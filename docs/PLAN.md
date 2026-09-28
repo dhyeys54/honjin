@@ -66,7 +66,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `CorralPreferences` proxy). Delete `sanity.test.ts`.
   - Verify: `npm test && npm run typecheck`.
 
-- [ ] **T1.3 Project list logic**
+- [x] **T1.3 Project list logic**
   - Spec: 03 §Project list (rules 1–7).
   - Tests first: `common/project-list.test.ts`: one `it` per rule, plus `visibleRoots` leaving out hidden and
     missing entries.
@@ -269,3 +269,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 G0 — spec-reviewer: no must-fix; pinned @theia/playwright exact (stage 0 complete)
 - 2026-09-29 T1.1 — packages + plugins + app config in both apps; AI not installed (D9); shell/AI-disabled E2E green (3 tests)
 - 2026-09-29 T1.2 — protocol.ts, preferences-schema.ts (8 keys, user scope), CorralPreferences binding; module renamed corral-frontend-module; sanity test removed (19 tests)
+- 2026-09-29 T1.3 — buildProjectList rules 1–7 + visibleRoots (8 tests)
