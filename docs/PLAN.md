@@ -27,7 +27,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     Put `package:mac` in as a placeholder that prints "see T3.5" and exits 1.
   - Verify: `npm test`, `npm run typecheck`, `npm run lint` all exit 0.
 
-- [ ] **T0.3 herdr test harness**
+- [x] **T0.3 herdr test harness**
   - Spec: 08 §herdr test harness.
   - Tests first: `corral-core/test/herdr-harness.int.test.ts`: (a) `startHerdr()` returns a session matching `/^corral-test-/`
     whose `status server --json` reports running; (b) after `stop()`, `herdr session list` does not contain it;
@@ -264,3 +264,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
 - 2026-09-29 T0.1 — Theia 1.76 app scaffolded; browser build passes, serves 200 on :3000 (0 tests)
 - 2026-09-29 T0.2 — jest unit/int configs, eslint flat config, root scripts; test/typecheck/lint green (1 test)
+- 2026-09-29 T0.3 — herdr test harness (startHerdr/assertTestSession; cli field deferred to T1.6) (3 tests)
