@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Corral app icon. macOS grid: 824px squircle tile inset 100px. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#171d1a"/>
+      <stop offset="1" stop-color="#0a0d0c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.52" r="0.5">
+      <stop offset="0" stop-color="#8fe388" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#8fe388" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="184.5" fill="none" stroke="#ffffff" stroke-opacity="0.07"/>
+  <rect x="160" y="160" width="704" height="704" rx="150" fill="url(#glow)"/>
+  <!-- The pen: a rounded enclosure with an open gate on the left -->
+  <path d="M 262 452 V 356 A 64 64 0 0 1 326 292 H 698 A 64 64 0 0 1 762 356 V 668 A 64 64 0 0 1 698 732 H 326 A 64 64 0 0 1 262 668 V 572"
+        fill="none" stroke="#8fe388" stroke-opacity="0.45" stroke-width="40" stroke-linecap="round"/>
+  <!-- The prompt: chevron + cursor -->
+  <path d="M 372 432 L 468 512 L 372 592" fill="none" stroke="#8fe388" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="512" y="566" width="148" height="44" rx="22" fill="#8fe388"/>
+</svg>

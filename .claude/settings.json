@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install*)",
+      "Bash(npm run *)",
+      "Bash(npm test*)",
+      "Bash(npm ls *)",
+      "Bash(npx jest *)",
+      "Bash(npx tsc *)",
+      "Bash(npx playwright *)",
+      "Bash(npx theia *)",
+      "Bash(npx -y -p yo -p generator-theia-extension *)",
+      "Bash(herdr --session corral-test*)",
+      "Bash(herdr session list*)",
+      "Bash(herdr session delete corral-test*)",
+      "Bash(herdr status*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(./scripts/make-icons.sh)",
+      "mcp__context7",
+      "mcp__playwright",
+      "Bash(npx -y -p generator-theia-extension *)",
+      "Bash(CORRAL_HERDR_SESSION=corral-test* *)",
+      "Bash(herdr --skill)",
+      "Bash(herdr --version)",
+      "Bash(git rev-parse *)",
+      "Bash(curl -s*http://127.0.0.1*)",
+      "Bash(mktemp *)",
+      "Bash(cp *)"
+    ],
+    "deny": [
+      "Bash(herdr --session default *)",
+      "Bash(herdr server stop*)",
+      "Bash(herdr session stop default*)",
+      "Bash(herdr session delete default*)",
+      "Bash(git push*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}

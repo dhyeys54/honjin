@@ -1,0 +1,61 @@
+# 00 — Overview and architecture
+
+## Goal
+
+A single-window macOS IDE for 4–8 active projects at once. The window has four regions:
+
+| Region | Contents |
+|---|---|
+| Left side panel | Search, Source Control (git), Run and Debug. These are stock Theia views. |
+| Main area, left half | Editors (Monaco). |
+| Main area, right half | One terminal widget attached to **herdr**. |
+| Right side panel | The **Projects** view: all projects as collapsible roots, each a VS Code-style file tree. Every folder gets a hover **+** action. |
+
+Out of scope: an agent/chat built into the IDE (Theia AI ships, **disabled**), remote development, Windows/Linux,
+and multi-window.
+
+## Glossary
+
+| Term | Meaning |
+|---|---|
+| Project | An absolute directory path shown as a root in the Projects view. |
+| Scan root | A directory whose immediate subdirectories are auto-discovered as projects. |
+| Extra project | A project added by hand, outside any scan root. |
+| Hidden project | A project in the hidden list. It is left out of the tree (unless *show hidden* is on) and out of the Theia workspace. |
+| herdr workspace | herdr's top-level grouping (`w1`, `w2`, …). Corral maps each project to exactly one. |
+| Startup command | The command typed into a new herdr tab (default `claude`). Can be overridden per project. |
+
+## Components
+
+```
+browser (frontend)                                 node (backend)
+─────────────────────────────                      ─────────────────────────────────────
+ProjectsWidget (right panel) ── RPC ─────────────► CorralProjectService
+  └─ uses common/project-list.ts                     └─ ProjectScanner (fs)
+  + button ─► startup-command.ts ── RPC ─────────► CorralHerdrService
+HerdrTerminalContribution                            ├─ HerdrCli (execFile herdr …, JSON)
+  └─ Theia TerminalWidget running `herdr`            └─ WorkspaceMapStore (<configDir>/herdr-workspaces.json)
+EditorPlacementGuard (keeps editors left of herdr)
+WorkspaceRootsSync (visible projects → Theia workspace roots)
+FirstRunContribution, CorralThemeContribution
+```
+
+- **Frontend ↔ backend:** Theia JSON-RPC services at `/services/corral-projects` and `/services/corral-herdr`.
+  The paths and interfaces are defined in `src/common/protocol.ts`.
+- **Configuration:** Theia preferences under `corral.*`, application/user scope only (spec 05). The config folder
+  is `~/.corral` (spec 01).
+- **Theia workspace:** Corral owns a managed multi-root workspace file, `<configDir>/corral.code-workspace` (`~/.corral/` in normal use). Its
+  roots always equal the visible projects, so search, git, LSP and debug cover every project (spec 03 §Roots sync).
+
+## Spec index
+
+| Spec | Area |
+|---|---|
+| 01-app-shell | Theia app composition, packages, branding, AI disabled, config folder |
+| 02-layout | Default layout, the herdr terminal widget, editor placement guard |
+| 03-projects-view | Project discovery, hide/show, the tree, the + action, file operations, roots sync |
+| 04-herdr-integration | The herdr CLI contract, workspace mapping, the open-tab flow, errors |
+| 05-settings | Preference schema, per-project overrides, first run |
+| 06-theme-and-branding | Corral Dark theme, fonts, icons |
+| 07-packaging | Building the signed-less local macOS `.app` |
+| 08-testing | TDD layers, tools, fixtures, commands |

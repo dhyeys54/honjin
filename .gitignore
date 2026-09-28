@@ -1,0 +1,10 @@
+node_modules/
+lib/
+plugins/
+dist/
+*.tsbuildinfo
+test-results/
+playwright-report/
+.DS_Store
+.impeccable/config.local.json
+# Theia generator lines are appended below in task T0.1
