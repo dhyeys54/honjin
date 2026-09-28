@@ -93,7 +93,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     then `herdr pane read` contains `corral-ok`; `getWorkspace('w999')` returns undefined.
   - Verify: `npm run test:int`.
 
-- [ ] **T1.7 Workspace mapping and openTab**
+- [x] **T1.7 Workspace mapping and openTab**
   - Spec: 04 §Workspace mapping, §The open-tab flow.
   - Tests first: `node/workspace-map-store.test.ts` (round-trip; corrupt file → empty plus a warning; atomic write;
     entries keyed by session). `common/workspace-resolution.test.ts` (reuse / create). `node/corral-herdr-service.test.ts`
@@ -273,3 +273,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.4 — owningProject + resolveStartupCommand (11 tests)
 - 2026-09-29 T1.5 — HerdrCli (argv/error mapping, injectable execFileFn) + HerdrBinaryResolver (17 tests)
 - 2026-09-29 T1.6 — HerdrCli against real headless herdr; fixed pane run empty stdout; harness now returns cli; int test lives in corral-core/test/ (3 int + 1 unit tests)
+- 2026-09-29 T1.7 — workspace map store, resolveWorkspace, CorralHerdrServiceImpl (per-project serialised openTab), backend module + RPC binding (17 unit + 1 int tests)
