@@ -12,12 +12,25 @@
     "start:browser": "npm --prefix browser-app start",
     "start:electron": "npm --prefix electron-app start",
     "watch:browser": "lerna run --parallel watch --ignore electron-app",
-    "watch:electron": "lerna run --parallel watch --ignore browser-app"
+    "watch:electron": "lerna run --parallel watch --ignore browser-app",
+    "build": "npm run build -w corral-core",
+    "test": "jest -c corral-core/test/jest.config.ts",
+    "test:int": "jest -c corral-core/test/jest.int.config.ts --passWithNoTests",
+    "test:e2e": "echo \"see T0.4\" && exit 1",
+    "typecheck": "tsc --noEmit -p corral-core",
+    "lint": "eslint .",
+    "package:mac": "echo \"see T3.5\" && exit 1"
   },
   "devDependencies": {
-    "lerna": "^8.2.4"
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "lerna": "^8.2.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0"
   },
   "workspaces": [
-    "corral-core", "browser-app", "electron-app"
+    "corral-core",
+    "browser-app",
+    "electron-app"
   ]
 }

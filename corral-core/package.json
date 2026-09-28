@@ -5,9 +5,7 @@
   ],
   "version": "0.0.0",
   "author": "Corral",
-  
   "license": "MIT",
-  
   "files": [
     "lib",
     "src"
@@ -16,7 +14,11 @@
     "@theia/core": "1.76.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
     "rimraf": "^5.0.0",
+    "ts-jest": "^29.4.14",
+    "ts-node": "^10.9.2",
     "typescript": "~5.4.5"
   },
   "scripts": {

@@ -18,7 +18,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     (`curl -sfo /dev/null -w '%{http_code}' http://127.0.0.1:3000`), then stop it.
   - Commit: `T0.1: scaffold Theia 1.76 app (generator-theia-extension)`.
 
-- [ ] **T0.2 Tooling and scripts**
+- [x] **T0.2 Tooling and scripts**
   - Spec: 08 §Layers, AGENTS.md §Commands.
   - Tests first: `common/sanity.test.ts` asserting `1 + 1 === 2` (proves the runner works); delete it in T1.2.
   - Do: Jest config at `corral-core/test/jest.config.ts` (unit) and `corral-core/test/jest.int.config.ts`
@@ -263,3 +263,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
 - 2026-09-29 T0.1 — Theia 1.76 app scaffolded; browser build passes, serves 200 on :3000 (0 tests)
+- 2026-09-29 T0.2 — jest unit/int configs, eslint flat config, root scripts; test/typecheck/lint green (1 test)
