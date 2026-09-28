@@ -86,7 +86,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     through the injected `execFileFn`.
   - Verify: `npm test -- herdr`.
 
-- [ ] **T1.6 HerdrCli (integration)**
+- [x] **T1.6 HerdrCli (integration)**
   - Spec: 04 §Facts.
   - Tests first: `node/herdr-cli.int.test.ts` against the harness: create a workspace in a temp dir (with a space
     in its name); get it; create a tab in a sub-folder; `pane list` shows that cwd; `runInPane(pane, 'echo corral-ok')`,
@@ -272,3 +272,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.3 — buildProjectList rules 1–7 + visibleRoots (8 tests)
 - 2026-09-29 T1.4 — owningProject + resolveStartupCommand (11 tests)
 - 2026-09-29 T1.5 — HerdrCli (argv/error mapping, injectable execFileFn) + HerdrBinaryResolver (17 tests)
+- 2026-09-29 T1.6 — HerdrCli against real headless herdr; fixed pane run empty stdout; harness now returns cli; int test lives in corral-core/test/ (3 int + 1 unit tests)

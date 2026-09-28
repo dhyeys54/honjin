@@ -68,11 +68,12 @@ export class HerdrCli {
     }
 
     async runInPane(paneId: string, command: string): Promise<void> {
-        await this.run(['pane', 'run', paneId, command]);
+        // The real `pane run` prints nothing on success (found by the integration test).
+        await this.run(['pane', 'run', paneId, command], true);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- herdr's JSON is validated by use, not by a schema
-    protected async run(args: string[]): Promise<any> {
+    protected async run(args: string[], allowEmptyOutput = false): Promise<any> {
         const argv = [...(this.opts.session ? ['--session', this.opts.session] : []), ...args];
         let res;
         try {
@@ -89,6 +90,9 @@ export class HerdrCli {
         }
         if (res.exitCode !== 0) {
             throw new HerdrError('cli_error', res.stderr.trim() || `herdr exited with ${res.exitCode}`, res.exitCode, res.stderr);
+        }
+        if (allowEmptyOutput && !res.stdout.trim()) {
+            return {};
         }
         const parsed = tryParse(res.stdout);
         if (parsed === undefined) {

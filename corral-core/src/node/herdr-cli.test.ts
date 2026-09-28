@@ -71,6 +71,14 @@ describe('HerdrCli argv', () => {
     });
 });
 
+describe('HerdrCli empty output', () => {
+    it('runInPane accepts empty stdout, but other commands still reject it', async () => {
+        const cli = new HerdrCli({ binary: 'h' }, fake({ stdout: '' }, { stdout: '' }).exec);
+        await expect(cli.runInPane('w1:p1', 'ls')).resolves.toBeUndefined();
+        await expect(cli.status()).rejects.toMatchObject({ code: 'cli_error' });
+    });
+});
+
 describe('HerdrCli errors', () => {
     const cli = (r: Reply) => new HerdrCli({ binary: 'h' }, fake(r).exec);
 

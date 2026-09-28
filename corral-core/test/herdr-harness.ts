@@ -1,6 +1,7 @@
 import { ChildProcess, execFile, spawn } from 'child_process';
 import { randomBytes } from 'crypto';
 import { promisify } from 'util';
+import { HerdrCli } from '../src/node/herdr-cli';
 
 const run = promisify(execFile);
 // The real binary resolver arrives in T1.5; tests only need the CLI on PATH.
@@ -8,6 +9,7 @@ const HERDR = process.env.HERDR_BIN || 'herdr';
 
 export interface HerdrHarness {
     session: string;
+    cli: HerdrCli;
     stop(): Promise<void>;
 }
 
@@ -61,5 +63,5 @@ export async function startHerdr(opts: { session?: string } = {}): Promise<Herdr
     };
     process.on('exit', onExit);
 
-    return { session, stop };
+    return { session, cli: new HerdrCli({ binary: HERDR, session }), stop };
 }
