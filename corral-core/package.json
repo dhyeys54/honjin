@@ -1,0 +1,33 @@
+{
+  "name": "corral-core",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "author": "Corral",
+  
+  "license": "MIT",
+  
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "1.76.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.0",
+    "typescript": "~5.4.5"
+  },
+  "scripts": {
+    "prepare": "npm run clean && npm run build",
+    "clean": "rimraf lib",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/corral-core-frontend-module"
+    }
+  ]
+}

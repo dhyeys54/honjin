@@ -8,3 +8,7 @@ playwright-report/
 .DS_Store
 .impeccable/config.local.json
 # Theia generator lines are appended below in task T0.1
+.browser_modules
+*.log
+*-app/*
+!*-app/package.json

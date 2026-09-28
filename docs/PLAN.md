@@ -10,7 +10,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 ## Stage 0 — Bootstrap
 
-- [ ] **T0.1 Scaffold the Theia app**
+- [x] **T0.1 Scaffold the Theia app**
   - Spec: 01 §Scaffold.
   - Do: run the generator in a temp dir, copy the output into the repo (keep our README/.gitignore and append
     only the generator's ignore lines that are missing; do **not** ignore `branding/generated/`, which is committed). Rename nothing else. `npm install`.
@@ -262,3 +262,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
+- 2026-09-29 T0.1 — Theia 1.76 app scaffolded; browser build passes, serves 200 on :3000 (0 tests)
