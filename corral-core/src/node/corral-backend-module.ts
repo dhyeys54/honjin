@@ -5,8 +5,9 @@ import { promises as fs } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
-import { CORRAL_HERDR_PATH, CorralHerdrService, HerdrError } from '../common/protocol';
+import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService, HerdrError } from '../common/protocol';
 import { CorralHerdrServiceImpl } from './corral-herdr-service';
+import { CorralProjectServiceImpl } from './corral-project-service';
 import { defaultExecFile, HerdrCli } from './herdr-cli';
 import { HerdrBinaryResolver } from './herdr-binary';
 import { WorkspaceMapStore } from './workspace-map-store';
@@ -45,5 +46,14 @@ export default new ContainerModule(bind => {
 
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler(CORRAL_HERDR_PATH, () => ctx.container.get<CorralHerdrService>(CorralHerdrService))
+    ).inSingletonScope();
+
+    bind(CorralProjectService).toDynamicValue(ctx => {
+        const env = ctx.container.get<EnvVariablesServer>(EnvVariablesServer);
+        return new CorralProjectServiceImpl(async () => fileURLToPath(await env.getConfigDirUri()));
+    }).inSingletonScope();
+
+    bind(ConnectionHandler).toDynamicValue(ctx =>
+        new RpcConnectionHandler(CORRAL_PROJECTS_PATH, () => ctx.container.get<CorralProjectService>(CorralProjectService))
     ).inSingletonScope();
 });

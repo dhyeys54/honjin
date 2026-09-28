@@ -104,7 +104,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
   - Do: bind the service in `node/corral-backend-module.ts` at the protocol path.
   - Verify: `npm test && npm run test:int`.
 
-- [ ] **T1.8 Project scanning service**
+- [x] **T1.8 Project scanning service**
   - Spec: 03 §Discovery.
   - Tests first: `node/project-scanner.int.test.ts` (real temp dirs: dot-dirs, `node_modules`, a file symlink, a
     dir symlink, a duplicate via symlink, an unreadable or missing root) and `node/corral-project-service.test.ts`
@@ -274,3 +274,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.5 — HerdrCli (argv/error mapping, injectable execFileFn) + HerdrBinaryResolver (17 tests)
 - 2026-09-29 T1.6 — HerdrCli against real headless herdr; fixed pane run empty stdout; harness now returns cli; int test lives in corral-core/test/ (3 int + 1 unit tests)
 - 2026-09-29 T1.7 — workspace map store, resolveWorkspace, CorralHerdrServiceImpl (per-project serialised openTab), backend module + RPC binding (17 unit + 1 int tests)
+- 2026-09-29 T1.8 — scanProjects, CorralProjectServiceImpl (missing, ~ expansion, managed corral.code-workspace created on first list), RPC bound (4 int + 4 unit tests)
