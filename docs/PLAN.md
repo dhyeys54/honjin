@@ -72,7 +72,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     missing entries.
   - Verify: `npm test -- project-list`.
 
-- [ ] **T1.4 Startup command resolution**
+- [x] **T1.4 Startup command resolution**
   - Spec: 05 §Startup-command resolution.
   - Tests first: `common/startup-command.test.ts`: the six cases listed in the spec.
   - Verify: `npm test -- startup-command`.
@@ -270,3 +270,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.1 — packages + plugins + app config in both apps; AI not installed (D9); shell/AI-disabled E2E green (3 tests)
 - 2026-09-29 T1.2 — protocol.ts, preferences-schema.ts (8 keys, user scope), CorralPreferences binding; module renamed corral-frontend-module; sanity test removed (19 tests)
 - 2026-09-29 T1.3 — buildProjectList rules 1–7 + visibleRoots (8 tests)
+- 2026-09-29 T1.4 — owningProject + resolveStartupCommand (11 tests)
