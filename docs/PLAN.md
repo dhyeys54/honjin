@@ -77,7 +77,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
   - Tests first: `common/startup-command.test.ts`: the six cases listed in the spec.
   - Verify: `npm test -- startup-command`.
 
-- [ ] **T1.5 HerdrCli (unit) and binary resolver**
+- [x] **T1.5 HerdrCli (unit) and binary resolver**
   - Spec: 04 §herdr-cli.ts, §Resolving the binary.
   - Tests first: `node/herdr-cli.test.ts`: the exact argv for each method, with and without a session; paths with
     spaces, `"` and `$`; error mapping for exit 1 JSON / exit 2 / ENOENT / timeout / bad JSON; `getWorkspace`
@@ -271,3 +271,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.2 — protocol.ts, preferences-schema.ts (8 keys, user scope), CorralPreferences binding; module renamed corral-frontend-module; sanity test removed (19 tests)
 - 2026-09-29 T1.3 — buildProjectList rules 1–7 + visibleRoots (8 tests)
 - 2026-09-29 T1.4 — owningProject + resolveStartupCommand (11 tests)
+- 2026-09-29 T1.5 — HerdrCli (argv/error mapping, injectable execFileFn) + HerdrBinaryResolver (17 tests)

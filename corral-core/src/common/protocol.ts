@@ -40,11 +40,11 @@ export interface CorralHerdrService {
     openTab(request: OpenTabRequest): Promise<OpenTabResult>;
 }
 
-/** Stable error codes crossing the RPC boundary; herdr's own codes pass through as strings. */
-export type HerdrErrorCode = 'server_not_running' | 'binary_not_found' | 'timeout' | 'bad_output' | 'cli_error' | (string & {});
+/** Error codes Corral itself produces; herdr's own codes (e.g. `workspace_not_found`) pass through as strings. */
+export type HerdrErrorCode = 'server_not_running' | 'not_found' | 'timeout' | 'cli_error' | (string & {});
 
 export class HerdrError extends Error {
-    constructor(readonly code: HerdrErrorCode, message?: string) {
+    constructor(readonly code: HerdrErrorCode, message?: string, readonly exitCode: number = -1, readonly stderr: string = '') {
         super(message ?? code);
         this.name = 'HerdrError';
     }
