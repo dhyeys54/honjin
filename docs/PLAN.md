@@ -57,7 +57,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     turn off the getting-started page.
   - Verify: `npm run download:plugins && npm run build:browser && npm run test:e2e`.
 
-- [ ] **T1.2 Protocol and preferences**
+- [x] **T1.2 Protocol and preferences**
   - Spec: 00 §Components, 05 §Preference schema.
   - Tests first: `common/preferences-schema.test.ts`: every key from spec 05 exists with the right type, default
     and `application` scope.
@@ -268,3 +268,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T0.4 — Playwright E2E skeleton on :3100 with herdr global setup/teardown and fixtures (1 test)
 - 2026-09-29 G0 — spec-reviewer: no must-fix; pinned @theia/playwright exact (stage 0 complete)
 - 2026-09-29 T1.1 — packages + plugins + app config in both apps; AI not installed (D9); shell/AI-disabled E2E green (3 tests)
+- 2026-09-29 T1.2 — protocol.ts, preferences-schema.ts (8 keys, user scope), CorralPreferences binding; module renamed corral-frontend-module; sanity test removed (19 tests)

@@ -29,7 +29,7 @@
   },
   "theiaExtensions": [
     {
-      "frontend": "lib/browser/corral-core-frontend-module"
+      "frontend": "lib/browser/corral-frontend-module"
     }
   ]
 }
