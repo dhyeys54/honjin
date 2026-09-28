@@ -44,7 +44,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     and the seeded settings. Run `npx playwright install chromium`.
   - Verify: `npm run test:e2e` passes; no `corral-test-e2e-*` session is left in `herdr session list`.
 
-- [ ] **G0 Stage 0 gate**: run the `spec-reviewer` agent on stage 0; fix its must-fix findings, then tick G0 yourself
+- [x] **G0 Stage 0 gate**: run the `spec-reviewer` agent on stage 0; fix its must-fix findings, then tick G0 yourself
   (no human checkpoint) and continue.
 
 ## Stage 1 — The core flow (usable)
@@ -266,3 +266,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T0.2 — jest unit/int configs, eslint flat config, root scripts; test/typecheck/lint green (1 test)
 - 2026-09-29 T0.3 — herdr test harness (startHerdr/assertTestSession; cli field deferred to T1.6) (3 tests)
 - 2026-09-29 T0.4 — Playwright E2E skeleton on :3100 with herdr global setup/teardown and fixtures (1 test)
+- 2026-09-29 G0 — spec-reviewer: no must-fix; pinned @theia/playwright exact (stage 0 complete)
