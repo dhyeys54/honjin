@@ -36,7 +36,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
   - Do: `corral-core/test/herdr-harness.ts`. Use `execFile`; no shell.
   - Verify: `npm run test:int`; `herdr session list` afterwards shows only the sessions that existed before.
 
-- [ ] **T0.4 E2E skeleton**
+- [x] **T0.4 E2E skeleton**
   - Spec: 08 §E2E setup.
   - Tests first: `e2e/smoke.spec.ts`: the app shell (`#theia-app-shell`) becomes visible within 60s.
   - Do: install `@playwright/test` and `@theia/playwright` (pinned to the Theia version). Add
@@ -265,3 +265,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T0.1 — Theia 1.76 app scaffolded; browser build passes, serves 200 on :3000 (0 tests)
 - 2026-09-29 T0.2 — jest unit/int configs, eslint flat config, root scripts; test/typecheck/lint green (1 test)
 - 2026-09-29 T0.3 — herdr test harness (startHerdr/assertTestSession; cli field deferred to T1.6) (3 tests)
+- 2026-09-29 T0.4 — Playwright E2E skeleton on :3100 with herdr global setup/teardown and fixtures (1 test)

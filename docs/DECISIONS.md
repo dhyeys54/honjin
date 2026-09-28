@@ -41,3 +41,8 @@ by the user on 2026-09-29).
 ## D7 — Test stack: Jest (unit/integration) + Playwright via @theia/playwright (E2E) · 2026-09-29
 **Why.** Jest is what the official generator scaffolds; `@theia/playwright` is Theia's own E2E toolkit. Integration
 tests use a real headless herdr session (`herdr --session corral-test-* server`) rather than mocks.
+
+## D8 — E2E runs on port 3100 · 2026-09-29
+**Why.** Port 3000 is the usual dev-server port (another project's server was holding it), and Playwright's
+`webServer` refuses to start when the port is taken. `start:browser` for manual use is still 3000.
+**Consequences.** Spec 08 §E2E setup updated; `e2e/playwright.config.ts` uses 3100.

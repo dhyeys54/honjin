@@ -31,7 +31,7 @@ export async function startHerdr(opts?: { session?: string }): Promise<{ session
 
 ## E2E setup: `e2e/playwright.config.ts`
 
-- `webServer`: `npm run start:browser -- --hostname 127.0.0.1 --port 3000`, with env:
+- `webServer`: `npm --prefix browser-app start -- --hostname 127.0.0.1 --port 3100`, with env: (3100, not 3000, so E2E never collides with a dev server; DECISIONS D8)
   - `THEIA_CONFIG_DIR=<tmp>/corral-config`, a fresh config folder per run (check the env var name that
     `@theia/core` backend reads in 1.76; `BackendApplicationConfigProvider` / `environment`).
   - `CORRAL_HERDR_SESSION`: the config computes the name **once** with
