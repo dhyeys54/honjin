@@ -46,3 +46,16 @@ tests use a real headless herdr session (`herdr --session corral-test-* server`)
 **Why.** Port 3000 is the usual dev-server port (another project's server was holding it), and Playwright's
 `webServer` refuses to start when the port is taken. `start:browser` for manual use is still 3000.
 **Consequences.** Spec 08 §E2E setup updated; `e2e/playwright.config.ts` uses 3100.
+
+## D9 — Theia AI packages are not installed (supersedes D4's "ships but disabled") · 2026-09-29
+**Why.** In Theia 1.76 `@theia/ai-core` sets its `ai-features.AiEnable.enableAI` context key to `true`
+unconditionally and there is no such preference, so with the packages installed an "AI Chat" tab shows in the right
+sidebar. The user does not want an in-IDE agent (herdr runs Claude Code).
+**Consequences.** `browser-app`/`electron-app` omit `@theia/ai-*`. To bring AI back later: add the three packages,
+add a Corral preference/contribution that hides the chat view, and update `e2e/ai-disabled.spec.ts`.
+
+## D10 — Preference key `editor.enablePreview`; no `@theia/scm-extra`; debug tab is titled "Debug" · 2026-09-29
+**Why.** `workbench.editor.enablePreview` does not exist in 1.76 (the key is `editor.enablePreview`);
+`@theia/scm-extra` has no 1.76 release (its features live in `@theia/scm`); the activity-bar tab for `@theia/debug`
+is titled "Debug", not "Run and Debug".
+**Consequences.** Spec 01 updated; E2E asserts the real titles.

@@ -19,7 +19,8 @@
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "typecheck": "tsc --noEmit -p corral-core",
     "lint": "eslint .",
-    "package:mac": "echo \"see T3.5\" && exit 1"
+    "package:mac": "echo \"see T3.5\" && exit 1",
+    "download:plugins": "npm --prefix browser-app run download:plugins"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

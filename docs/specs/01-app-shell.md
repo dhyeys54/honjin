@@ -33,7 +33,7 @@ version**:
 | Left panel | `@theia/search-in-workspace` `@theia/scm` `@theia/scm-extra` `@theia/debug` |
 | VS Code extension host (LSP, git, debug adapters) | `@theia/plugin-ext` `@theia/plugin-ext-vscode` `@theia/vsx-registry` |
 | Nice-to-have core | `@theia/keymaps` `@theia/outline-view` `@theia/output` `@theia/getting-started` (then hidden, spec 06) |
-| AI, shipped but disabled (DECISIONS D4) | `@theia/ai-core` `@theia/ai-chat` `@theia/ai-chat-ui` |
+| AI (not shipped in v1, DECISIONS D9) | none: `@theia/ai-core` `@theia/ai-chat` `@theia/ai-chat-ui` are left out |
 | Electron only | `@theia/electron` |
 
 **Built-in VS Code extensions.** Add a `theiaPlugins` map to both app `package.json`s, plus a root script
@@ -54,8 +54,7 @@ that.
     "defaultTheme": { "light": "corral-dark", "dark": "corral-dark" },
     "defaultIconTheme": "theia-file-icons",
     "preferences": {
-      "ai-features.AiEnable.enableAI": false,
-      "workbench.editor.enablePreview": true,
+      "editor.enablePreview": true,
       "terminal.integrated.enablePersistentSessions": false
     }
   }},
@@ -70,8 +69,8 @@ that.
   `theia.frontend.config` mechanism that exists in 1.76. Check how the Theia IDE's browser app does it.
 
 ## Theia AI stays off
-
-- `ai-features.AiEnable.enableAI` defaults to `false` (the config above). With AI off, no AI views may appear in
+- Theia 1.76 has no working `enableAI` switch (`@theia/ai-core` always turns AI on), so Corral does not install the
+  AI packages at all (DECISIONS D9). No AI views may appear in the default layout.
   the default layout.
 - E2E test `e2e/ai-disabled.spec.ts`: a fresh start shows no chat/AI view in any panel.
 

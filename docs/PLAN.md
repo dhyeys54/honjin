@@ -49,7 +49,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 ## Stage 1 — The core flow (usable)
 
-- [ ] **T1.1 App composition**
+- [x] **T1.1 App composition**
   - Spec: 01 §Packages, §Application config, §Theia AI stays off.
   - Tests first: `e2e/shell.spec.ts`: the document title contains "Corral"; the left activity bar has Search,
     Source Control and Run and Debug. `e2e/ai-disabled.spec.ts`: no AI/chat view is visible in any panel.
@@ -267,3 +267,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T0.3 — herdr test harness (startHerdr/assertTestSession; cli field deferred to T1.6) (3 tests)
 - 2026-09-29 T0.4 — Playwright E2E skeleton on :3100 with herdr global setup/teardown and fixtures (1 test)
 - 2026-09-29 G0 — spec-reviewer: no must-fix; pinned @theia/playwright exact (stage 0 complete)
+- 2026-09-29 T1.1 — packages + plugins + app config in both apps; AI not installed (D9); shell/AI-disabled E2E green (3 tests)
