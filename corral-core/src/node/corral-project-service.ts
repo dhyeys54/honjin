@@ -29,13 +29,9 @@ export class CorralProjectServiceImpl implements CorralProjectService {
         // The frontend lists on startup, so this creates the workspace file before anything opens it.
         await (this.ensured ??= this.ensureWorkspaceFile());
         const scanned = await scanProjects(req.scanRoots.map(r => expandHome(r, this.home)), this.warn);
-        const missing: string[] = [];
-        for (const entry of [...req.extra, ...req.hidden]) {
-            if (!missing.includes(entry) && !(await exists(expandHome(entry, this.home)))) {
-                missing.push(entry);
-            }
-        }
-        return { scanned, missing };
+        const entries = [...new Set([...req.extra, ...req.hidden])];
+        const present = await Promise.all(entries.map(e => exists(expandHome(e, this.home))));
+        return { scanned, missing: entries.filter((_, i) => !present[i]) };
     }
 
     reveal(path: string): Promise<void> {

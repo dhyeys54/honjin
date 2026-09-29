@@ -60,4 +60,11 @@ describe('WorkspaceMapStore', () => {
         expect(await store.get('/p/b', '')).toBe('w2');
         await store.delete('/p/never'); // no-op, no throw
     });
+
+    it('concurrent writes for different projects both persist', async () => {
+        const s = new WorkspaceMapStore(join(tmp(), 'm.json'), () => undefined);
+        await Promise.all([s.set('/p/a', 'default', 'wa'), s.set('/p/b', 'default', 'wb'), s.delete('/p/c')]);
+        expect(await s.get('/p/a', 'default')).toBe('wa');
+        expect(await s.get('/p/b', 'default')).toBe('wb');
+    });
 });

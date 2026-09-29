@@ -71,7 +71,10 @@ export class ProjectsModel extends FileTreeModel {
         }
     }
 
+    protected generation = 0;
+
     protected async rebuild(): Promise<void> {
+        const generation = ++this.generation;
         this.entries = this.projectList.entries(this.showHidden);
         const root: CompositeTreeNode = this.projectsTree.createRoot();
         this.toDisposeOnRebuild.dispose();
@@ -86,6 +89,9 @@ export class ProjectsModel extends FileTreeModel {
                 return undefined; // vanished between scan and stat; the next refresh shows it as missing
             }
         }));
+        if (generation !== this.generation) {
+            return; // a newer rebuild started while this one was resolving stats
+        }
         this.projectsTree.projects = nodes.filter((n): n is NonNullable<typeof n> => !!n);
         this.root = root;
     }

@@ -15,19 +15,30 @@ export class WorkspaceMapStore {
         return entry && entry.session === session ? entry.workspaceId : undefined;
     }
 
-    async set(projectPath: string, session: string, workspaceId: string): Promise<void> {
-        const map = await this.read();
-        map[projectPath] = { workspaceId, session };
-        await this.write(map);
+    set(projectPath: string, session: string, workspaceId: string): Promise<void> {
+        return this.update(map => {
+            map[projectPath] = { workspaceId, session };
+            return true;
+        });
     }
 
     /** Forgets the link only; the herdr workspace itself is left alone. */
-    async delete(projectPath: string): Promise<void> {
-        const map = await this.read();
-        if (projectPath in map) {
-            delete map[projectPath];
-            await this.write(map);
-        }
+    delete(projectPath: string): Promise<void> {
+        return this.update(map => projectPath in map && delete map[projectPath]);
+    }
+
+    /** Read-modify-write, one at a time: two projects opening together must not lose each other's entry. */
+    protected queue: Promise<unknown> = Promise.resolve();
+
+    protected update(change: (map: MapFile) => boolean): Promise<void> {
+        const run = this.queue.then(async () => {
+            const map = await this.read();
+            if (change(map)) {
+                await this.write(map);
+            }
+        });
+        this.queue = run.catch(() => undefined);
+        return run;
     }
 
     protected async write(map: MapFile): Promise<void> {

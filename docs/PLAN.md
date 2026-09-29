@@ -373,7 +373,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     (same as `NavigatorWidget.tapNode`).
   - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/projects.spec.ts e2e/placement.spec.ts`.
 
-- [ ] **T5.3 Robustness fixes**
+- [x] **T5.3 Robustness fixes**
   - Tests first:
     - `node/workspace-map-store.test.ts`: two concurrent `set`s for different projects both persist.
     - `common/project-list.test.ts` or a new unit: none for the model race (wiring); covered by existing E2E.
@@ -499,3 +499,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T4.6 — Docs (README, specs 08/09), full suite green, Corral.app repackaged and installed with Projects over Changes (144 unit, 35 e2e)
 - 2026-09-29 T5.1 — a hidden project that vanished from disk stays listed (spec 03 rule 4): the service reuses `buildProjectList` instead of its own filter; E2E in add-remove.spec (144 unit)
 - 2026-09-29 T5.2 — a single click in the Projects tree previews a file (italic tab), a double click pins it; honours `workbench.list.openMode` (144 unit, +1 e2e)
+- 2026-09-29 T5.3 — workspace-map writes are serialised, stale Projects rebuilds are dropped, the herdr output listener cannot leak, missing-project checks run in parallel (145 unit, 11 int)

@@ -100,6 +100,7 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
         // Keep a short tail of output: when herdr quits, its error is the last thing it printed.
         let tail = '';
         const output = widget.onOutput(data => { tail = (tail + data).slice(-4096); });
+        widget.onDidDispose(() => output.dispose());
         await widget.start();
         const listener = this.watcher.onTerminalExit(e => {
             if (e.terminalId === widget.terminalId) {
@@ -110,7 +111,7 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
                 this.showPlaceholder(reason ? `herdr exited: ${reason}` : 'herdr exited', 'Reattach', () => this.commands.executeCommand(HerdrCommands.REATTACH.id));
             }
         });
-        widget.onDidDispose(() => { listener.dispose(); output.dispose(); });
+        widget.onDidDispose(() => listener.dispose());
     }
 
     protected async showPlaceholder(message: string, action: string, run: () => unknown): Promise<void> {
