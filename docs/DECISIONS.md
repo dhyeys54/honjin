@@ -74,3 +74,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** `HerdrError` loses its class over RPC, so the frontend detects the server-down case by `server_not_running` in the error message (the default message is the code). The ⌥⌘T keybinding is global but does nothing unless the Projects view is active with a selection. The `+` is a plain button rendered in `renderTailDecorations`; it is not yet disabled on missing roots because those are not in the tree (D12).
 **Why.** Simplest thing that works with Theia's RPC and tree APIs.
 **Consequences.** If herdr error codes need to be structured, add a code field to the RPC error later.
+
+## D14 — placement guard test opener (T1.12)
+**Decision.** The E2E opens the "other opener" through File > New Text File instead of Quick Open (⌘P). It is a non-Projects opener that Theia places next to the focused widget, and it fails when the guard is disabled. The interim `editorPlacement()` from D12 is gone; `ProjectsModel` uses `EditorPlacementGuard.optionsFor()`.
+**Why.** Quick Open lists nothing until workspace roots are synced (T1.14).
+**Consequences.** After T1.14, add a Quick Open case to `placement.spec.ts` if wanted.

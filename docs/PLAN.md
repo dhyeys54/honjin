@@ -145,7 +145,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     the "Open herdr" action.
   - Verify: `npm run build:browser && npm run test:e2e -- new-tab`.
 
-- [ ] **T1.12 Editor placement guard**
+- [x] **T1.12 Editor placement guard**
   - Spec: 02 §Editor placement guard.
   - Tests first: `common/placement.test.ts` (no editors → split-left of herdr; editors exist → tab-after the most
     recent; widget landed in herdr's group → move). `e2e/placement.spec.ts`: with the herdr terminal focused, open
@@ -278,3 +278,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.9 — herdr terminal tab in main area (non-closable, env cleared, opens before start), exited/not-found placeholder tab with Reattach, R15 persistence (4 E2E)
 - 2026-09-29 T1.10 — Projects view (FileTree on a synthetic root of project DirNodes) in the right panel, default layout + corral.resetLayout, files open left of herdr (3 E2E)
 - 2026-09-29 T1.11 — + button on every directory row, corral.herdr.newTab (startup command, retry when the server is down, error notification), ⌥⌘T (2 E2E)
+- 2026-09-29 T1.12 — placementFor/needsMove (common), EditorPlacementGuard moves foreign widgets out of herdr's tab bar; replaces D12's interim rule (6 unit + 1 E2E)
