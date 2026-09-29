@@ -12,3 +12,4 @@ playwright-report/
 *.log
 *-app/*
 !*-app/package.json
+!*-app/electron-builder.yml

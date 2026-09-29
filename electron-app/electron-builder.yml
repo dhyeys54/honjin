@@ -1,0 +1,25 @@
+appId: dev.corral.ide
+productName: Corral
+directories:
+  output: dist
+# The Theia bundle lives in lib/ and src-gen/; plugins ship as a resource and are found through THEIA_DEFAULT_PLUGINS
+# (set in scripts/ in the main process before Theia starts).
+files:
+  - package.json
+  - lib/**/*
+  - src-gen/**/*
+  - scripts/**/*
+extraResources:
+  - from: ../plugins
+    to: plugins
+asar: true
+asarUnpack:
+  - "**/node_modules/node-pty/**"
+  - "**/node_modules/@theia/**/*.node"
+  - "**/node_modules/@vscode/ripgrep/**"
+  - "**/node_modules/drivelist/**"
+mac:
+  target: dir
+  icon: ../branding/generated/corral.icns
+  category: public.app-category.developer-tools
+  identity: null
