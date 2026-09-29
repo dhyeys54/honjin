@@ -217,7 +217,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     still opens Quick Open.
   - Verify: `npm run test:e2e -- herdr-keys`.
 
-- [ ] **G2 Stage 2 gate**: same as G1 (all suites → `spec-reviewer` → fix → **human checkpoint, stop**).
+- [x] **G2 Stage 2 gate**: same as G1 (all suites → `spec-reviewer` → fix → **human checkpoint, stop**).
 
 ## Stage 3 — Look, feel, ship
 
@@ -288,3 +288,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T2.4 — Tree context menu: New File…/New Folder…/Rename…/Delete (Theia WorkspaceCommands), Copy Path, Reveal in Finder (backend `open -R`); tree refreshes on disk changes (1 unit + 1 E2E)
 - 2026-09-29 T2.5 — Rescan verified (Refresh button, scanRoots change); window title `Corral — <project>` from the active editor or last + click (3 E2E)
 - 2026-09-29 T2.6 — herdr prefix (ctrl+b c) and ⌘P verified from the focused terminal; fixed the terminal env missing HOME, which attached the in-IDE client to a different herdr server than the backend's (2 E2E)
+- 2026-09-29 G2 — spec-reviewer run; fixed collapse-all, eye/eye-closed toggle, hidden/missing row flags, E2E races; leftovers in FOR-REVIEW #8–9 (unit 102, int 11, e2e 26)
