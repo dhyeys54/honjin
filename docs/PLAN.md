@@ -152,7 +152,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     a file via Quick Open (`⌘P`) → it opens in the left half, and the herdr tab is in the right half of the main area.
   - Verify: `npm test && npm run test:e2e -- placement`.
 
-- [ ] **T1.13 First run**
+- [x] **T1.13 First run**
   - Spec: 05 §First run.
   - Tests first: `common/first-run.test.ts` (the should-run predicate). `e2e/first-run.spec.ts` with an
     un-seeded config: the folder picker appears; choosing `e2e/fixtures/projects` fills the tree and sets
@@ -279,3 +279,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.10 — Projects view (FileTree on a synthetic root of project DirNodes) in the right panel, default layout + corral.resetLayout, files open left of herdr (3 E2E)
 - 2026-09-29 T1.11 — + button on every directory row, corral.herdr.newTab (startup command, retry when the server is down, error notification), ⌥⌘T (2 E2E)
 - 2026-09-29 T1.12 — placementFor/needsMove (common), EditorPlacementGuard moves foreign widgets out of herdr's tab bar; replaces D12's interim rule (6 unit + 1 E2E)
+- 2026-09-29 T1.13 — first run: Theia folder dialog, scan roots stored with ~, firstRunCompleted, corral.projects.chooseScanRoots with confirmation; tree reloads on pref change (8 unit + 1 E2E)

@@ -7,6 +7,7 @@ import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/ser
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
 import { CorralCoreContribution } from './corral-core-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
+import { FirstRunContribution } from './first-run-contribution';
 import { EditorPlacementGuard } from './editor-placement-guard';
 import { NewTabContribution } from './herdr/new-tab-contribution';
 import { ProjectsContribution } from './projects/projects-contribution';
@@ -28,6 +29,9 @@ export default new ContainerModule(bind => {
     bind(CorralProjectService).toDynamicValue(ctx =>
         ServiceConnectionProvider.createProxy<CorralProjectService>(ctx.container, CORRAL_PROJECTS_PATH)
     ).inSingletonScope();
+    bind(FirstRunContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(FirstRunContribution);
+    bind(CommandContribution).toService(FirstRunContribution);
     bind(EditorPlacementGuard).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(EditorPlacementGuard);
     bind(NewTabContribution).toSelf().inSingletonScope();

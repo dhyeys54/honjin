@@ -79,3 +79,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** The E2E opens the "other opener" through File > New Text File instead of Quick Open (⌘P). It is a non-Projects opener that Theia places next to the focused widget, and it fails when the guard is disabled. The interim `editorPlacement()` from D12 is gone; `ProjectsModel` uses `EditorPlacementGuard.optionsFor()`.
 **Why.** Quick Open lists nothing until workspace roots are synced (T1.14).
 **Consequences.** After T1.14, add a Quick Open case to `placement.spec.ts` if wanted.
+
+## D15 — first-run picker (T1.13)
+**Decision.** The "OS folder picker" is Theia's own file dialog (`FileDialogService`), which works the same in the browser and Electron. `corral.projects.chooseScanRoots` asks for confirmation (old vs new roots) before it replaces the roots. `first-run.spec.ts` starts its own backend on port 3110 with an empty config, because the shared E2E backend is seeded.
+**Why.** A native dialog cannot be driven from Playwright and would differ between the two targets.
+**Consequences.** If you want the native macOS dialog in Electron, swap `pickFolders()` only.
