@@ -1,4 +1,4 @@
-import { buildProjectList, ProjectListInput, visibleRoots } from './project-list';
+import { addProblem, buildProjectList, ProjectListInput, visibleRoots } from './project-list';
 
 const input = (over: Partial<ProjectListInput> = {}): ProjectListInput => ({
     scanned: [], extra: [], hidden: [], showHidden: false, missing: [], ...over
@@ -47,5 +47,36 @@ describe('visibleRoots', () => {
             scanned: ['/w/a', '/w/b', '/w/c'], hidden: ['/w/b'], missing: ['/w/c'], showHidden: true
         }));
         expect(visibleRoots(list)).toEqual(['/w/a']);
+    });
+
+    it('leaves out a folder that holds other projects, even hidden ones, so a scan root is never loaded whole', () => {
+        const list = buildProjectList(input({ scanned: ['/w/a', '/w/b'], extra: ['/w'], hidden: ['/w/b'], showHidden: true }));
+        expect(visibleRoots(list)).toEqual(['/w/a']);
+        expect(visibleRoots(buildProjectList(input({ scanned: ['/w/b'], extra: ['/w'], hidden: ['/w/b'], showHidden: true })))).toEqual([]);
+    });
+
+    it('does not confuse a sibling that shares a name prefix with a parent', () => {
+        const list = buildProjectList(input({ scanned: ['/w/app', '/w/app-two'] }));
+        expect(visibleRoots(list)).toEqual(['/w/app', '/w/app-two']);
+    });
+});
+
+describe('addProblem', () => {
+    const list = buildProjectList(input({ scanned: ['/w/a', '/w/b', '/w/c', '/w/d'], hidden: ['/w/d'], showHidden: true }));
+
+    it('accepts an unrelated folder', () => {
+        expect(addProblem('/x/new', list)).toBeUndefined();
+    });
+
+    it('refuses a folder that holds listed projects, naming a few', () => {
+        expect(addProblem('/w/', list)).toBe('w holds 4 listed projects (a, b, c, …). Add a single project folder instead.');
+    });
+
+    it('refuses a folder inside a listed project', () => {
+        expect(addProblem('/w/a/src', list)).toBe('src is inside the project a.');
+    });
+
+    it('refuses a folder that is already listed', () => {
+        expect(addProblem('/w/b', list)).toBe('b is already in the list.');
     });
 });

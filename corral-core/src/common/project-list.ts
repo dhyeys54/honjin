@@ -65,7 +65,32 @@ export function buildProjectList(input: ProjectListInput): ProjectEntry[] {
     });
 }
 
-/** Projects that become Theia workspace roots. */
+function isInside(path: string, folder: string): boolean {
+    return path.startsWith(folder === '/' ? '/' : folder + '/') && path !== folder;
+}
+
+/**
+ * Projects that become Theia workspace roots. A folder that holds other projects (a scan root added by mistake) is
+ * left out: as a root it would pull every project under it, hidden ones included, into the watcher, git and search.
+ */
 export function visibleRoots(list: ProjectEntry[]): string[] {
-    return list.filter(e => !e.hidden && !e.missing).map(e => e.path);
+    return list
+        .filter(e => !e.hidden && !e.missing && !list.some(o => isInside(o.path, e.path)))
+        .map(e => e.path);
+}
+
+/** Why a folder can't be added as a project, or undefined when it can. */
+export function addProblem(folder: string, list: ProjectEntry[]): string | undefined {
+    const path = normalise(folder);
+    const name = lastSegment(path) || path;
+    if (list.some(e => e.path === path)) {
+        return `${name} is already in the list.`;
+    }
+    const inner = list.filter(e => isInside(e.path, path));
+    if (inner.length) {
+        const shown = inner.slice(0, 3).map(e => lastSegment(e.path)).join(', ') + (inner.length > 3 ? ', …' : '');
+        return `${name} holds ${inner.length} listed projects (${shown}). Add a single project folder instead.`;
+    }
+    const outer = list.find(e => isInside(path, e.path));
+    return outer ? `${name} is inside the project ${lastSegment(outer.path)}.` : undefined;
 }

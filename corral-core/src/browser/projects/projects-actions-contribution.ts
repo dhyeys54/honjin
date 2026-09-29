@@ -22,6 +22,7 @@ import { ScmService } from '@theia/scm/lib/browser/scm-service';
 import { ScmResource } from '@theia/scm/lib/browser/scm-provider';
 import { ScmContribution } from '@theia/scm/lib/browser/scm-contribution';
 import { pickChange } from '../../common/scm-change';
+import { addProblem } from '../../common/project-list';
 
 export const ProjectsActions = {
     TOGGLE_SHOW_HIDDEN: { id: 'corral.projects.toggleShowHidden', label: 'Corral: Show Hidden Projects' } as Command,
@@ -222,10 +223,20 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
 
     protected async add(): Promise<void> {
         const chosen = (await this.picker.pick('Add projects')).map(u => u.path.fsPath());
-        if (chosen.length) {
+        const list = this.projectList.entries(true);
+        const ok: string[] = [];
+        for (const path of chosen) {
+            const problem = addProblem(path, list);
+            if (problem) {
+                this.messages.warn(problem);
+            } else {
+                ok.push(path);
+            }
+        }
+        if (ok.length) {
             const current = this.prefs['corral.extraProjects'];
             await this.preferenceService.set('corral.extraProjects',
-                [...current, ...chosen.filter(p => !current.includes(p))], PreferenceScope.User);
+                [...current, ...ok.filter(p => !current.includes(p))], PreferenceScope.User);
         }
     }
 

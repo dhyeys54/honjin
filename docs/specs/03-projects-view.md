@@ -12,7 +12,8 @@ interface ProjectListInput {
 }
 interface ProjectEntry { path: string; name: string; hidden: boolean; missing: boolean; manual: boolean; }
 function buildProjectList(input: ProjectListInput): ProjectEntry[];
-function visibleRoots(list: ProjectEntry[]): string[];   // not hidden and not missing → Theia workspace roots
+function visibleRoots(list: ProjectEntry[]): string[];   // not hidden, not missing, holds no other entry → workspace roots
+function addProblem(folder: string, list: ProjectEntry[]): string | undefined;   // why Add refuses a folder
 ```
 
 Rules (each one gets a unit test):
@@ -64,7 +65,7 @@ Build it on `@theia/filesystem`'s `FileTreeWidget` / `FileTreeModel`, following 
 
 | Icon | Command | Behaviour |
 |---|---|---|
-| `add` | `corral.projects.add` | Folder picker (multi-select). Adds the chosen folders to `corral.extraProjects`. |
+| `add` | `corral.projects.add` | Folder picker (multi-select). Adds the chosen folders to `corral.extraProjects`. A folder that is already listed, holds listed projects (a scan root), or sits inside one is refused with a warning (`addProblem`). |
 | `eye` / `eye-closed` | `corral.projects.toggleShowHidden` | Flips `showHidden`. The toggle state is saved in the widget state, not in preferences. |
 | `refresh` | `corral.projects.refresh` | Rescans. |
 | `collapse-all` | `corral.projects.collapseAll` | Collapses every project. |
