@@ -349,7 +349,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     `first-run.spec.ts` are known flaky late in a full run: re-run them alone, they must pass). The installed app
     shows Projects over Changes and herdr attached.
 
-- [ ] **G4 Stage 4 gate**: all suites → `spec-reviewer` on spec 09 and stage 4 → fix must-fix findings →
+- [x] **G4 Stage 4 gate**: all suites → `spec-reviewer` on spec 09 and stage 4 → fix must-fix findings →
   **human checkpoint, stop**.
 
 ## Stage 5 — Review fixes (full-app code review, 2026-09-29)
@@ -458,7 +458,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     `projects-actions-contribution.ts` staying one file).
   - Verify: `npm test`; grep that each amended spec cites its decision.
 
-- [ ] **G5 Stage 5 gate**: all suites → `spec-reviewer` on stage 5 → fix must-fix findings → **human checkpoint, stop**.
+- [x] **G5 Stage 5 gate**: all suites → `spec-reviewer` on stage 5 → fix must-fix findings → **human checkpoint, stop**.
 
 ## Progress log
 
@@ -513,3 +513,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.9 — Changes E2E covers the old-layout fix-up (C14, checked red with the fix-up off), Open File / Copy Path (C10), Enter, project toggle and collapsed-through-refresh (C9), hidden projects (C1); nothing needed fixing (+2 e2e)
 - 2026-09-30 T5.10 — e2e/helpers.ts replaces 13 copies of the settings/row/git/herdr/temp-dir helpers; ai-disabled waits for .theia-preload instead of 2 s; first-run awaits the server going down. Kept: the two sleeps guarding negative checks (nested, startup-override) and the herdr TUI pacing sleeps (no observable condition). Two full runs: 39/40, the known roots flake, which passes alone (40 e2e)
 - 2026-09-30 T5.11 — specs 02, 03, 05, 06, 09 and the AGENTS.md CSS rule now describe what was built (D11, D17, D20, D21, D25, D27, D36); D36 records the Changes-code details (docs only; 148 unit)
+- 2026-09-30 G4, G5 — approved by the user after checking the packaged app
