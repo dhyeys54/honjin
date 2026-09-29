@@ -60,6 +60,14 @@ test('Changes lists uncommitted files by project, marks live ones, opens diffs a
         writeFileSync(join(repo, 'a.txt'), 'three\n');
         await expect(changeRow(page, 'a.txt')).toHaveClass(/corral-live/, { timeout: 15_000 });
 
+        // (f) the Projects tree carries the same marks (C12)
+        const projectRow = (name: string) => page.locator('[data-testid="corral-projects"] .theia-TreeNode', { hasText: name });
+        await projectRow('delta').click();
+        await page.keyboard.press('ArrowRight');
+        await expect(projectRow('a.txt').locator('.corral-change-letter')).toHaveText('M');
+        await expect(projectRow('delta').first().locator('.corral-change-count')).toHaveText('2');
+        await expect(projectRow('delta').first()).toHaveClass(/corral-live/);
+
         // (c) click opens the diff against HEAD
         await changeRow(page, 'a.txt').click();
         await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 15_000 });
@@ -81,6 +89,8 @@ test('Changes lists uncommitted files by project, marks live ones, opens diffs a
         git(repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'more');
         await expect(changeRow(page, 'delta')).toHaveCount(0, { timeout: 30_000 });
         await expect(page.locator('[data-testid="corral-changes-empty"]')).toBeVisible();
+        await expect(projectRow('delta').first().locator('.corral-change-count')).toHaveCount(0);
+        await expect(projectRow('a.txt').locator('.corral-change-letter')).toHaveCount(0);
     } finally {
         writeSettings(JSON.parse(original));
         rmSync(join(repo, '..'), { recursive: true, force: true });

@@ -28,7 +28,9 @@ export class ProjectsContribution extends AbstractViewContribution<ProjectsWidge
     // Layouts saved before spec 09 hold Projects as its own right-panel tab: move it into the container.
     async onDidInitializeLayout(): Promise<void> {
         const standalone = this.tryGetWidget();
-        if (standalone && this.shell.getTabBarFor(standalone)) {
+        // getTabBarFor also resolves a part through its container, so "standalone" means: not inside the container.
+        const container = this.shell.getWidgetById(PROJECTS_CONTAINER_ID);
+        if (standalone && this.shell.getTabBarFor(standalone) && !container?.node.contains(standalone.node)) {
             await this.shell.closeWidget(standalone.id);
             await this.openView({ activate: false, reveal: true });
         }

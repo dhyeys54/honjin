@@ -5,7 +5,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 
 const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
+const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { has: page.getByText(name, { exact: true }) });
 const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
 const writeSettings = (value: object) => {
     const tmp = settingsFile() + '.tmp';

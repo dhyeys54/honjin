@@ -327,7 +327,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     `ColorContribution`), `style/changes.css`, bindings in `corral-frontend-module.ts`.
   - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts changes-view changes panels`.
 
-- [ ] **T4.5 Marks in the Projects tree**
+- [x] **T4.5 Marks in the Projects tree**
   - Spec: 09 C12.
   - Tests first: extend the T4.4 test, before the commit step: expand `delta` in the Projects tree (click the row,
     `ArrowRight`); the `a.txt` row has `.corral-change-letter` with text `M`; the `delta` row has
@@ -392,3 +392,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 T4.2 — ChangesService: git repos + file writes + project list → groups, live flags, one expiry timer; bound as a singleton (0 new tests, wiring; E2E in T4.4)
 - 2026-09-29 T4.3 — Projects over Changes in one `corral-projects-container` view container; old layouts fixed up; Projects toolbar stays visible (144 unit, 34 e2e)
 - 2026-09-29 T4.4 — Changes tree: projects over files, letters/counts, live dot, diff on click, context menus, colours (144 unit, 35 e2e)
+- 2026-09-29 T4.5 — Projects tree shows change letters, project counts and live dots; layout fix-up no longer re-closes Projects on every start (144 unit, 35 e2e)

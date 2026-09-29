@@ -8,7 +8,7 @@
     color: var(--theia-descriptionForeground);
 }
 
-.corral-changes .theia-TreeNode .corral-change-count {
+.corral-change-count {
     margin-left: 8px;
     color: var(--theia-descriptionForeground);
 }
