@@ -1,14 +1,10 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import URI from '@theia/core/lib/common/uri';
-import { Command, CommandContribution, CommandRegistry, MaybeArray } from '@theia/core/lib/common';
-import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
+import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common';
 import { ConfirmDialog, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
-import { FileDialogService } from '@theia/filesystem/lib/browser';
-import { FileService } from '@theia/filesystem/lib/browser/file-service';
-import { fileURLToPath } from 'url';
 import { abbreviateHome, shouldRunFirstRun } from '../common/first-run';
+import { FolderPicker } from './folder-picker';
 import { CorralPreferences } from './corral-preferences';
 
 export const ChooseScanRootsCommand: Command = { id: 'corral.projects.chooseScanRoots', label: 'Corral: Choose Project Folders…' };
@@ -18,9 +14,7 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
 
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
     @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
-    @inject(FileDialogService) protected readonly dialogs: FileDialogService;
-    @inject(FileService) protected readonly files: FileService;
-    @inject(EnvVariablesServer) protected readonly env: EnvVariablesServer;
+    @inject(FolderPicker) protected readonly picker: FolderPicker;
 
     async onDidInitializeLayout(): Promise<void> {
         await this.prefs.ready;
@@ -62,17 +56,8 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
 
     /** Folder paths with `~` abbreviated; empty when the dialog was cancelled. */
     protected async pickFolders(): Promise<string[]> {
-        const home = fileURLToPath(await this.env.getHomeDirUri());
-        const desktopProjects = new URI().withScheme('file').withPath(home + '/Desktop/projects');
-        const start = await this.files.exists(desktopProjects) ? desktopProjects : new URI().withScheme('file').withPath(home);
-        const picked: MaybeArray<URI> | undefined = await this.dialogs.showOpenDialog({
-            title: 'Choose the folders that hold your projects',
-            openLabel: 'Choose',
-            canSelectFolders: true,
-            canSelectFiles: false,
-            canSelectMany: true
-        }, await this.files.resolve(start));
-        const uris = picked === undefined ? [] : Array.isArray(picked) ? picked : [picked];
+        const uris = await this.picker.pick('Choose the folders that hold your projects');
+        const home = await this.picker.home();
         return uris.map(u => abbreviateHome(u.path.fsPath(), home));
     }
 }

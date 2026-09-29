@@ -5,6 +5,7 @@ import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { FrontendApplicationContribution, KeybindingContribution, WidgetFactory, bindViewContribution } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/service-connection-provider';
+import { FolderPicker } from './folder-picker';
 import { ProjectListService } from './projects/project-list-service';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
@@ -30,6 +31,7 @@ export default new ContainerModule(bind => {
     bind(FrontendApplicationContribution).toService(HerdrTerminalContribution);
     bind(CommandContribution).toService(HerdrTerminalContribution);
 
+    bind(FolderPicker).toSelf().inSingletonScope();
     bind(ProjectListService).toSelf().inSingletonScope();
     bind(WorkspaceRootsSync).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(WorkspaceRootsSync);

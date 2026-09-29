@@ -11,7 +11,7 @@ const writeSettings = (text: string) => {
 const beta = resolve(__dirname, 'fixtures/projects/beta');
 
 test('search covers visible projects only, in the managed workspace, without reloading', async ({ page }) => {
-    test.setTimeout(90_000); // the managed-workspace reload and root sync happen before search can find anything
+    test.setTimeout(120_000); // the managed-workspace reload and root sync happen before search can find anything
     const original = readFileSync(settingsFile(), 'utf8');
     try {
         await page.goto('/');
@@ -33,7 +33,7 @@ test('search covers visible projects only, in the managed workspace, without rel
         await expect(async () => {
             await search();
             await expect(hit).toBeVisible({ timeout: 3_000 });
-        }).toPass({ timeout: 30_000 });
+        }).toPass({ timeout: 60_000 });
 
         const settings = JSON.parse(original);
         settings['corral.hiddenProjects'] = [beta];

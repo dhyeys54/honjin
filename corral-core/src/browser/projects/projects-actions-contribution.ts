@@ -5,7 +5,8 @@ import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-s
 import { Widget } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { DirNode } from '@theia/filesystem/lib/browser';
-import { withHidden } from '../../common/hidden-projects';
+import { withHidden, withoutPath } from '../../common/hidden-projects';
+import { FolderPicker } from '../folder-picker';
 import { CorralPreferences } from '../corral-preferences';
 import { ProjectListService } from './project-list-service';
 import { PROJECTS_CONTEXT_MENU, ProjectsWidget } from './projects-widget';
@@ -14,6 +15,9 @@ import { ProjectsContribution } from './projects-contribution';
 export const ProjectsActions = {
     TOGGLE_SHOW_HIDDEN: { id: 'corral.projects.toggleShowHidden', label: 'Corral: Show Hidden Projects' } as Command,
     HIDE: { id: 'corral.projects.hide', label: 'Hide project' } as Command,
+    ADD: { id: 'corral.projects.add', label: 'Corral: Add Project…' } as Command,
+    REMOVE: { id: 'corral.projects.remove', label: 'Remove from list' } as Command,
+    REFRESH: { id: 'corral.projects.refresh', label: 'Corral: Refresh Projects' } as Command,
     UNHIDE: { id: 'corral.projects.unhide', label: 'Unhide project' } as Command
 };
 
@@ -25,6 +29,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
 
     @inject(ProjectsContribution) protected readonly view: ProjectsContribution;
     @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(FolderPicker) protected readonly picker: FolderPicker;
     @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
 
@@ -32,6 +37,12 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         commands.registerCommand(ProjectsActions.TOGGLE_SHOW_HIDDEN, {
             execute: () => this.widget?.model.toggleShowHidden(),
             isToggled: () => !!this.widget?.model.showHidden
+        });
+        commands.registerCommand(ProjectsActions.ADD, { execute: () => this.add() });
+        commands.registerCommand(ProjectsActions.REFRESH, { execute: () => this.projectList.reload() });
+        commands.registerCommand(ProjectsActions.REMOVE, {
+            execute: () => this.remove(),
+            isVisible: () => this.isManual(this.selectedProject())
         });
         commands.registerCommand(ProjectsActions.HIDE, {
             execute: () => this.setHidden(true),
@@ -46,9 +57,18 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     registerMenus(menus: MenuModelRegistry): void {
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.HIDE.id, order: 'a' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.UNHIDE.id, order: 'b' });
+        menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.REMOVE.id, order: 'c' });
     }
 
     registerToolbarItems(toolbar: TabBarToolbarRegistry): void {
+        toolbar.registerItem({
+            id: ProjectsActions.ADD.id, command: ProjectsActions.ADD.id, icon: 'codicon codicon-add',
+            tooltip: 'Add project…', priority: 10, isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget
+        });
+        toolbar.registerItem({
+            id: ProjectsActions.REFRESH.id, command: ProjectsActions.REFRESH.id, icon: 'codicon codicon-refresh',
+            tooltip: 'Refresh projects', priority: 30, isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget
+        });
         toolbar.registerItem({
             id: ProjectsActions.TOGGLE_SHOW_HIDDEN.id,
             command: ProjectsActions.TOGGLE_SHOW_HIDDEN.id,
@@ -78,6 +98,28 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         if (path) {
             await this.preferenceService.set('corral.hiddenProjects',
                 withHidden(this.prefs['corral.hiddenProjects'], path, hide), PreferenceScope.User);
+        }
+    }
+
+    protected isManual(path: string | undefined): boolean {
+        return !!path && this.projectList.entries(true).some(e => e.path === path && e.manual);
+    }
+
+    protected async add(): Promise<void> {
+        const chosen = (await this.picker.pick('Add projects')).map(u => u.path.fsPath());
+        if (chosen.length) {
+            const current = this.prefs['corral.extraProjects'];
+            await this.preferenceService.set('corral.extraProjects',
+                [...current, ...chosen.filter(p => !current.includes(p))], PreferenceScope.User);
+        }
+    }
+
+    /** Only forgets the entry; the folder itself is never touched. */
+    protected async remove(): Promise<void> {
+        const path = this.selectedProject();
+        if (path) {
+            await this.preferenceService.set('corral.extraProjects',
+                withoutPath(this.prefs['corral.extraProjects'], path), PreferenceScope.User);
         }
     }
 }

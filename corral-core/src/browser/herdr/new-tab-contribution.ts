@@ -61,7 +61,7 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         const folderPath = fileURLToPath(uri.toString());
         const projects = this.projectList.entries(true).map(e => e.path);
         const projectPath = owningProject(folderPath, projects);
-        if (!projectPath) {
+        if (!projectPath || this.projectList.entries(true).some(e => e.path === projectPath && e.missing)) {
             return;
         }
         const command = resolveStartupCommand(folderPath, projects, this.prefs['corral.startupCommand'], this.prefs['corral.projectOverrides']);

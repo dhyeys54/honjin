@@ -2,11 +2,17 @@ import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
 import { CompositeTreeNode, OpenerService, TreeNode, open } from '@theia/core/lib/browser';
 import { FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
+import { FileStat } from '@theia/filesystem/lib/common/files';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { EditorPlacementGuard } from '../editor-placement-guard';
 import { ProjectEntry } from '../../common/project-list';
 import { ProjectListService } from './project-list-service';
 import { ProjectsTree } from './projects-tree';
+
+/** A stand-in stat so a vanished project can still be listed (struck through) and removed. */
+const missingStat = (resource: URI): FileStat => ({
+    resource, name: resource.path.base, isFile: false, isDirectory: true, isSymbolicLink: false, isReadonly: false
+});
 
 @injectable()
 export class ProjectsModel extends FileTreeModel {
@@ -22,6 +28,10 @@ export class ProjectsModel extends FileTreeModel {
 
     get hiddenPaths(): Set<string> {
         return new Set(this.entries.filter(e => e.hidden).map(e => e.path));
+    }
+
+    get missingPaths(): Set<string> {
+        return this.projectsTree.missing;
     }
 
     protected override init(): void {
@@ -42,11 +52,13 @@ export class ProjectsModel extends FileTreeModel {
     protected async rebuild(): Promise<void> {
         this.entries = this.projectList.entries(this.showHidden);
         const root: CompositeTreeNode = this.projectsTree.createRoot();
-        const nodes = await Promise.all(this.entries.filter(e => !e.missing).map(async e => {
+        this.projectsTree.missing = new Set(this.entries.filter(e => e.missing).map(e => e.path));
+        const nodes = await Promise.all(this.entries.map(async e => {
+            const uri = new URI().withScheme('file').withPath(e.path);
             try {
-                return this.projectsTree.createProjectNode(await this.files.resolve(new URI().withScheme('file').withPath(e.path)), root);
+                return this.projectsTree.createProjectNode(e.missing ? missingStat(uri) : await this.files.resolve(uri), root);
             } catch {
-                return undefined; // vanished between scan and stat; the next refresh drops it
+                return undefined; // vanished between scan and stat; the next refresh shows it as missing
             }
         }));
         root.children = nodes.filter((n): n is NonNullable<typeof n> => !!n);

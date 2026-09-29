@@ -9,6 +9,16 @@ export const PROJECTS_ROOT_ID = 'corral-projects-root';
 @injectable()
 export class ProjectsTree extends FileTree {
 
+    /** Project folders that no longer exist; they show as rows but have nothing to expand. */
+    missing = new Set<string>();
+
+    override async resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
+        if (DirNode.is(parent) && this.missing.has(parent.uri.path.toString())) {
+            return [];
+        }
+        return super.resolveChildren(parent);
+    }
+
     createRoot(): CompositeTreeNode {
         return { id: PROJECTS_ROOT_ID, name: 'Projects', parent: undefined, children: [], visible: false };
     }

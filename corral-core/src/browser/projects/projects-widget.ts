@@ -55,13 +55,17 @@ export class ProjectsWidget extends FileTreeWidget {
             React.createElement('p', undefined, noRoots
                 ? 'Choose the folders that hold your projects'
                 : `No projects found in ${roots.join(', ')}`),
-            button(noRoots ? 'Choose folders…' : 'Change folders…', 'corral.projects.chooseScanRoots'));
+            button(noRoots ? 'Choose folders…' : 'Change folders…', 'corral.projects.chooseScanRoots'),
+            noRoots ? undefined : button('Add project…', 'corral.projects.add'));
     }
 
     protected override createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
         const classes = super.createNodeClassNames(node, props);
         if (DirNode.is(node) && this.model.hiddenPaths.has(node.uri.path.toString())) {
             classes.push('corral-project-hidden');
+        }
+        if (DirNode.is(node) && this.model.missingPaths.has(node.uri.path.toString())) {
+            classes.push('corral-project-missing');
         }
         return classes;
     }
@@ -78,6 +82,7 @@ export class ProjectsWidget extends FileTreeWidget {
                 className: 'corral-new-tab codicon codicon-add',
                 title: 'New herdr tab here (⌥⌘T)',
                 'aria-label': `New herdr tab in ${label}`,
+                disabled: this.model.missingPaths.has(node.uri.path.toString()),
                 'data-testid': 'corral-new-tab',
                 onClick: (e: React.MouseEvent) => {
                     e.stopPropagation();

@@ -34,3 +34,12 @@
     gap: 8px;
     padding: 12px;
 }
+
+.corral-projects .theia-TreeNode.corral-project-missing .theia-TreeNodeSegmentGrow {
+    text-decoration: line-through;
+}
+
+.corral-projects .corral-new-tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+}

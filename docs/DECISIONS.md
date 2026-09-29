@@ -100,3 +100,8 @@ is titled "Debug", not "Run and Debug".
 **Why.** Keeps T2.1 small; icon swap and the extra button are cosmetic and isolated.
 **Consequences.** T2.2 adds the button; stage 3 can swap the icon.
 
+## D19 — missing projects (T2.2)
+**Decision.** A missing project stays in the tree as a struck-through row (synthetic stat, no children, + disabled, ⌥⌘T ignored) so it can still be removed or hidden; it is not a workspace root. The E2E adds a folder through the real dialog, but puts it back through settings.json before the missing check.
+**Why.** Removing a vanished project must stay possible from the UI.
+**Consequences.** Spec 03's toolbar has `collapse-all` still unimplemented (not in any T2.x task yet; add in stage 3 or T2.5).
+

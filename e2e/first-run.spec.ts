@@ -45,7 +45,7 @@ test.afterAll(stopServer);
 test('first run asks for folders, fills the tree, and does not ask again', async ({ page }) => {
     test.setTimeout(180_000);
     await page.goto(url);
-    await expect(page.getByText('Choose the folders that hold your projects')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText('Choose the folders that hold your projects').first()).toBeVisible({ timeout: 60_000 });
 
     await page.locator('.theia-LocationInputToggle').click(); // switch the location list to a text field
     const location = page.locator('.theia-LocationListPanel input');

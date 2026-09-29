@@ -183,7 +183,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     with no roots the empty state appears with **Choose folders…**.
   - Verify: `npm run test:e2e -- hide`.
 
-- [ ] **T2.2 Add / remove projects; missing projects**
+- [x] **T2.2 Add / remove projects; missing projects**
   - Spec: 03 §View toolbar (add), §Context menu (remove), §Project list rule 4.
   - Tests first: `e2e/add-remove.spec.ts`: add a temp folder outside the scan root → it appears (manual); remove
     it → it's gone and the folder still exists on disk; deleting a manual project's folder on disk then pressing
@@ -283,3 +283,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.14 — ProjectListService (single project list), WorkspaceRootsSync moves into <config>/corral.code-workspace and diffs roots without reloading; search covers visible projects only (5 unit + 1 E2E)
 - 2026-09-29 G1 — suites green (97 unit, 11 int, 15 E2E); spec-reviewer: no must-fix; user pre-approved the human checkpoint (review pending, see FOR-REVIEW)
 - 2026-09-29 T2.1 — Hide/Unhide project context-menu items, eye toolbar toggle (hidden rows at 50%), empty states with Choose/Change folders… (2 unit + 2 E2E)
+- 2026-09-29 T2.2 — Add project… (folder dialog → extraProjects), Remove from list (manual only, never deletes files), Refresh, missing projects struck through with + disabled; FolderPicker shared with first run (1 E2E)
