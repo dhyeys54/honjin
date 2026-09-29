@@ -235,7 +235,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     round. Screenshots go to `docs/screenshots/`.
   - Verify: the full E2E suite is still green; before/after screenshots are committed.
 
-- [ ] **T3.3 Branding wired in**
+- [x] **T3.3 Branding wired in**
   - Spec: 06 §Icons and branding.
   - Tests first: `e2e/branding.spec.ts`: the favicon link points to the Corral favicon; the application name shown
     in Help → About is "Corral".
@@ -291,3 +291,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 G2 — spec-reviewer run; fixed collapse-all, eye/eye-closed toggle, hidden/missing row flags, E2E races; leftovers in FOR-REVIEW #8–9 (unit 102, int 11, e2e 26)
 - 2026-09-29 T3.1 — Corral Dark theme (all tokens), JetBrains Mono bundled, font defaults (117 unit + 1 E2E)
 - 2026-09-29 T3.2 — one critique round + one fix batch (flat selection bar, quiet notification buttons); before/after shots in docs/screenshots (27 E2E)
+- 2026-09-29 T3.3 — favicon link injected at startup, About shows Corral (2 E2E)
