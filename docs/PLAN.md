@@ -265,7 +265,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 `.d.ts` in `node_modules` (spec 09 names every one it uses). Unit tests run with
 `npx jest -c corral-core/test/jest.config.ts <name>` from the repo root (plain `jest` inside corral-core fails on TS).
 
-- [ ] **T4.1 Changes logic**
+- [x] **T4.1 Changes logic**
   - Spec: 09 §Rules C1–C8, §Code layout `common/changes.ts`.
   - Tests first: `common/changes.test.ts`, one `it` per rule:
     - C1: groups follow `roots` order; a repo path under no root is dropped.
@@ -388,3 +388,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 T3.4 — README hero screenshot (3 projects, 2 herdr tabs, real app) and Screenshots section
 - 2026-09-29 T3.5 — `npm run package:mac` builds electron-app/dist/mac-arm64/Corral.app; smoke-tested: title "Corral — alpha", herdr terminal attached with a minimal PATH, Corral Dark applied
 - 2026-09-29 G3 — all suites green (117 unit, 11 int, 29 E2E); spec-reviewer found no must-fix; ticked per the standing "do not stop at gates" instruction, awaiting human review
+- 2026-09-29 T4.1 — common/changes.ts: groupChanges (C1–C7), changeKind, liveFolders, nextExpiry (10 tests)
