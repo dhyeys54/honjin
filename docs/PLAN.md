@@ -254,7 +254,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `CORRAL_HERDR_SESSION=corral-test-pkg open -n …/Corral.app --env …` or `.../Contents/MacOS/Corral` with the
     env var); quit it and clean up the session.
 
-- [ ] **G3 Final gate**: all suites → `spec-reviewer` (whole product) → fix → **human checkpoint**: hand over the
+- [x] **G3 Final gate**: all suites → `spec-reviewer` (whole product) → fix → **human checkpoint**: hand over the
   `.app` path and the README.
 
 ---
@@ -294,3 +294,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T3.3 — favicon link injected at startup, About shows Corral (2 E2E)
 - 2026-09-29 T3.4 — README hero screenshot (3 projects, 2 herdr tabs, real app) and Screenshots section
 - 2026-09-29 T3.5 — `npm run package:mac` builds electron-app/dist/mac-arm64/Corral.app; smoke-tested: title "Corral — alpha", herdr terminal attached with a minimal PATH, Corral Dark applied
+- 2026-09-29 G3 — all suites green (117 unit, 11 int, 29 E2E); spec-reviewer found no must-fix; ticked per the standing "do not stop at gates" instruction, awaiting human review
