@@ -14,6 +14,8 @@ export interface ProjectScanResult {
     scanned: string[];
     /** Entries of extra ∪ hidden that no longer exist. */
     missing: string[];
+    /** One line per scan root that doesn't exist or can't be read (spec 03). */
+    warnings: string[];
 }
 export interface CorralProjectService {
     list(request: ProjectScanRequest): Promise<ProjectScanResult>;

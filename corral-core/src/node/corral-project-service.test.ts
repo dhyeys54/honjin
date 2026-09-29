@@ -18,7 +18,7 @@ describe('CorralProjectServiceImpl.list', () => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), 'corral-psvc-')));
     mkdirSync(join(base, 'root', 'p1'), { recursive: true });
     mkdirSync(join(base, 'extra'));
-    const service = new CorralProjectServiceImpl(base, () => undefined);
+    const service = new CorralProjectServiceImpl(base);
 
     it('scans expanded roots and computes missing from extra and hidden', async () => {
         const res = await service.list({
@@ -30,8 +30,15 @@ describe('CorralProjectServiceImpl.list', () => {
         expect(res.missing).toEqual([join(base, 'gone-extra'), join(base, 'gone-hidden')]);
     });
 
+    it('returns one warning per unreadable scan root (spec 03)', async () => {
+        const res = await service.list({ scanRoots: [join(base, 'root'), join(base, 'no-such-root')], extra: [], hidden: [] });
+        expect(res.scanned).toEqual([join(base, 'root', 'p1')]);
+        expect(res.warnings).toHaveLength(1);
+        expect(res.warnings[0]).toContain(join(base, 'no-such-root'));
+    });
+
     it('expands ~ using the home dir, but reports missing entries as given', async () => {
-        const s = new CorralProjectServiceImpl(base, () => undefined, base);
+        const s = new CorralProjectServiceImpl(base, base);
         const res = await s.list({ scanRoots: ['~/root'], extra: ['~/extra', '~/nope'], hidden: [] });
         expect(res.scanned).toEqual([join(base, 'root', 'p1')]);
         expect(res.missing).toEqual(['~/nope']);
@@ -51,7 +58,7 @@ describe('CorralProjectServiceImpl.list', () => {
 describe('CorralProjectServiceImpl.workspaceFile', () => {
     it('creates the managed workspace file and returns its path', async () => {
         const dir = mkdtempSync(join(tmpdir(), 'corral-ws-'));
-        const path = await new CorralProjectServiceImpl(dir, () => undefined).workspaceFile();
+        const path = await new CorralProjectServiceImpl(dir).workspaceFile();
         expect(path).toBe(join(dir, 'corral.code-workspace'));
         expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ folders: [], settings: {} });
     });
@@ -60,7 +67,7 @@ describe('CorralProjectServiceImpl.workspaceFile', () => {
 describe('CorralProjectServiceImpl.reveal', () => {
     it('opens the OS file manager on the path with an argument array', async () => {
         const opener = jest.fn().mockResolvedValue(undefined);
-        const service = new CorralProjectServiceImpl('/x', () => undefined, '/h', opener);
+        const service = new CorralProjectServiceImpl('/x', '/h', opener);
         await service.reveal('/p/with space/$x');
         expect(opener).toHaveBeenCalledWith('/p/with space/$x');
     });

@@ -18,7 +18,6 @@ const exists = (p: string) => fs.access(p).then(() => true, () => false);
 export class CorralProjectServiceImpl implements CorralProjectService {
     constructor(
         protected readonly configDir: string | (() => Promise<string>),
-        protected readonly warn: (msg: string) => void = m => console.warn(m),
         protected readonly home: string = homedir(),
         protected readonly opener: (path: string) => Promise<void> = revealInFinder
     ) { }
@@ -28,10 +27,11 @@ export class CorralProjectServiceImpl implements CorralProjectService {
     async list(req: ProjectScanRequest): Promise<ProjectScanResult> {
         // The frontend lists on startup, so this creates the workspace file before anything opens it.
         await (this.ensured ??= this.ensureWorkspaceFile());
-        const scanned = await scanProjects(req.scanRoots.map(r => expandHome(r, this.home)), this.warn);
+        const warnings: string[] = [];
+        const scanned = await scanProjects(req.scanRoots.map(r => expandHome(r, this.home)), m => warnings.push(m));
         const entries = [...new Set([...req.extra, ...req.hidden])];
         const present = await Promise.all(entries.map(e => exists(expandHome(e, this.home))));
-        return { scanned, missing: entries.filter((_, i) => !present[i]) };
+        return { scanned, missing: entries.filter((_, i) => !present[i]), warnings };
     }
 
     reveal(path: string): Promise<void> {

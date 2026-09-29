@@ -1,5 +1,6 @@
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
 import { Emitter, Event } from '@theia/core/lib/common';
+import { OutputChannelManager, OutputChannelSeverity } from '@theia/output/lib/browser/output-channel';
 import { CorralProjectService } from '../../common/protocol';
 import { ProjectEntry, ProjectListInput, buildProjectList, visibleRoots } from '../../common/project-list';
 import { CorralPreferences } from '../corral-preferences';
@@ -12,12 +13,15 @@ export class ProjectListService {
 
     @inject(CorralProjectService) protected readonly backend: CorralProjectService;
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
+    @inject(OutputChannelManager) protected readonly output: OutputChannelManager;
 
     protected input: ProjectListInput = { scanned: [], extra: [], hidden: [], showHidden: true, missing: [] };
     protected all: ProjectEntry[] = [];
     /** False until the first list arrives, so the view does not flash an empty state. */
     loaded = false;
     protected generation = 0;
+    /** Warnings from the last scan, so every reload doesn't repeat them. */
+    protected warned = new Set<string>();
     protected readonly changed = new Emitter<void>();
     readonly onDidChange: Event<void> = this.changed.event;
 
@@ -45,13 +49,23 @@ export class ProjectListService {
         const generation = ++this.generation;
         const extra = this.prefs['corral.extraProjects'];
         const hidden = this.prefs['corral.hiddenProjects'];
-        const { scanned, missing } = await this.backend.list({ scanRoots: this.prefs['corral.scanRoots'], extra, hidden });
+        const { scanned, missing, warnings } = await this.backend.list({ scanRoots: this.prefs['corral.scanRoots'], extra, hidden });
         if (generation !== this.generation) {
             return; // a newer reload is in flight and will publish
         }
+        this.report(warnings);
         this.input = { scanned, extra, hidden, showHidden: true, missing };
         this.all = buildProjectList(this.input);
         this.loaded = true;
         this.changed.fire();
+    }
+
+    protected report(warnings: string[]): void {
+        const fresh = warnings.filter(w => !this.warned.has(w));
+        this.warned = new Set(warnings);
+        if (fresh.length) {
+            const channel = this.output.getChannel('Corral');
+            fresh.forEach(w => channel.appendLine(w, OutputChannelSeverity.Warning));
+        }
     }
 }
