@@ -359,7 +359,7 @@ each checked against the code. Not acted on, with the reason recorded in D36: `d
 missing (spec 08 sanctions it); hand-built backend services (constructor injection keeps them unit-testable);
 `server_not_running` matched by message (the RPC boundary drops the `HerdrError` class).
 
-- [ ] **T5.1 Missing projects always listed (spec 03 rule 4)**
+- [x] **T5.1 Missing projects always listed (spec 03 rule 4)**
   - Tests first: `common/project-list.test.ts`: `shownEntries(all, false)` keeps a hidden **missing** project and
     drops a hidden present one; `shownEntries(all, true)` keeps all.
   - Do: `shownEntries` in `common/project-list.ts`; `ProjectListService.entries` calls it.
@@ -497,3 +497,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T4.4 — Changes tree: projects over files, letters/counts, live dot, diff on click, context menus, colours (144 unit, 35 e2e)
 - 2026-09-29 T4.5 — Projects tree shows change letters, project counts and live dots; layout fix-up no longer re-closes Projects on every start (144 unit, 35 e2e)
 - 2026-09-29 T4.6 — Docs (README, specs 08/09), full suite green, Corral.app repackaged and installed with Projects over Changes (144 unit, 35 e2e)
+- 2026-09-29 T5.1 — a hidden project that vanished from disk stays listed (spec 03 rule 4): the service reuses `buildProjectList` instead of its own filter; E2E in add-remove.spec (144 unit)

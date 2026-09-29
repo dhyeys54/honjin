@@ -1,7 +1,7 @@
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
 import { Emitter, Event } from '@theia/core/lib/common';
 import { CorralProjectService } from '../../common/protocol';
-import { ProjectEntry, buildProjectList, visibleRoots } from '../../common/project-list';
+import { ProjectEntry, ProjectListInput, buildProjectList, visibleRoots } from '../../common/project-list';
 import { CorralPreferences } from '../corral-preferences';
 
 const PROJECT_KEYS = ['corral.scanRoots', 'corral.extraProjects', 'corral.hiddenProjects'];
@@ -13,6 +13,7 @@ export class ProjectListService {
     @inject(CorralProjectService) protected readonly backend: CorralProjectService;
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
 
+    protected input: ProjectListInput = { scanned: [], extra: [], hidden: [], showHidden: true, missing: [] };
     protected all: ProjectEntry[] = [];
     /** False until the first list arrives, so the view does not flash an empty state. */
     loaded = false;
@@ -29,9 +30,9 @@ export class ProjectListService {
         });
     }
 
-    /** Entries for the tree; hidden ones only when asked for. */
+    /** Entries for the tree; hidden ones only when asked for, missing ones always (spec 03 rule 4). */
     entries(showHidden: boolean): ProjectEntry[] {
-        return showHidden ? this.all : this.all.filter(e => !e.hidden);
+        return showHidden ? this.all : buildProjectList({ ...this.input, showHidden });
     }
 
     /** Project folders that belong in the workspace: not hidden, not missing. */
@@ -48,7 +49,8 @@ export class ProjectListService {
         if (generation !== this.generation) {
             return; // a newer reload is in flight and will publish
         }
-        this.all = buildProjectList({ scanned, extra, hidden, showHidden: true, missing });
+        this.input = { scanned, extra, hidden, showHidden: true, missing };
+        this.all = buildProjectList(this.input);
         this.loaded = true;
         this.changed.fire();
     }
