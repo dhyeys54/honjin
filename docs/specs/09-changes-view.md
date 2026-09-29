@@ -25,7 +25,7 @@ against one (AGENTS.md).
 | C11 | Empty state (no listed files in any project): the text `No uncommitted changes` in `fg-muted`, with `data-testid="corral-changes-empty"`. |
 | C12 | Projects tree: a changed file's row shows its letter (class `corral-change-letter corral-change-<kind>`) at the end of the row, before the `+`. A project row with changes shows its file count (class `corral-change-count`, `fg-muted`). Live files, folders that contain a live file, and live project rows get the class `corral-live`. |
 | C13 | Colours are registered by a `ColorContribution` and used in CSS as `var(--theia-corral-changes-<kind>)`: `modified` = `warning`, `added` = `info`, `deleted` = `danger`, `conflict` = `danger`, `live` = `accent` (hex values from `common/design-tokens.ts`). The name of a deleted row is struck through in `fg-faint`. `.corral-live` draws a 6px round dot in `--theia-corral-changes-live` whose opacity pulses 1 → 0.35 → 1 over 1.2 s, infinitely. Under `@media (prefers-reduced-motion: reduce)` the dot does not animate. |
-| C14 | Layout: a view container with id `corral-projects-container`, title `Projects` and icon `codicon-root-folder`. Parts: Projects (`corral-projects`: order 0, weight 70, `canHide: false`, `disableDraggingToOtherContainers: true`), then Changes (`corral-changes`: order 1, weight 30, `canHide: true`). If a saved layout has `corral-projects` outside this container (a layout saved before this change), `onDidInitializeLayout` closes that widget with `shell.closeWidget(id)` and opens the container. |
+| C14 | Layout: a view container with id `corral-projects-container`, title `Projects` and icon `codicon-root-folder`. Parts: Projects (`corral-projects`: order 0, weight 70, `canHide: false`, `disableDraggingToOtherContainers: true`), then Changes (`corral-changes`: order 1, weight 30, `canHide: true`). If a saved layout has `corral-projects` outside this container (a layout saved before this change), `onDidInitializeLayout` closes that widget with `shell.closeWidget(id)` and opens the container. "Outside" means the widget's node is not inside the container's node: `shell.getTabBarFor` resolves a part through its container, so it can't tell the two apart. In a container part, a tree gets no height from the dock panel, so `.corral-projects` and `.corral-changes` set `height: 100%` (as Theia's navigator does), and the Projects part's toolbar (Add project, Refresh, …) is always visible, not hover-only. |
 
 ## Code layout
 
@@ -85,7 +85,7 @@ An `@injectable()` class bound `inSingletonScope()`. It is the only owner of cha
 - `protected override async resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]>`:
   - **For the root:** one node per `ChangeGroup`. Each is `ExpandableTreeNode & SelectableTreeNode`, with id `changes:<project>`, `name = group.name`, `expanded = (this.getNode(id) as ExpandableTreeNode | undefined)?.expanded ?? true`, `children: []`, `selected: false`, and `parent`.
   - **For a project node:** one `SelectableTreeNode` per file, with id `changes:<file.path>` and `name = file.rel`.
-  - Store the `ChangeGroup` or `ChangeFile` on the node as a `change` property. Add `ChangesProjectNode.is` / `ChangesFileNode.is` type guards.
+  - Store the `ChangeGroup` or `ChangeFile` on the node as a `change` property. Export `isProjectNode` / `isFileNode` type guards (the lint config forbids namespaces).
 
 ### `browser/changes/changes-widget.ts`
 

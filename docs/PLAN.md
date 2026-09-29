@@ -338,7 +338,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     No `TreeDecoratorService`.
   - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts changes-view projects hide changes`.
 
-- [ ] **T4.6 Docs, full suite, package**
+- [x] **T4.6 Docs, full suite, package**
   - Spec: 09 (all). README: add a "Changes (right, under Projects)" bullet to the feature list and a CHANGES block
     to the diagram (also fix the diagram's duplicated `debug` line).
   - Do: walk C1–C14 and confirm each has a test or visible code; fix gaps. Then package and install:
@@ -393,3 +393,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 T4.3 — Projects over Changes in one `corral-projects-container` view container; old layouts fixed up; Projects toolbar stays visible (144 unit, 34 e2e)
 - 2026-09-29 T4.4 — Changes tree: projects over files, letters/counts, live dot, diff on click, context menus, colours (144 unit, 35 e2e)
 - 2026-09-29 T4.5 — Projects tree shows change letters, project counts and live dots; layout fix-up no longer re-closes Projects on every start (144 unit, 35 e2e)
+- 2026-09-29 T4.6 — Docs (README, specs 08/09), full suite green, Corral.app repackaged and installed with Projects over Changes (144 unit, 35 e2e)

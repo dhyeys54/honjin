@@ -12,13 +12,18 @@ and runs your coding agents (Claude Code) in herdr, not in a chat panel built in
 ┌────────┬──────────────────────────┬──────────────────────────┬──────────────┐
 │ search │ editor                   │ herdr                    │ PROJECTS     │
 │ debug  │                          │  alpha ▸ 1 claude · 2 sh │ alpha      ▾ │
-│ debug  │                          │                          │  src/    [+] │
+│        │                          │                          │  src/    [+] │
 │        │                          │                          │ beta       ▸ │
+│        │                          │                          │ CHANGES      │
+│        │                          │                          │ alpha (2)  ● │
 └────────┴──────────────────────────┴──────────────────────────┴──────────────┘
 ```
 
 - **Projects panel (right):** every project under your chosen folders, each one a collapsible VS Code-style file
   tree. Hide the ones you're not using; the eye button brings them back.
+- **Changes panel (right, under Projects):** every uncommitted git change in your visible projects, grouped by
+  project. A pulsing dot marks files written in the last 30 s, so you can see where agents are working. Click a file
+  for its diff against HEAD. Changed files also carry a letter in the Projects tree.
 - **+ on any folder:** opens a new herdr tab in that folder, inside that project's own herdr workspace, and runs
   your startup command (`claude` by default; can be set per project).
 - **herdr in the middle:** agents keep running when Corral closes, and herdr shows which ones are working, blocked
