@@ -110,3 +110,8 @@ is titled "Debug", not "Run and Debug".
 **Why.** Theia's `QuickInputService.input` is a single text box; a two-item picker would need a custom quick pick.
 **Consequences.** The global value is not shown in the menu label; add it to the label if wanted.
 
+
+## D21 — file operations in the Projects tree (T2.4)
+**Decision.** File operations reuse Theia's `WorkspaceCommands` (New File/Folder, Rename, Delete). Rename is not offered on project roots (Theia disables it for workspace roots). Open / Open to the Side are left out; a click already opens in the left half. Reveal in Finder runs `open -R` in the backend via `execFile`.
+**Why.** Same dialogs and confirmations as the rest of Theia, no new UI to maintain.
+**Consequences.** `ProjectsTree` ids nodes by `uri.toString()` so `FileTreeModel.getNodesByUri` finds them, and project nodes are handed out through `resolveChildren` so they are registered. Theia only watches the workspace file, so each expanded folder gets one shallow `files.watch`; a recursive watch per project starved the backend search and broke the roots E2E.

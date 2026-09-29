@@ -1,6 +1,8 @@
 import { promises as fs } from 'fs';
 import { homedir } from 'os';
+import { execFile } from 'child_process';
 import { join } from 'path';
+import { promisify } from 'util';
 import { CorralProjectService, ProjectScanRequest, ProjectScanResult } from '../common/protocol';
 import { scanProjects } from './project-scanner';
 
@@ -8,13 +10,17 @@ export function expandHome(p: string, home: string): string {
     return p === '~' ? home : p.startsWith('~/') ? join(home, p.slice(2)) : p;
 }
 
+/** macOS Finder; argv only, so paths with spaces, quotes or `$` are safe. */
+const revealInFinder = (path: string) => promisify(execFile)('open', ['-R', path]).then(() => undefined);
+
 const exists = (p: string) => fs.access(p).then(() => true, () => false);
 
 export class CorralProjectServiceImpl implements CorralProjectService {
     constructor(
         protected readonly configDir: string | (() => Promise<string>),
         protected readonly warn: (msg: string) => void = m => console.warn(m),
-        protected readonly home: string = homedir()
+        protected readonly home: string = homedir(),
+        protected readonly opener: (path: string) => Promise<void> = revealInFinder
     ) { }
 
     protected ensured?: Promise<void>;
@@ -30,6 +36,10 @@ export class CorralProjectServiceImpl implements CorralProjectService {
             }
         }
         return { scanned, missing };
+    }
+
+    reveal(path: string): Promise<void> {
+        return this.opener(path);
     }
 
     async workspaceFile(): Promise<string> {

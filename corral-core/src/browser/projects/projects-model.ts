@@ -1,7 +1,8 @@
+import { Disposable, DisposableCollection } from '@theia/core/lib/common';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
 import { CompositeTreeNode, OpenerService, TreeNode, open } from '@theia/core/lib/browser';
-import { FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
+import { DirNode, FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
 import { FileStat } from '@theia/filesystem/lib/common/files';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { EditorPlacementGuard } from '../editor-placement-guard';
@@ -37,6 +38,9 @@ export class ProjectsModel extends FileTreeModel {
     protected override init(): void {
         super.init();
         this.toDispose.push(this.projectList.onDidChange(() => this.rebuild()));
+        this.toDispose.push(this.toDisposeOnRebuild);
+        this.toDispose.push(Disposable.create(() => this.watches.forEach(w => w.dispose())));
+        this.toDispose.push(this.onExpansionChanged(node => this.watchExpanded(node)));
         this.rebuild();
     }
 
@@ -49,9 +53,30 @@ export class ProjectsModel extends FileTreeModel {
         this.rebuild();
     }
 
+    protected readonly toDisposeOnRebuild = new DisposableCollection();
+
+    // Theia only watches the workspace file, so folders shown in the tree are watched as they expand.
+    // A recursive watch per project starves the backend search of file handles, hence one shallow watch per open folder.
+    protected readonly watches = new Map<string, Disposable>();
+
+    protected watchExpanded(node: Readonly<{ id: string, expanded?: boolean }>): void {
+        if (!DirNode.is(node as never)) {
+            return;
+        }
+        const dir = node as unknown as DirNode;
+        this.watches.get(dir.id)?.dispose();
+        this.watches.delete(dir.id);
+        if (dir.expanded) {
+            this.watches.set(dir.id, this.files.watch(dir.uri));
+        }
+    }
+
     protected async rebuild(): Promise<void> {
         this.entries = this.projectList.entries(this.showHidden);
         const root: CompositeTreeNode = this.projectsTree.createRoot();
+        this.toDisposeOnRebuild.dispose();
+        this.watches.forEach(w => w.dispose());
+        this.watches.clear();
         this.projectsTree.missing = new Set(this.entries.filter(e => e.missing).map(e => e.path));
         const nodes = await Promise.all(this.entries.map(async e => {
             const uri = new URI().withScheme('file').withPath(e.path);
@@ -61,7 +86,7 @@ export class ProjectsModel extends FileTreeModel {
                 return undefined; // vanished between scan and stat; the next refresh shows it as missing
             }
         }));
-        root.children = nodes.filter((n): n is NonNullable<typeof n> => !!n);
+        this.projectsTree.projects = nodes.filter((n): n is NonNullable<typeof n> => !!n);
         this.root = root;
     }
 

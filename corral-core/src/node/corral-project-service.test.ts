@@ -56,3 +56,12 @@ describe('CorralProjectServiceImpl.workspaceFile', () => {
         expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ folders: [], settings: {} });
     });
 });
+
+describe('CorralProjectServiceImpl.reveal', () => {
+    it('opens the OS file manager on the path with an argument array', async () => {
+        const opener = jest.fn().mockResolvedValue(undefined);
+        const service = new CorralProjectServiceImpl('/x', () => undefined, '/h', opener);
+        await service.reveal('/p/with space/$x');
+        expect(opener).toHaveBeenCalledWith('/p/with space/$x');
+    });
+});

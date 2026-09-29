@@ -197,7 +197,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     "Remove from herdr mapping" → the next + creates a new workspace, and the old one still exists.
   - Verify: `npm run test:e2e -- startup-override`.
 
-- [ ] **T2.4 File operations from the tree**
+- [x] **T2.4 File operations from the tree**
   - Spec: 03 §Selection, §Context menu.
   - Tests first: `e2e/file-ops.spec.ts`: New File in `alpha/src` → the file exists on disk and opens in the left
     half; Rename; Delete (confirm) → it's gone.
@@ -285,3 +285,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T2.1 — Hide/Unhide project context-menu items, eye toolbar toggle (hidden rows at 50%), empty states with Choose/Change folders… (2 unit + 2 E2E)
 - 2026-09-29 T2.2 — Add project… (folder dialog → extraProjects), Remove from list (manual only, never deletes files), Refresh, missing projects struck through with + disabled; FolderPicker shared with first run (1 E2E)
 - 2026-09-29 T2.3 — Set startup command… (QuickInput, empty = plain shell), Use global startup command, Remove from herdr mapping (forgetProject RPC, workspace stays) (2 unit + 1 E2E)
+- 2026-09-29 T2.4 — Tree context menu: New File…/New Folder…/Rename…/Delete (Theia WorkspaceCommands), Copy Path, Reveal in Finder (backend `open -R`); tree refreshes on disk changes (1 unit + 1 E2E)

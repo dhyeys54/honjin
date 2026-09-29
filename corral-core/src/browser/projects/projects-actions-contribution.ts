@@ -8,11 +8,14 @@ import { DirNode } from '@theia/filesystem/lib/browser';
 import { QuickInputService } from '@theia/core/lib/browser';
 import { withHidden, withoutPath } from '../../common/hidden-projects';
 import { resolveStartupCommand, withOverride } from '../../common/startup-command';
-import { CorralHerdrService } from '../../common/protocol';
+import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
+import { WorkspaceCommands } from '@theia/workspace/lib/browser/workspace-commands';
+import { FileStatNode } from '@theia/filesystem/lib/browser';
+import { CorralHerdrService, CorralProjectService } from '../../common/protocol';
 import { FolderPicker } from '../folder-picker';
 import { CorralPreferences } from '../corral-preferences';
 import { ProjectListService } from './project-list-service';
-import { PROJECTS_CONTEXT_MENU, ProjectsWidget } from './projects-widget';
+import { NEW_TAB_COMMAND_ID, PROJECTS_CONTEXT_MENU, ProjectsWidget } from './projects-widget';
 import { ProjectsContribution } from './projects-contribution';
 
 export const ProjectsActions = {
@@ -23,6 +26,8 @@ export const ProjectsActions = {
     SET_STARTUP: { id: 'corral.projects.setStartupCommand', label: 'Set startup command…' } as Command,
     USE_GLOBAL: { id: 'corral.projects.useGlobalCommand', label: 'Use global startup command' } as Command,
     FORGET: { id: 'corral.projects.forgetMapping', label: 'Remove from herdr mapping' } as Command,
+    COPY_PATH: { id: 'corral.projects.copyPath', label: 'Copy Path' } as Command,
+    REVEAL: { id: 'corral.projects.revealInFinder', label: 'Reveal in Finder' } as Command,
     REFRESH: { id: 'corral.projects.refresh', label: 'Corral: Refresh Projects' } as Command,
     UNHIDE: { id: 'corral.projects.unhide', label: 'Unhide project' } as Command
 };
@@ -37,6 +42,8 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     @inject(ProjectListService) protected readonly projectList: ProjectListService;
     @inject(QuickInputService) protected readonly quickInput: QuickInputService;
     @inject(CorralHerdrService) protected readonly herdr: CorralHerdrService;
+    @inject(ClipboardService) protected readonly clipboard: ClipboardService;
+    @inject(CorralProjectService) protected readonly projectService: CorralProjectService;
     @inject(FolderPicker) protected readonly picker: FolderPicker;
     @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
@@ -45,6 +52,14 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         commands.registerCommand(ProjectsActions.TOGGLE_SHOW_HIDDEN, {
             execute: () => this.widget?.model.toggleShowHidden(),
             isToggled: () => !!this.widget?.model.showHidden
+        });
+        commands.registerCommand(ProjectsActions.COPY_PATH, {
+            execute: () => this.clipboard.writeText(this.selectedPaths().join('\n')),
+            isVisible: () => this.selectedPaths().length > 0
+        });
+        commands.registerCommand(ProjectsActions.REVEAL, {
+            execute: () => this.projectService.reveal(this.selectedPaths()[0]),
+            isVisible: () => this.selectedPaths().length === 1
         });
         commands.registerCommand(ProjectsActions.ADD, { execute: () => this.add() });
         commands.registerCommand(ProjectsActions.REFRESH, { execute: () => this.projectList.reload() });
@@ -72,6 +87,17 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     }
 
     registerMenus(menus: MenuModelRegistry): void {
+        // Theia's own workspace commands act on the selection, which the tree publishes (globalSelection).
+        const NEW = [...PROJECTS_CONTEXT_MENU, '1_new'];
+        menus.registerMenuAction(NEW, { commandId: NEW_TAB_COMMAND_ID, label: 'New herdr tab here', order: 'a' });
+        menus.registerMenuAction(NEW, { commandId: WorkspaceCommands.NEW_FILE.id, label: 'New File…', order: 'b' });
+        menus.registerMenuAction(NEW, { commandId: WorkspaceCommands.NEW_FOLDER.id, label: 'New Folder…', order: 'c' });
+        const EDIT = [...PROJECTS_CONTEXT_MENU, '2_edit'];
+        menus.registerMenuAction(EDIT, { commandId: WorkspaceCommands.FILE_RENAME.id, label: 'Rename…', order: 'a' });
+        menus.registerMenuAction(EDIT, { commandId: WorkspaceCommands.FILE_DELETE.id, label: 'Delete', order: 'b' });
+        const PATH = [...PROJECTS_CONTEXT_MENU, '3_path'];
+        menus.registerMenuAction(PATH, { commandId: ProjectsActions.COPY_PATH.id, order: 'a' });
+        menus.registerMenuAction(PATH, { commandId: ProjectsActions.REVEAL.id, order: 'b' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.HIDE.id, order: 'a' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.UNHIDE.id, order: 'b' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.REMOVE.id, order: 'c' });
@@ -107,6 +133,10 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     protected selectedProject(): string | undefined {
         const node = this.widget?.model.selectedNodes.find(n => DirNode.is(n) && !DirNode.is(n.parent));
         return node && DirNode.is(node) ? node.uri.path.toString() : undefined;
+    }
+
+    protected selectedPaths(): string[] {
+        return (this.widget?.model.selectedNodes ?? []).filter(FileStatNode.is).map(n => n.uri.path.fsPath());
     }
 
     protected isHidden(path: string): boolean {

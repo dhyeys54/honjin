@@ -19,6 +19,8 @@ export interface CorralProjectService {
     list(request: ProjectScanRequest): Promise<ProjectScanResult>;
     /** Absolute path of the managed `corral.code-workspace`; created if missing. */
     workspaceFile(): Promise<string>;
+    /** Shows the path in the OS file manager (Finder). */
+    reveal(path: string): Promise<void>;
 }
 
 export const CorralHerdrService = Symbol('CorralHerdrService');
