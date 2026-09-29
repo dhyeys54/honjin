@@ -5,7 +5,7 @@
 | Region | Content | Default size |
 |---|---|---|
 | Left panel | Search, Run and Debug. **Collapsed**; the activity bar stays visible. | 280px when opened |
-| Main area | Editor group on the left, herdr terminal on the right | 50/50 split |
+| Main area | Editor group on the left, herdr terminal on the right | 50/50 when herdr first splits it; Reset Layout leaves this split alone (D36) |
 | Right panel | Projects view over the Changes view (`corral-projects-container`, spec 09 C14), **expanded** | 300px |
 | Bottom panel | Collapsed (Problems/Output live here when opened) | — |
 

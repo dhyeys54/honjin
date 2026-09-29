@@ -426,7 +426,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     them after the first rebuild.
   - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/projects.spec.ts e2e/hide.spec.ts`.
 
-- [ ] **T5.8 Reset Layout sets sizes (spec 02)**
+- [x] **T5.8 Reset Layout sets sizes (spec 02)**
   - Tests first: `e2e/panels.spec.ts`: after `corral.resetLayout`, the right panel is 300 px ± 2 and the left
     panel opens at 280 px ± 2.
   - Do: `ApplicationShell.resize(size, area)` in `applyDefaultLayout`. The 50/50 editor/herdr split only if a
@@ -507,3 +507,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.5 — shared `paths.ts` (`trimSlash`, `isInside`); one Show Changes (Changes view runs the Projects command, which ignores the menu-anchor arg); dead stub removed; `FileUri.fsPath` in browser code; kind-tagged Changes nodes; spec 04 binary order (147 unit, 11 int)
 - 2026-09-29 T5.6 — an unreadable scan root is reported once in the Output channel "Corral" (warnings come back from `list()` over RPC; `@theia/output` declared, D36) (148 unit, 11 int)
 - 2026-09-29 T5.7 — Projects tree keeps expanded folders and show-hidden across a restart (widget state holds ids only; re-applied after the first list) (+1 e2e)
+- 2026-09-29 T5.8 — Reset Layout sets the right panel to 300 px and the left to reopen at 280 px; the 50/50 main split is only the initial split (spec 02 amended, D36) (+1 e2e)

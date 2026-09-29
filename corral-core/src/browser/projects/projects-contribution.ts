@@ -45,7 +45,9 @@ export class ProjectsContribution extends AbstractViewContribution<ProjectsWidge
     // resetting only touches those and never closes editors or the herdr tab.
     protected async applyDefaultLayout(): Promise<void> {
         await this.openView({ activate: false, reveal: true });
+        this.shell.resize(300, 'right');
         await this.shell.collapsePanel('left');
+        this.shell.resize(280, 'left'); // collapsed, so this is the width it reopens at
         await this.shell.collapsePanel('bottom');
     }
 }
