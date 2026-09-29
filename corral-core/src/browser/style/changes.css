@@ -48,7 +48,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .corral-live .theia-TreeNodeContent::after {
+    .corral-live .theia-TreeNodeContent::after,
+    .corral-projects .theia-TreeNode.corral-live .theia-TreeNodeContent::after {
         animation: none;
     }
 }

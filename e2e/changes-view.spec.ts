@@ -68,6 +68,16 @@ test('Changes lists uncommitted files by project, marks live ones, opens diffs a
         await expect(projectRow('delta').first().locator('.corral-change-count')).toHaveText('2');
         await expect(projectRow('delta').first()).toHaveClass(/corral-live/);
 
+        // C13: the dot pulses, and stops under prefers-reduced-motion in both trees
+        const dotAnimation = (row: ReturnType<typeof changeRow>) =>
+            row.evaluate(el => getComputedStyle(el.querySelector('.theia-TreeNodeContent')!, '::after').animationName);
+        await expect.poll(() => dotAnimation(changeRow(page, 'a.txt'))).toBe('corral-live-pulse');
+        await expect.poll(() => dotAnimation(projectRow('delta').first())).toBe('corral-live-pulse');
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await expect.poll(() => dotAnimation(changeRow(page, 'a.txt'))).toBe('none');
+        await expect.poll(() => dotAnimation(projectRow('delta').first())).toBe('none');
+        await page.emulateMedia({ reducedMotion: 'no-preference' });
+
         // (c) click opens the diff against HEAD
         await changeRow(page, 'a.txt').click();
         await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 15_000 });
