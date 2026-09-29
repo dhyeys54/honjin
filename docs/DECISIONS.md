@@ -144,3 +144,8 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 - CSS reads `--theia-*` variables, which the theme maps from the DESIGN.md tokens; no `--corral-*` aliases exist. Add them only if a rule needs a token the theme does not expose.
 - `editor.lineHeight` is 1.6 (DESIGN.md `code`). The terminal keeps Theia's default: herdr is a TUI and a 1.6 line height breaks its box drawing.
 - Not done: favicon `.ico` fallback link, Electron dev-window icon (`icon-512.png`); both listed in FOR-REVIEW.
+
+## D28 — packaged app unpacks `lib/prebuilds` (post-plan fix)
+**Decision.** `electron-builder.yml` adds `lib/prebuilds/**` to `asarUnpack`.
+**Why.** Theia's bundle loads node-pty's `spawn-helper` from `lib/prebuilds/<arch>/`, not from `node_modules`. It stayed inside `app.asar`, so the packaged Corral.app failed with `posix_spawn failed: No such file or directory` and the herdr pane stayed blank. The browser and dev builds were unaffected, so E2E never caught it.
+**Consequences.** Verified by launching the rebuilt app: a herdr client now runs on its own tty.

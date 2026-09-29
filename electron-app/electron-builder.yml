@@ -14,6 +14,7 @@ extraResources:
 asar: true
 asarUnpack:
   - "**/node_modules/node-pty/**"
+  - "lib/prebuilds/**"
   - "**/node_modules/@theia/**/*.node"
   - "**/node_modules/@vscode/ripgrep/**"
   - "**/node_modules/drivelist/**"
