@@ -365,7 +365,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
   - Do: `shownEntries` in `common/project-list.ts`; `ProjectListService.entries` calls it.
   - Verify: `npm test`, typecheck, lint.
 
-- [ ] **T5.2 Single click previews a file (spec 03 §Opening files)**
+- [x] **T5.2 Single click previews a file (spec 03 §Opening files)**
   - Tests first: `e2e/projects.spec.ts`: one click on a file opens an editor tab that is a preview
     (`.theia-editor-preview-title-unpinned`, or the class Theia 1.76 really uses: check `@theia/editor`);
     a double click pins it.
@@ -498,3 +498,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T4.5 — Projects tree shows change letters, project counts and live dots; layout fix-up no longer re-closes Projects on every start (144 unit, 35 e2e)
 - 2026-09-29 T4.6 — Docs (README, specs 08/09), full suite green, Corral.app repackaged and installed with Projects over Changes (144 unit, 35 e2e)
 - 2026-09-29 T5.1 — a hidden project that vanished from disk stays listed (spec 03 rule 4): the service reuses `buildProjectList` instead of its own filter; E2E in add-remove.spec (144 unit)
+- 2026-09-29 T5.2 — a single click in the Projects tree previews a file (italic tab), a double click pins it; honours `workbench.list.openMode` (144 unit, +1 e2e)

@@ -46,6 +46,14 @@ export class ProjectsWidget extends FileTreeWidget {
     }
 
     // Spec 03 §Empty states. Hidden projects count as projects, so hiding the last one is not "empty".
+    // Spec 03: a single click previews a file, as in Theia's Explorer.
+    protected override tapNode(node?: TreeNode): void {
+        if (node && this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+            this.model.previewNode(node);
+        }
+        super.tapNode(node);
+    }
+
     protected override render(): React.ReactNode {
         if (!this.projectList.loaded || this.projectList.entries(true).length > 0) {
             return super.render();

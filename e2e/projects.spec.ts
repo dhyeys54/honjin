@@ -28,3 +28,15 @@ test('expanding a project shows its folders and a file opens in the left half', 
     const bar = editorTab.locator('xpath=ancestor::div[contains(@class,"lm-TabBar")][1]');
     await expect(bar.locator('.lm-TabBar-tab', { hasText: 'herdr' })).toHaveCount(0);
 });
+
+test('a single click previews a file and a double click pins it (spec 03)', async ({ page }) => {
+    await row(page, 'alpha').click();
+    await page.keyboard.press('ArrowRight');
+    await row(page, 'src').click();
+    await page.keyboard.press('ArrowRight');
+    await row(page, 'index.ts').click();
+    const tab = page.locator('.lm-TabBar-tab', { hasText: 'index.ts' }).first();
+    await expect(tab).toHaveClass(/theia-editor-preview-title-unpinned/, { timeout: 15_000 });
+    await row(page, 'index.ts').dblclick();
+    await expect(tab).not.toHaveClass(/theia-editor-preview-title-unpinned/);
+});
