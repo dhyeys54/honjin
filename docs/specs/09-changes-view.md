@@ -15,7 +15,7 @@ against one (AGENTS.md).
 | C1 | The projects are `ProjectListService.roots` (visible roots, in that order). Hidden and missing projects are never shown. |
 | C2 | A file is listed if and only if some `ScmRepository` in `ScmService.repositories` has it in the `resources` of any of its `provider.groups`. That includes changes made before Corral started. It stays listed until git stops reporting it (committed or reverted). |
 | C3 | Each file belongs to the project that `owningProject(filePath, roots)` returns (`common/startup-command.ts`, deepest root wins). A file with no owner is dropped. A project with zero files is not shown, so projects that aren't git repositories never appear. |
-| C4 | A file in several groups (e.g. both `index` and `workingTree`) is one row. Its letter and flags come from the first group in `pickChange` order (`common/scm-change.ts`: non-`index` groups first). |
+| C4 | A file in several groups (e.g. both `index` and `workingTree`) is one row. Its letter and flags come from the first group in `pickChanges` order (`common/scm-change.ts`: non-`index` groups first). |
 | C5 | Files within a project are sorted by their path relative to the project root (`a.localeCompare(b)`). Projects keep C1 order. |
 | C6 | Row letter = `resource.decorations?.letter ?? 'M'`. `changeKind(letter, strikeThrough)`: `A` or `U` → `added`; `D` → `deleted`; `!` → `conflict`; anything else → `modified`. `strikeThrough === true` gives `deleted` whatever the letter. |
 | C7 | **Live:** a listed file is live if its last write was less than `LIVE_MS` (30 000 ms) ago; a write exactly 30 000 ms ago is not live. Writes come from `FileService.onDidFilesChange`: each `event.changes[i]` of type `FileChangeType.UPDATED` or `ADDED` records `Date.now()` for `change.resource.path.toString()`. Paths containing `/.git/` are ignored (`files.watcherExclude`, D33, already filters the rest). A write to an unlisted file creates no row, but is remembered in case git lists it later. A project row is live if any of its files is live. |
@@ -50,7 +50,7 @@ export function liveFolders(groups: ChangeGroup[]): Set<string>;
 export function nextExpiry(writes: ReadonlyMap<string, number>, now: number): number | undefined;
 ```
 
-For C4, reuse `pickChange`: give it `{ id: group, resources: [{ sourceUri: path, ...input }] }` groups, or apply
+For C4, reuse `pickChanges`: give it `{ id: group, resources: [{ sourceUri: path, ...input }] }` groups, or apply
 the same ordering (non-`index` first). Don't redefine the group order.
 
 ### `browser/changes/changes-service.ts`
@@ -67,7 +67,8 @@ An `@injectable()` class bound `inSingletonScope()`. It is the only owner of cha
 - It recomputes on any of these events:
   - `ChangeInput`s come from `repo.provider.groups[].resources[]`: `path = resource.sourceUri.path.toString()`, `group = group.id`, `letter = resource.decorations?.letter`, `strikeThrough = resource.decorations?.strikeThrough`.
   - `groups = groupChanges(projectList.roots, inputs, writes, Date.now())`.
-  - It keeps `Map<path, ScmResource>` using the C4 winner, then fires `onDidChange`.
+  - It keeps `Map<path, ScmResource>` using the C4 winner, then fires `onDidChange`, unless `sameGroups(old, new)`
+    (`common/changes.ts`) says nothing visible changed (D36).
 - Public API:
   - `groups(): ChangeGroup[]`
   - `groupFor(root: string): ChangeGroup | undefined`

@@ -22,7 +22,7 @@ export function changeKind(letter: string, strikeThrough?: boolean): ChangeKind 
 
 /** C1–C7: the listed changes of the visible projects, in root order, with the live flags. */
 export function groupChanges(roots: string[], changes: ChangeInput[], writes: ReadonlyMap<string, number>, now: number): ChangeGroup[] {
-    // C4: pickChange owns the "working tree beats index" order, so a file in two groups is one row.
+    // C4: pickChanges owns the "working tree beats index" order, so a file in two groups is one row.
     const byGroup = new Map<string, { id: string, resources: (ChangeInput & { sourceUri: string })[] }>();
     for (const change of changes) {
         const group = byGroup.get(change.group) ?? { id: change.group, resources: [] };
