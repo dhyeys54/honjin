@@ -31,5 +31,3 @@ export const colors = {
     'ansi-bright-cyan': '#94dbe8',
     'ansi-bright-white': '#eef3f0',
 } as const;
-
-export type ColorToken = keyof typeof colors;

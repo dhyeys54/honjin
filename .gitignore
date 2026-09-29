@@ -13,3 +13,4 @@ playwright-report/
 *-app/*
 !*-app/package.json
 !*-app/electron-builder.yml
+.playwright-mcp/
