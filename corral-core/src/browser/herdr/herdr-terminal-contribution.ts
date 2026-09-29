@@ -8,6 +8,7 @@ import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { CorralHerdrService } from '../../common/protocol';
 import { fileURLToPath } from 'url';
 import { exitReason } from '../../common/exit-reason';
+import { herdrClientEnv } from '../../common/herdr-client-env';
 
 export const HerdrCommands = {
     FOCUS: { id: 'corral.herdr.focus', label: 'Corral: Focus herdr' } as Command,
@@ -15,11 +16,6 @@ export const HerdrCommands = {
 };
 
 export const HERDR_TERMINAL_ID = 'corral-herdr-terminal';
-
-// herdr refuses to nest and would follow HERDR_SOCKET_PATH to another server when Corral itself was
-// launched from inside a herdr pane. Theia merges process.env twice (server, then ShellProcess), which would re-add cleared variables, so strictEnv
-// is needed: the first merge already produced the complete environment.
-const HERDR_ENV_TO_CLEAR = ['HERDR_ENV', 'HERDR_PANE_ID', 'HERDR_SOCKET_PATH', 'HERDR_TAB_ID', 'HERDR_WORKSPACE_ID'];
 
 @injectable()
 export class HerdrTerminalContribution implements FrontendApplicationContribution, CommandContribution {
@@ -73,9 +69,9 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
             shellPath: binary,
             shellArgs: session ? ['--session', session] : [],
             cwd: home,
+            // Theia merges process.env twice without strictEnv, which would bring back HERDR_* from a parent herdr pane.
             strictEnv: true,
-            // strictEnv leaves HOME out, and without it herdr looks for its socket in $TMPDIR: a different server than the backend's CLI calls reach.
-            env: { ...Object.fromEntries(HERDR_ENV_TO_CLEAR.map(k => [k, ''])), HOME: home },
+            env: herdrClientEnv(home),
             destroyTermOnClose: true,
             isTransient: true
         });

@@ -61,7 +61,7 @@ is titled "Debug", not "Run and Debug".
 **Consequences.** Spec 01 updated; E2E asserts the real titles.
 
 ## D11 — herdr terminal widget details (T1.9)
-**Decision.** (1) The terminal starts with `strictEnv: true` and empty `HERDR_*` values, because Theia merges `process.env` twice and herdr refuses to nest. (2) The widget is opened before `start()`, otherwise herdr aborts with "zero-sized grid". (3) Detach key is `prefix+q`, not `prefix+d` (spec 04 corrected). (4) Theia 1.76 disposes a terminal widget after its process exits, so "herdr exited" / "herdr not found" is a separate placeholder tab with the action button. (5) E2E checks the client via `pgrep`, since xterm paints on a canvas with no readable text. (6) Placement is `main` / `split-right`; "own pinned group" is not done.
+**Decision.** (1) The terminal starts with `strictEnv: true`, because Theia merges `process.env` twice and herdr refuses to nest (the empty `HERDR_*` values first used here were wrong; see D30). (2) The widget is opened before `start()`, otherwise herdr aborts with "zero-sized grid". (3) Detach key is `prefix+q`, not `prefix+d` (spec 04 corrected). (4) Theia 1.76 disposes a terminal widget after its process exits, so "herdr exited" / "herdr not found" is a separate placeholder tab with the action button. (5) E2E checks the client via `pgrep`, since xterm paints on a canvas with no readable text. (6) Placement is `main` / `split-right`; "own pinned group" is not done.
 **Why.** Each was found by failing tests against real herdr 0.9.1 and Theia 1.76.
 **Consequences.** All are in `herdr-terminal-contribution.ts`, easy to change.
 
@@ -154,3 +154,8 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 **Decision.** The herdr terminal keeps the last 4 KB of output, and on exit the overlay shows the last readable line (`common/exit-reason.ts`). Spec 02 was updated.
 **Why.** A wedged `default` server made every new client quit with "server did not become ready within 15s", but the overlay only said "herdr exited", so the cause was invisible.
 **Consequences.** Nothing new is persisted. The tail is dropped with the widget.
+
+## D30 — herdr client env passes no `HERDR_*` keys (post-plan fix)
+**Decision.** The herdr terminal's env is `herdrClientEnv(home)` (`common/herdr-client-env.ts`): only `HOME`. `strictEnv` already keeps Corral's own `HERDR_*` variables out.
+**Why.** Setting `HERDR_SOCKET_PATH` to `''` did not clear it: herdr treated it as a socket path, so the Corral client on the default session always failed with "server did not become ready within 15s" and never attached. E2E missed it because it runs with `--session corral-test-*`, which doesn't use that path.
+**Consequences.** Verified by opening the packaged app: its herdr client connects to `~/.config/herdr/herdr-client.sock` and attaches to the live session.
