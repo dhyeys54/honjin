@@ -124,7 +124,8 @@
         "terminal.ansiCyan": "#6cc5d6",
         "terminal.ansiBrightCyan": "#94dbe8",
         "terminal.ansiWhite": "#c8d0cc",
-        "terminal.ansiBrightWhite": "#eef3f0"
+        "terminal.ansiBrightWhite": "#eef3f0",
+        "list.focusOutline": "#0c0f0e00"
     },
     "tokenColors": [
         {

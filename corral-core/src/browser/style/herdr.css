@@ -70,3 +70,26 @@
 .corral-projects .corral-project-flag + .corral-new-tab {
     margin-left: 0;
 }
+
+/* Selection is a flat fill plus a 2px accent bar, not an outline box; the bar keeps keyboard focus visible. */
+.corral-projects .theia-TreeNode.theia-mod-selected,
+.corral-projects .theia-TreeNode.theia-mod-focus {
+    outline: none !important; /* Theia's own rule is :focus-within-specific */
+    box-shadow: inset 2px 0 0 var(--theia-focusBorder);
+}
+
+.corral-projects:focus-within .theia-TreeNode.theia-mod-selected {
+    box-shadow: inset 2px 0 0 var(--theia-list-highlightForeground);
+}
+
+/* Notification actions: quiet by default, the first one carries the accent. */
+.theia-notification-list-item-content-bottom .theia-button {
+    background: var(--theia-button-secondaryBackground);
+    color: var(--theia-button-secondaryForeground);
+    border: 1px solid var(--theia-dropdown-border);
+}
+
+.theia-notification-list-item-content-bottom .theia-button:first-child {
+    background: var(--theia-button-background);
+    border-color: transparent;
+}
