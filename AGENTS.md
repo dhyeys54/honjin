@@ -13,6 +13,8 @@ A macOS IDE built on **Eclipse Theia** (1.76.x) for working on many projects fro
 │ search │ (Monaco tabs)            │ (TUI: workspaces/tabs/   │ app-a      ▾ │
 │ debug  │                          │  panes running `claude`) │  src/    [+] │
 │        │                          │                          │ app-b      ▸ │
+│        │                          │                          │ CHANGES      │
+│        │                          │                          │ app-a (2)  ● │
 └────────┴──────────────────────────┴──────────────────────────┴──────────────┘
 ```
 

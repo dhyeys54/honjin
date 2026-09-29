@@ -40,6 +40,8 @@ Rules (each one gets a unit test):
 
 ## The tree widget
 
+Changed-file letters, per-project change counts and live dots come from the Changes view's state (spec 09 C12).
+
 Build it on `@theia/filesystem`'s `FileTreeWidget` / `FileTreeModel`, following how `@theia/navigator` builds
 `FileNavigatorWidget` (read `node_modules/@theia/navigator/lib/browser/navigator-container.js` and
 `navigator-model.js` first).

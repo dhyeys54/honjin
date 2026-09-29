@@ -112,6 +112,8 @@ Stage 3 (`corral-polish` skill) may refine these values. Change this file first,
 ### Signals
 - `warning` means blocked/needs input; `danger` means errors and destructive actions; `info` means links and
   notices.
+- Git changes (spec 09 C13): modified `warning`, added/untracked `info`, deleted and conflicts `danger`. The pulsing
+  `accent` dot on a file being written right now is the "agent that is working" use of the accent.
 
 ### Named Rules
 - **One green thing per region.** At most one accent-coloured element should be at rest in any region. Hover and

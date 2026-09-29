@@ -259,6 +259,99 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 ---
 
+## Stage 4 — Changes view (spec 09)
+
+Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding against any Theia API, open its
+`.d.ts` in `node_modules` (spec 09 names every one it uses). Unit tests run with
+`npx jest -c corral-core/test/jest.config.ts <name>` from the repo root (plain `jest` inside corral-core fails on TS).
+
+- [ ] **T4.1 Changes logic**
+  - Spec: 09 §Rules C1–C8, §Code layout `common/changes.ts`.
+  - Tests first: `common/changes.test.ts`, one `it` per rule:
+    - C1: groups follow `roots` order; a repo path under no root is dropped.
+    - C3: a file maps to its deepest root (roots `/p` and `/p/inner` → `/p/inner/x` belongs to `/p/inner`); a root
+      with no files is omitted; `name` is the root's last segment.
+    - C4: the same path in `index` (letter `A`) and `workingTree` (letter `M`) gives one row with letter `M`.
+    - C5: files sort by `rel` (`b/a.ts` after `a.ts`, `rel` has no leading slash).
+    - C6: `changeKind` for `A`, `U` → added; `D` → deleted; `!` → conflict; `M`, `R`, `C`, `T` → modified; a
+      missing letter gives `M`/modified in `groupChanges`; `strikeThrough: true` → deleted.
+    - C7: with `now = 100_000`, a write at 70_001 is live and one at 70_000 is not; a write to an unlisted path
+      adds no row; a live file makes its group `live`.
+    - `liveFolders`: live `/p/src/a/x.ts` in project `/p` → `{'/p/src/a', '/p/src', '/p'}` and not `/`.
+    - `nextExpiry`: returns the smallest `write + 30_000` greater than `now`; `undefined` when none.
+  - Do: implement `common/changes.ts` exactly as spec 09's signatures. Pure: no Theia/DOM/Node imports. Reuse
+    `owningProject` (`common/startup-command.ts`) and the group order of `pickChange` (`common/scm-change.ts`).
+  - Verify: `npx jest -c corral-core/test/jest.config.ts changes`, then `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T4.2 ChangesService**
+  - Spec: 09 §`browser/changes/changes-service.ts`, C7, C8.
+  - Tests first: none at unit level (pure wiring, like `ProjectListService`); exercised by T4.4/T4.5 E2E.
+  - Do: implement it; bind `ChangesService` `toSelf().inSingletonScope()` in `corral-frontend-module.ts`. Open and
+    code against: `node_modules/@theia/scm/lib/browser/scm-service.d.ts`, `.../scm-repository.d.ts`,
+    `.../scm-provider.d.ts`, `node_modules/@theia/filesystem/lib/browser/file-service.d.ts` (`onDidFilesChange`),
+    `node_modules/@theia/filesystem/lib/common/files.d.ts` (`FileChangesEvent.changes`, `FileChangeType`).
+    `FileChangeType` is a `const enum`: import it from `@theia/filesystem/lib/common/files`.
+  - Verify: `npm run typecheck && npm run lint && npm test && npm run build:browser`.
+
+- [ ] **T4.3 Projects + Changes view container**
+  - Spec: 09 C14, C11; 02 §Default layout.
+  - Tests first:
+    - `e2e/panels.spec.ts`: the tab locator becomes `.theia-app-right #shell-tab-corral-projects-container`.
+    - New `e2e/changes-view.spec.ts`, test "Projects and Changes are stacked in one right-panel container":
+      after `page.goto('/')`, `#theia-right-content-panel [data-testid="corral-projects"]` and
+      `#theia-right-content-panel [data-testid="corral-changes"]` are both visible, and the Projects part's top is
+      above the Changes part's top (compare `boundingBox().y`).
+    - Run them; they fail because the container does not exist.
+  - Do: `browser/projects/projects-view-container.ts` (spec 09 §projects-view-container), `ChangesWidget` with only
+    the C11 empty state for now (`browser/changes/changes-widget.ts` + its `WidgetFactory`, id `corral-changes`),
+    `viewContainerId` in `ProjectsContribution`, and the old-layout fix-up in `ProjectsContribution`'s
+    `onDidInitializeLayout` (pattern: `browser/scm/corral-scm-contribution.ts`).
+  - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts panels changes-view shell projects placement`.
+
+- [ ] **T4.4 Changes tree**
+  - Spec: 09 C2, C3, C5, C7, C9–C11, C13; §changes-tree, §changes-widget, §changes-contribution, §CSS.
+  - Tests first: in `e2e/changes-view.spec.ts` add one test that builds a temp repo exactly like `e2e/changes.spec.ts`
+    (`mkdtempSync` under `realpathSync(tmpdir())`, `git init`, commit `a.txt` and `.gitignore` containing `ignored.log`,
+    then write `a.txt` = `two`, `new.txt`, `ignored.log`), adds it via `corral.extraProjects` (restore the original
+    settings in `finally`), then:
+    - (a) the Changes view shows a project row `delta` whose `.corral-change-count` is `2`, and rows `a.txt` (letter
+      `M`) and `new.txt` (letter `U`), and no `ignored.log` (`expect.poll`, 30 s: git refresh is async);
+    - (b) the `a.txt` row has class `corral-live` (write it again right before asserting if needed);
+    - (c) clicking `a.txt` shows `.monaco-diff-editor`;
+    - (d) right-click `a.txt` → menu has Open File, Reveal in Projects, Copy Path; right-click `delta` → Show Changes.
+      Wait for the menu to render before counting items; close menus by clicking `#theia-statusBar` at `{x:1,y:1}`
+      (Escape does not close Theia menus);
+    - (e) `git add -A` + commit (with `-c user.name=t -c user.email=t@t`) → the `delta` row disappears and
+      `[data-testid="corral-changes-empty"]` is visible.
+  - Do: `changes-tree.ts`, the full `changes-widget.ts`, `changes-contribution.ts` (commands, menus,
+    `ColorContribution`), `style/changes.css`, bindings in `corral-frontend-module.ts`.
+  - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts changes-view changes panels`.
+
+- [ ] **T4.5 Marks in the Projects tree**
+  - Spec: 09 C12.
+  - Tests first: extend the T4.4 test, before the commit step: expand `delta` in the Projects tree (click the row,
+    `ArrowRight`); the `a.txt` row has `.corral-change-letter` with text `M`; the `delta` row has
+    `.corral-change-count` with text `2`; the `delta` row has class `corral-live`. After the commit, the `delta`
+    row has no `.corral-change-count` and `a.txt` has no `.corral-change-letter`.
+  - Do: in `ProjectsWidget`, inject `ChangesService`; `createNodeClassNames` adds `corral-live`;
+    `renderTailDecorations` renders the letter / count spans before the `+` button; `update()` on `onDidChange`.
+    No `TreeDecoratorService`.
+  - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts changes-view projects hide changes`.
+
+- [ ] **T4.6 Docs, full suite, package**
+  - Spec: 09 (all). README: add a "Changes (right, under Projects)" bullet to the feature list and a CHANGES block
+    to the diagram (also fix the diagram's duplicated `debug` line).
+  - Do: walk C1–C14 and confirm each has a test or visible code; fix gaps. Then package and install:
+    `npm run package:mac`; `osascript -e 'quit app "Corral"'` and wait until `pgrep -f "Corral.app/Contents/MacOS"`
+    is empty (never replace the app while it runs); `rm -rf /Applications/Corral.app && ditto
+    electron-app/dist/mac-arm64/Corral.app /Applications/Corral.app && open /Applications/Corral.app`.
+  - Verify: `npm test && npm run typecheck && npm run lint && npm run test:e2e` (`roots.spec.ts` and
+    `first-run.spec.ts` are known flaky late in a full run: re-run them alone, they must pass). The installed app
+    shows Projects over Changes and herdr attached.
+
+- [ ] **G4 Stage 4 gate**: all suites → `spec-reviewer` on spec 09 and stage 4 → fix must-fix findings →
+  **human checkpoint, stop**.
+
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->

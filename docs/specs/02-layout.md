@@ -6,9 +6,10 @@
 |---|---|---|
 | Left panel | Search, Run and Debug. **Collapsed**; the activity bar stays visible. | 280px when opened |
 | Main area | Editor group on the left, herdr terminal on the right | 50/50 split |
-| Right panel | Projects view, **expanded** | 300px |
+| Right panel | Projects view over the Changes view (`corral-projects-container`, spec 09 C14), **expanded** | 300px |
 | Bottom panel | Collapsed (Problems/Output live here when opened) | — |
 
+- Reset Layout and the Projects toggle open the whole `corral-projects-container` (spec 09 C14).
 - Theia's Explorer (navigator) is not in the default layout. It can still be opened from the View menu.
 - Command `corral.resetLayout` ("Corral: Reset Layout") rebuilds exactly this layout. Use it via the application's
   `initializeLayout` hook (a `FrontendApplicationContribution`) so a fresh profile gets it automatically.

@@ -20,7 +20,7 @@ One task per run. Never start a second task in the same run.
 3. Read the task's block and **every spec section it cites**. Read `AGENTS.md` §Hard rules if this is your first
    task in the session.
 
-## 1. Gate tasks (G0–G3)
+## 1. Gate tasks (G0–G4)
 
 Run the steps written in the task. For the review step, launch the `spec-reviewer` agent with the stage number.
 Fix each **must-fix** finding as a separate commit (`G<n>: fix <finding>`). When a gate says **human

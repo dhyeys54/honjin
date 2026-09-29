@@ -6,7 +6,7 @@
 
 Run **`/next-task`** repeatedly. Each run does exactly one task from `docs/PLAN.md` using the TDD loop, verifies
 it, commits it, and stops. For an unattended run: `/loop /next-task`. It stops by itself at a `[!]` blocked task, at a
-human checkpoint (G1, G2, G3), or when the plan is complete. To continue after a checkpoint, try the build, then
+human checkpoint (G1–G4), or when the plan is complete. To continue after a checkpoint, try the build, then
 tick the gate in `docs/PLAN.md` (or tell Claude "approved, tick G1") and run `/loop /next-task` again.
 
 Suggested models: Sonnet for `/next-task`. Opus (or a fresh Sonnet) for the `spec-reviewer` agent at the end of
