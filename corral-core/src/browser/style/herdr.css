@@ -6,3 +6,19 @@
     background: var(--theia-editor-background);
     color: var(--theia-foreground);
 }
+
+.corral-projects .corral-new-tab {
+    margin-left: auto;
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.corral-projects .theia-TreeNode:hover .corral-new-tab,
+.corral-projects .theia-TreeNode.theia-mod-selected .corral-new-tab,
+.corral-projects .corral-new-tab:focus-visible {
+    visibility: visible;
+}

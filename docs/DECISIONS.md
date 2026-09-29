@@ -69,3 +69,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** The tree is built on `FileTree`/`FileTreeModel` with a synthetic invisible root. Missing projects are left out of the tree for now (they return with the toolbar/context menu tasks). Opening a file uses a small `editorPlacement()` in `ProjectsModel`: after the last editor, else split-left of the herdr tab. `corral.resetLayout` only reopens Projects and collapses the left and bottom panels. `@theia/editor` and `@theia/filesystem` were declared in `corral-core` (already installed, same version).
 **Why.** Without it Theia opens editors in the herdr tab's group. The general guard is T1.12, which will replace `editorPlacement()`.
 **Consequences.** Remove `editorPlacement()` when T1.12 lands.
+
+## D13 — newTab details (T1.11)
+**Decision.** `HerdrError` loses its class over RPC, so the frontend detects the server-down case by `server_not_running` in the error message (the default message is the code). The ⌥⌘T keybinding is global but does nothing unless the Projects view is active with a selection. The `+` is a plain button rendered in `renderTailDecorations`; it is not yet disabled on missing roots because those are not in the tree (D12).
+**Why.** Simplest thing that works with Theia's RPC and tree APIs.
+**Consequences.** If herdr error codes need to be structured, add a code field to the RPC error later.

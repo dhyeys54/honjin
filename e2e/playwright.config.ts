@@ -10,7 +10,8 @@ if (!process.env.CORRAL_E2E_CONFIG_DIR) {
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'settings.json'), JSON.stringify({
         'corral.scanRoots': [resolve(__dirname, 'fixtures/projects')],
-        'corral.firstRunCompleted': true
+        'corral.firstRunCompleted': true,
+        'corral.startupCommand': 'echo corral-e2e'
     }, undefined, 2));
     process.env.CORRAL_E2E_CONFIG_DIR = dir;
 }

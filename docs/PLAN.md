@@ -21,7 +21,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - [x] **T0.2 Tooling and scripts**
   - Spec: 08 §Layers, AGENTS.md §Commands.
   - Tests first: `common/sanity.test.ts` asserting `1 + 1 === 2` (proves the runner works); delete it in T1.2.
-  - Do: Jest config at `corral-core/test/jest.config.ts` (unit) and `corral-core/test/jest.int.config.ts`
+  - Do: Jest config at `corral-coreX/test/jest.config.ts` (unit) and `corral-core/test/jest.int.config.ts`
     (integration, `maxWorkers: 1`). Add root scripts `test`, `test:int`, `test:e2e`, `typecheck` (`tsc --noEmit -p corral-core`),
     `lint` (eslint + typescript-eslint, flat config, recommended rules only), `build` (`npm run build -w corral-core`).
     Put `package:mac` in as a placeholder that prints "see T3.5" and exits 1.
@@ -134,7 +134,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `initializeLayout` default layout, and `corral.resetLayout`.
   - Verify: `npm run build:browser && npm run test:e2e -- projects`.
 
-- [ ] **T1.11 The + action**
+- [x] **T1.11 The + action**
   - Spec: 03 (+ action), 04 §The open-tab flow (frontend side), 05 §Startup-command resolution.
   - Tests first: `e2e/new-tab.spec.ts`: hover `alpha/src` → `+` is visible; click it → in the e2e session,
     `workspace list` has exactly one workspace labelled `alpha`, and `pane list` has a pane with cwd ending
@@ -277,3 +277,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.8 — scanProjects, CorralProjectServiceImpl (missing, ~ expansion, managed corral.code-workspace created on first list), RPC bound (4 int + 4 unit tests)
 - 2026-09-29 T1.9 — herdr terminal tab in main area (non-closable, env cleared, opens before start), exited/not-found placeholder tab with Reattach, R15 persistence (4 E2E)
 - 2026-09-29 T1.10 — Projects view (FileTree on a synthetic root of project DirNodes) in the right panel, default layout + corral.resetLayout, files open left of herdr (3 E2E)
+- 2026-09-29 T1.11 — + button on every directory row, corral.herdr.newTab (startup command, retry when the server is down, error notification), ⌥⌘T (2 E2E)
