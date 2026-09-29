@@ -5,8 +5,8 @@ import { ScmRepository } from '@theia/scm/lib/browser/scm-repository';
 import { ScmResource } from '@theia/scm/lib/browser/scm-provider';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { FileChangeType } from '@theia/filesystem/lib/common/files';
-import { ChangeFile, ChangeGroup, ChangeInput, LIVE_MS, groupChanges, liveFolders, nextExpiry } from '../../common/changes';
-import { pickChange } from '../../common/scm-change';
+import { ChangeFile, ChangeGroup, LIVE_MS, groupChanges, liveFolders, nextExpiry, sameGroups } from '../../common/changes';
+import { pickChanges } from '../../common/scm-change';
 import { ProjectListService } from '../projects/project-list-service';
 
 /** Git fires several events per operation; one recompute per burst is enough. */
@@ -25,6 +25,7 @@ export class ChangesService {
     protected readonly writes = new Map<string, number>();
     protected current: ChangeGroup[] = [];
     protected live = new Set<string>();
+    protected byPath = new Map<string, ChangeFile>();
     protected resources = new Map<string, ScmResource>();
     protected recomputeTimer: ReturnType<typeof setTimeout> | undefined;
     protected expiryTimer: ReturnType<typeof setTimeout> | undefined;
@@ -59,12 +60,12 @@ export class ChangesService {
     }
 
     fileFor(path: string): ChangeFile | undefined {
-        return this.current.flatMap(g => g.files).find(f => f.path === path);
+        return this.byPath.get(path);
     }
 
     /** True for a live file, a folder that contains one, and a project with one. */
     isLive(path: string): boolean {
-        return this.live.has(path) || !!this.fileFor(path)?.live;
+        return this.live.has(path) || !!this.byPath.get(path)?.live;
     }
 
     resourceFor(path: string): ScmResource | undefined {
@@ -97,30 +98,24 @@ export class ChangesService {
                 this.writes.delete(path);
             }
         }
-        const inputs: ChangeInput[] = [];
-        const candidates: { id: string, resources: { sourceUri: string, resource: ScmResource }[] }[] = [];
-        for (const repo of this.scm.repositories) {
-            for (const group of repo.provider.groups) {
-                candidates.push({ id: group.id, resources: group.resources.map(resource => ({ sourceUri: resource.sourceUri.path.toString(), resource })) });
-                for (const r of group.resources) {
-                    inputs.push({
-                        path: r.sourceUri.path.toString(), group: group.id,
-                        letter: r.decorations?.letter, strikeThrough: r.decorations?.strikeThrough
-                    });
-                }
-            }
-        }
-        this.current = groupChanges(this.projectList.roots, inputs, this.writes, now);
-        this.live = liveFolders(this.current);
+        const groups = this.scm.repositories.flatMap(repo => repo.provider.groups.map(group => ({
+            id: group.id,
+            resources: group.resources.map(resource => {
+                const path = resource.sourceUri.path.toString();
+                return { path, sourceUri: path, group: group.id, letter: resource.decorations?.letter,
+                    strikeThrough: resource.decorations?.strikeThrough, resource };
+            })
+        })));
+        const next = groupChanges(this.projectList.roots, groups.flatMap(g => g.resources), this.writes, now);
         // The same winner rule as the row, so a click opens the diff of the change that is shown.
-        this.resources = new Map();
-        for (const file of this.current.flatMap(g => g.files)) {
-            const hit = pickChange(candidates, file.path);
-            if (hit) {
-                this.resources.set(file.path, hit.resource);
-            }
-        }
+        this.resources = new Map([...pickChanges(groups)].map(([path, c]) => [path, c.resource]));
         this.armExpiry(now);
+        if (sameGroups(this.current, next)) {
+            return;
+        }
+        this.current = next;
+        this.live = liveFolders(next);
+        this.byPath = new Map(next.flatMap(g => g.files).map(f => [f.path, f]));
         this.changed.fire();
     }
 

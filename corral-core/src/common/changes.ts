@@ -1,5 +1,5 @@
 import { owningProject } from './startup-command';
-import { pickChange } from './scm-change';
+import { pickChanges } from './scm-change';
 
 /** How long a written file counts as "being changed now" (spec 09 C7). */
 export const LIVE_MS = 30_000;
@@ -31,8 +31,7 @@ export function groupChanges(roots: string[], changes: ChangeInput[], writes: Re
         g.resources.push({ ...c, sourceUri: c.path });
         byGroup.set(c.group, g);
     }
-    const groups = [...byGroup.values()];
-    const winners = [...new Set(changes.map(c => c.path))].map(p => pickChange(groups, p)!);
+    const winners = pickChanges([...byGroup.values()]).values();
 
     const perProject = new Map<string, ChangeFile[]>();
     for (const w of winners) {
@@ -87,3 +86,6 @@ export function nextExpiry(writes: ReadonlyMap<string, number>, now: number, liv
     }
     return next;
 }
+
+/** True when a recompute changed nothing a view shows, so it need not re-render. */
+export const sameGroups = (a: ChangeGroup[], b: ChangeGroup[]) => JSON.stringify(a) === JSON.stringify(b);

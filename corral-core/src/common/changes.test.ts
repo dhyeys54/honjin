@@ -1,4 +1,4 @@
-import { ChangeInput, LIVE_MS, changeKind, groupChanges, liveFolders, nextExpiry } from './changes';
+import { ChangeInput, LIVE_MS, changeKind, groupChanges, liveFolders, nextExpiry, sameGroups } from './changes';
 
 const NOW = 100_000;
 const none = new Map<string, number>();
@@ -75,5 +75,13 @@ describe('changes', () => {
         expect(nextExpiry(writes, NOW)).toBe(NOW - 10_000 + LIVE_MS);
         expect(nextExpiry(new Map([['/b', NOW - 40_000]]), NOW)).toBeUndefined();
         expect(nextExpiry(none, NOW)).toBeUndefined();
+    });
+
+    it('sameGroups: equal results match; a changed letter, live flag or file does not', () => {
+        const base = () => groupChanges(['/p'], [input('/p/a.ts'), input('/p/b.ts')], new Map([['/p/a.ts', NOW - 1]]), NOW);
+        expect(sameGroups(base(), base())).toBe(true);
+        expect(sameGroups(base(), groupChanges(['/p'], [input('/p/a.ts', { letter: 'A' }), input('/p/b.ts')], new Map([['/p/a.ts', NOW - 1]]), NOW))).toBe(false);
+        expect(sameGroups(base(), groupChanges(['/p'], [input('/p/a.ts'), input('/p/b.ts')], none, NOW))).toBe(false);
+        expect(sameGroups(base(), groupChanges(['/p'], [input('/p/a.ts')], new Map([['/p/a.ts', NOW - 1]]), NOW))).toBe(false);
     });
 });

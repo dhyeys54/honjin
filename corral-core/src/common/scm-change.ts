@@ -1,16 +1,19 @@
 /** Group ids of the built-in git extension. A file can be both staged and modified; the working tree is newest. */
 const INDEX_GROUP = 'index';
 
-/** The SCM change to open for a file (spec 02, "Changes"), or undefined when the file has no change. */
-export function pickChange<R extends { sourceUri: string }>(
-    groups: { id: string, resources: R[] }[], uri: string
-): R | undefined {
-    const ordered = [...groups.filter(g => g.id !== INDEX_GROUP), ...groups.filter(g => g.id === INDEX_GROUP)];
-    for (const g of ordered) {
-        const hit = g.resources.find(r => r.sourceUri === uri);
-        if (hit) {
-            return hit;
+type Groups<R> = { id: string, resources: R[] }[];
+
+const newestFirst = <R>(groups: Groups<R>) => [...groups.filter(g => g.id !== INDEX_GROUP), ...groups.filter(g => g.id === INDEX_GROUP)];
+
+/** The SCM change to open for each changed file (spec 02, "Changes"), keyed by `sourceUri`. */
+export function pickChanges<R extends { sourceUri: string }>(groups: Groups<R>): Map<string, R> {
+    const picked = new Map<string, R>();
+    for (const g of newestFirst(groups)) {
+        for (const r of g.resources) {
+            if (!picked.has(r.sourceUri)) {
+                picked.set(r.sourceUri, r);
+            }
         }
     }
-    return undefined;
+    return picked;
 }

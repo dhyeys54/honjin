@@ -385,7 +385,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     - `corral-backend-module.ts`: one `resourcesPath` constant instead of the repeated cast.
   - Verify: `npm test`, `npm run test:int`, typecheck, lint.
 
-- [ ] **T5.4 Changes: cheaper recompute, Reveal scrolls**
+- [x] **T5.4 Changes: cheaper recompute, Reveal scrolls**
   - Tests first: `common/changes.test.ts`: `sameGroups(a, b)` is true for equal results and false when a
     letter, a live flag or a file differs. `common/scm-change.test.ts`: `pickChange` behaviour unchanged.
   - Do:
@@ -500,3 +500,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.1 — a hidden project that vanished from disk stays listed (spec 03 rule 4): the service reuses `buildProjectList` instead of its own filter; E2E in add-remove.spec (144 unit)
 - 2026-09-29 T5.2 — a single click in the Projects tree previews a file (italic tab), a double click pins it; honours `workbench.list.openMode` (144 unit, +1 e2e)
 - 2026-09-29 T5.3 — workspace-map writes are serialised, stale Projects rebuilds are dropped, the herdr output listener cannot leak, missing-project checks run in parallel (145 unit, 11 int)
+- 2026-09-29 T5.4 — Changes recompute is one linear pass (`pickChanges`), lookups are O(1), views re-render only when the result changed; Open Changes reuses ChangesService. Reveal already scrolls (TreeWidget scrolls to the selection), so no change there (145 unit)

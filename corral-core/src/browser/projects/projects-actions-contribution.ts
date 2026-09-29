@@ -21,7 +21,7 @@ import { MessageService } from '@theia/core/lib/common/message-service';
 import { ScmService } from '@theia/scm/lib/browser/scm-service';
 import { ScmResource } from '@theia/scm/lib/browser/scm-provider';
 import { ScmContribution } from '@theia/scm/lib/browser/scm-contribution';
-import { pickChange } from '../../common/scm-change';
+import { ChangesService } from '../changes/changes-service';
 import { addProblem } from '../../common/project-list';
 
 export const ProjectsActions = {
@@ -59,6 +59,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     @inject(ScmService) protected readonly scm: ScmService;
     @inject(ScmContribution) protected readonly scmView: ScmContribution;
     @inject(MessageService) protected readonly messages: MessageService;
+    @inject(ChangesService) protected readonly changes: ChangesService;
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(ProjectsActions.TOGGLE_SHOW_HIDDEN, {
@@ -185,12 +186,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     /** The git change of the one selected file, if it has one: the menu item only shows for changed files. */
     protected selectedChange(): ScmResource | undefined {
         const node = this.selectedNode();
-        const repo = node && !DirNode.is(node) ? this.scm.findRepository(node.uri) : undefined;
-        if (!repo) {
-            return undefined;
-        }
-        const groups = repo.provider.groups.map(g => ({ id: g.id, resources: g.resources.map(r => ({ sourceUri: r.sourceUri.toString(), r })) }));
-        return pickChange(groups, node!.uri.toString())?.r;
+        return node && !DirNode.is(node) ? this.changes.resourceFor(node.uri.path.toString()) : undefined;
     }
 
     /** The Source Control view only shows the selected repository, so point it at this folder's repo first. */
