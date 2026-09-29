@@ -1,5 +1,5 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import { Command, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
+import { Command, Emitter, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import { Widget } from '@theia/core/lib/browser';
@@ -29,6 +29,7 @@ export const ProjectsActions = {
     COPY_PATH: { id: 'corral.projects.copyPath', label: 'Copy Path' } as Command,
     REVEAL: { id: 'corral.projects.revealInFinder', label: 'Reveal in Finder' } as Command,
     REFRESH: { id: 'corral.projects.refresh', label: 'Corral: Refresh Projects' } as Command,
+    COLLAPSE_ALL: { id: 'corral.projects.collapseAll', label: 'Corral: Collapse All Projects' } as Command,
     UNHIDE: { id: 'corral.projects.unhide', label: 'Unhide project' } as Command
 };
 
@@ -50,9 +51,13 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(ProjectsActions.TOGGLE_SHOW_HIDDEN, {
-            execute: () => this.widget?.model.toggleShowHidden(),
+            execute: () => {
+                this.widget?.model.toggleShowHidden();
+                this.eyeChanged.fire();
+            },
             isToggled: () => !!this.widget?.model.showHidden
         });
+        commands.registerCommand(ProjectsActions.COLLAPSE_ALL, { execute: () => this.widget?.model.collapseAll() });
         commands.registerCommand(ProjectsActions.COPY_PATH, {
             execute: () => this.clipboard.writeText(this.selectedPaths().join('\n')),
             isVisible: () => this.selectedPaths().length > 0
@@ -116,14 +121,20 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
             tooltip: 'Refresh projects', priority: 30, isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget
         });
         toolbar.registerItem({
-            id: ProjectsActions.TOGGLE_SHOW_HIDDEN.id,
-            command: ProjectsActions.TOGGLE_SHOW_HIDDEN.id,
-            icon: 'codicon codicon-eye',
-            tooltip: 'Show hidden projects',
-            priority: 20,
-            isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget
+            id: ProjectsActions.COLLAPSE_ALL.id, command: ProjectsActions.COLLAPSE_ALL.id, icon: 'codicon codicon-collapse-all',
+            tooltip: 'Collapse all projects', priority: 40, isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget
         });
+        // One item per state: the icon of a toolbar item is fixed, so the eye swaps for eye-closed while hidden projects are shown.
+        const eye = (id: string, icon: string, tooltip: string, shown: boolean) => toolbar.registerItem({
+            id, command: ProjectsActions.TOGGLE_SHOW_HIDDEN.id, icon, tooltip, priority: 20,
+            onDidChange: this.eyeChanged.event,
+            isVisible: (w: Widget | undefined) => w instanceof ProjectsWidget && !!w.model.showHidden === shown
+        });
+        eye(ProjectsActions.TOGGLE_SHOW_HIDDEN.id, 'codicon codicon-eye', 'Show hidden projects', false);
+        eye(ProjectsActions.TOGGLE_SHOW_HIDDEN.id + '.on', 'codicon codicon-eye-closed', 'Hide hidden projects', true);
     }
+
+    protected readonly eyeChanged = new Emitter<void>();
 
     protected get widget(): ProjectsWidget | undefined {
         return this.view.tryGetWidget();

@@ -51,6 +51,7 @@ test('first run asks for folders, fills the tree, and does not ask again', async
     const location = page.locator('.theia-LocationListPanel input');
     await location.fill(projectsDir);
     await location.press('Enter');
+    await expect(page.locator('.theia-FileTree, .dialogContent').getByText('alpha', { exact: true }).first()).toBeVisible({ timeout: 15_000 }); // navigation done; Choose earlier picks the previous folder
     await page.getByRole('button', { name: 'Choose', exact: true }).click();
 
     await expect(projects(page).locator('.theia-TreeNode', { hasText: /^alpha$/ })).toBeVisible({ timeout: 30_000 });

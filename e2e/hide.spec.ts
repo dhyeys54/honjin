@@ -19,6 +19,9 @@ test('hide removes a project, the eye shows it dimmed, unhide restores it', asyn
         await page.locator('.p-TabBar-toolbar [id="corral.projects.toggleShowHidden"], .theia-tabBar-toolbar [id="corral.projects.toggleShowHidden"], [id="corral.projects.toggleShowHidden"]').first().click();
         await expect(row(page, 'beta')).toBeVisible();
         await expect(row(page, 'beta')).toHaveClass(/corral-project-hidden/);
+        await expect(row(page, 'beta').locator('.codicon-eye-closed')).toBeVisible(); // spec 03: eye-off glyph on hidden rows
+        expect(await row(page, 'beta').evaluate(el => getComputedStyle(el).opacity)).toBe('0.5');
+        await expect(page.locator('[id="corral.projects.toggleShowHidden.on"]').first()).toBeVisible(); // the eye is now eye-closed
 
         await row(page, 'beta').click({ button: 'right' });
         await page.locator('.lm-Menu-itemLabel', { hasText: 'Unhide project' }).click();
@@ -45,4 +48,13 @@ test('with no roots the empty state offers Choose folders…', async ({ page }) 
         writeFileSync(tmp, original);
         renameSync(tmp, settingsFile());
     }
+});
+
+test('collapse all folds every expanded project', async ({ page }) => {
+    await page.goto('/');
+    await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
+    await row(page, 'alpha').dblclick();
+    await expect(row(page, 'src')).toBeVisible();
+    await page.locator('[id="corral.projects.collapseAll"]').first().click();
+    await expect(row(page, 'src')).toHaveCount(0);
 });

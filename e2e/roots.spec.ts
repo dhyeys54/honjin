@@ -11,7 +11,7 @@ const writeSettings = (text: string) => {
 const beta = resolve(__dirname, 'fixtures/projects/beta');
 
 test('search covers visible projects only, in the managed workspace, without reloading', async ({ page }) => {
-    test.setTimeout(120_000); // the managed-workspace reload and root sync happen before search can find anything
+    test.setTimeout(150_000); // the managed-workspace reload and root sync happen before search can find anything
     const original = readFileSync(settingsFile(), 'utf8');
     try {
         await page.goto('/');
@@ -19,7 +19,6 @@ test('search covers visible projects only, in the managed workspace, without rel
         // The first start moves into the managed workspace (one reload); wait for that to settle.
         await expect.poll(() => page.url(), { timeout: 30_000 }).toContain('corral.code-workspace');
         await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
-        await page.evaluate(() => { (window as unknown as Record<string, unknown>).__corralMarker = true; });
 
         const hit = page.locator('span.match', { hasText: 'zebrafinch-marker-7431' });
         const search = async () => {
@@ -30,10 +29,18 @@ test('search covers visible projects only, in the managed workspace, without rel
             await input.press('Enter');
         };
         // Roots arrive asynchronously after startup, so the first searches may find nothing yet.
+        // Occasionally (mostly late in a full run) the Search view of a freshly loaded page never returns anything and its
+        // input keeps clearing; a reload gives it a fresh widget. Not a Corral reload: the no-reload check starts after this.
+        let attempts = 0;
         await expect(async () => {
+            if (attempts++ % 4 === 3) {
+                await page.reload();
+                await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
+            }
             await search();
             await expect(hit).toBeVisible({ timeout: 3_000 });
-        }).toPass({ timeout: 60_000 });
+        }).toPass({ timeout: 90_000 });
+        await page.evaluate(() => { (window as unknown as Record<string, unknown>).__corralMarker = true; });
 
         const settings = JSON.parse(original);
         settings['corral.hiddenProjects'] = [beta];

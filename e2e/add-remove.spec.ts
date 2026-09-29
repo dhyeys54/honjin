@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 
 const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
+const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}(missing)?$`) });
 const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
 const toolbar = (page: Page, id: string) => page.locator(`[id="${id}"]`).first();
 
@@ -39,6 +39,7 @@ test('add a folder outside the scan root, remove it, then see a deleted one as m
         rmSync(outside, { recursive: true });
         await toolbar(page, 'corral.projects.refresh').click();
         await expect(row(page, 'gamma')).toHaveClass(/corral-project-missing/, { timeout: 20_000 });
+        await expect(row(page, 'gamma').locator('[data-testid="corral-project-flag"]')).toHaveText('missing');
         await expect(row(page, 'gamma').locator('[data-testid="corral-new-tab"]')).toBeDisabled();
     } finally {
         const tmp = settingsFile() + '.tmp';

@@ -43,3 +43,13 @@
     opacity: 0.4;
     cursor: default;
 }
+
+.corral-projects .corral-project-flag {
+    margin-left: auto;
+    padding: 0 4px;
+    font-size: 11px;
+}
+
+.corral-projects .corral-project-flag + .corral-new-tab {
+    margin-left: 0;
+}

@@ -77,7 +77,13 @@ export class ProjectsWidget extends FileTreeWidget {
             return decorations;
         }
         const label = this.labelProvider.getName(node.uri);
-        return React.createElement(React.Fragment, undefined, decorations,
+        const path = node.uri.path.toString();
+        const flag = this.model.missingPaths.has(path)
+            ? React.createElement('span', { className: 'corral-project-flag', 'data-testid': 'corral-project-flag' }, 'missing')
+            : this.model.hiddenPaths.has(path)
+                ? React.createElement('span', { className: 'corral-project-flag codicon codicon-eye-closed', title: 'Hidden', 'data-testid': 'corral-project-flag' })
+                : undefined;
+        return React.createElement(React.Fragment, undefined, decorations, flag,
             React.createElement('button', {
                 className: 'corral-new-tab codicon codicon-add',
                 title: 'New herdr tab here (⌥⌘T)',
