@@ -73,7 +73,8 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
             shellArgs: session ? ['--session', session] : [],
             cwd: home,
             strictEnv: true,
-            env: Object.fromEntries(HERDR_ENV_TO_CLEAR.map(k => [k, ''])),
+            // strictEnv leaves HOME out, and without it herdr looks for its socket in $TMPDIR: a different server than the backend's CLI calls reach.
+            env: { ...Object.fromEntries(HERDR_ENV_TO_CLEAR.map(k => [k, ''])), HOME: home },
             destroyTermOnClose: true,
             isTransient: true
         });

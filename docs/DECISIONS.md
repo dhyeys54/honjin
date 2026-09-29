@@ -120,3 +120,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** The title comes from a `WindowTitleContribution` (`Corral — <project>`, plain `Corral` before any project is focused). The contribution holds no injected services; a separate `FrontendApplicationContribution` listens to the editor manager and pushes updates.
 **Why.** `WindowTitleService` resolves its contributions while initialising, and `EditorManager` reaches back to it, which blanked the app with a DI cycle.
 **Consequences.** Rescan on startup, Refresh and `corral.scanRoots` changes were already implemented in T1.14/T2.2; T2.5 only added tests for them.
+
+## D23 — herdr key passthrough and terminal HOME (T2.6)
+**Decision.** No keybinding changes were needed: Theia already passes `ctrl+b` and its follow-up keys to the terminal. The herdr terminal now sets `HOME` explicitly in its environment.
+**Why.** With `strictEnv` the terminal had no `HOME`, so herdr resolved its socket under `$TMPDIR` and the IDE client attached to a different server than the backend's CLI calls (new tabs, status). The key test exposed it.
+**Consequences.** `ctrl+b c` in the test asks for a tab name; the test presses Enter to accept the default.

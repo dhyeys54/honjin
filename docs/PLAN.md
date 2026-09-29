@@ -210,7 +210,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     after opening `alpha/src/index.ts`. Clean up `gamma` in `afterEach`.
   - Verify: `npm run test:e2e -- rescan`.
 
-- [ ] **T2.6 herdr key passthrough**
+- [x] **T2.6 herdr key passthrough**
   - Spec: 02 §Key handling.
   - Tests first: `e2e/herdr-keys.spec.ts`: with the herdr terminal focused, the herdr prefix `ctrl+b` followed by
     `c` (herdr's default `new_tab` = `prefix+c`) creates a tab (checked with `tab list`); `⌘P`
@@ -287,3 +287,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T2.3 — Set startup command… (QuickInput, empty = plain shell), Use global startup command, Remove from herdr mapping (forgetProject RPC, workspace stays) (2 unit + 1 E2E)
 - 2026-09-29 T2.4 — Tree context menu: New File…/New Folder…/Rename…/Delete (Theia WorkspaceCommands), Copy Path, Reveal in Finder (backend `open -R`); tree refreshes on disk changes (1 unit + 1 E2E)
 - 2026-09-29 T2.5 — Rescan verified (Refresh button, scanRoots change); window title `Corral — <project>` from the active editor or last + click (3 E2E)
+- 2026-09-29 T2.6 — herdr prefix (ctrl+b c) and ⌘P verified from the focused terminal; fixed the terminal env missing HOME, which attached the in-IDE client to a different herdr server than the backend's (2 E2E)
