@@ -433,7 +433,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     public API does it; otherwise amend spec 02 in this commit.
   - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/panels.spec.ts e2e/shell.spec.ts`.
 
-- [ ] **T5.9 Stage 4 test gaps**
+- [x] **T5.9 Stage 4 test gaps**
   - Tests first, all in `e2e/changes-view.spec.ts`:
     - a saved layout with Projects outside the container is fixed up on reload (C14);
     - Open File opens the plain editor, Copy Path puts the path on the clipboard (C10);
@@ -508,3 +508,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.6 — an unreadable scan root is reported once in the Output channel "Corral" (warnings come back from `list()` over RPC; `@theia/output` declared, D36) (148 unit, 11 int)
 - 2026-09-29 T5.7 — Projects tree keeps expanded folders and show-hidden across a restart (widget state holds ids only; re-applied after the first list) (+1 e2e)
 - 2026-09-29 T5.8 — Reset Layout sets the right panel to 300 px and the left to reopen at 280 px; the 50/50 main split is only the initial split (spec 02 amended, D36) (+1 e2e)
+- 2026-09-29 T5.9 — Changes E2E covers the old-layout fix-up (C14, checked red with the fix-up off), Open File / Copy Path (C10), Enter, project toggle and collapsed-through-refresh (C9), hidden projects (C1); nothing needed fixing (+2 e2e)

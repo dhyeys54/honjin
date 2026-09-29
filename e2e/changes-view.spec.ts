@@ -106,3 +106,90 @@ test('Changes lists uncommitted files by project, marks live ones, opens diffs a
         rmSync(join(repo, '..'), { recursive: true, force: true });
     }
 });
+
+// A repo with one modified and one untracked file, listed through corral.extraProjects.
+function makeRepo(): string {
+    const repo = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-git-')), 'delta');
+    mkdirSync(repo);
+    git(repo, 'init', '-q');
+    writeFileSync(join(repo, 'a.txt'), 'one\n');
+    git(repo, 'add', '.');
+    git(repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'init');
+    writeFileSync(join(repo, 'a.txt'), 'two\n');
+    writeFileSync(join(repo, 'new.txt'), 'new\n');
+    return repo;
+}
+
+test('C9, C10, C1: keyboard and toggles, Open File, Copy Path, hidden projects', async ({ page, context }) => {
+    test.setTimeout(120_000);
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const original = readFileSync(settingsFile(), 'utf8');
+    const repo = makeRepo();
+    try {
+        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [repo] });
+        await page.goto('/');
+        const project = changeRow(page, 'delta');
+        await expect(project.locator('.corral-change-count')).toHaveText('2', { timeout: 60_000 });
+
+        // C9: a click on the project row toggles it, and the state survives a refresh
+        await project.click();
+        await expect(changeRow(page, 'a.txt')).toHaveCount(0);
+        writeFileSync(join(repo, 'third.txt'), 'x\n');
+        await expect(project.locator('.corral-change-count')).toHaveText('3', { timeout: 30_000 });
+        await expect(changeRow(page, 'a.txt')).toHaveCount(0);
+        await project.click();
+        await expect(changeRow(page, 'a.txt')).toBeVisible();
+
+        // C9: Enter on a file row opens its diff
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Enter');
+        await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 15_000 });
+
+        // C10: Open File opens the plain editor; Copy Path copies the absolute path
+        const item = (label: string) => page.locator('.lm-Menu-itemLabel', { hasText: label });
+        await changeRow(page, 'new.txt').click({ button: 'right' });
+        await item('Open File').click();
+        await expect(page.locator('.lm-TabBar-tab', { hasText: 'new.txt', hasNotText: 'Working Tree' })).toBeVisible({ timeout: 15_000 });
+        await changeRow(page, 'new.txt').click({ button: 'right' });
+        await item('Copy Path').click();
+        await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(join(repo, 'new.txt'));
+
+        // C1: a hidden project's changes are not listed
+        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [repo], 'corral.hiddenProjects': [repo] });
+        await expect(changeRow(page, 'delta')).toHaveCount(0, { timeout: 30_000 });
+    } finally {
+        writeSettings(JSON.parse(original));
+        rmSync(join(repo, '..'), { recursive: true, force: true });
+    }
+});
+
+test('C14: a saved layout with Projects outside the container is moved into it', async ({ page }) => {
+    // Theia stores the layout on unload, but only listens for unload once the preload screen is gone; the first
+    // load may still reload to open the workspace, hence the retry. The layout is edited from a same-origin page
+    // that isn't Theia, so nothing overwrites it.
+    await expect(async () => {
+        await page.goto('/');
+        await expect(page.locator('[data-testid="corral-changes"]')).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('.theia-preload')).toHaveCount(0);
+        await page.goto('/favicon.ico');
+        // Rewrite it the way it looked before spec 09: Projects as its own right-panel tab.
+        expect(await page.evaluate(() => {
+            const key = Object.keys(localStorage).find(k => k.endsWith(':layout'));
+            const layout = key && JSON.parse(JSON.parse(localStorage.getItem(key)!));
+            const item = layout?.rightPanel.items.find((i: { widget?: { constructionOptions: { factoryId: string } } }) =>
+                i.widget?.constructionOptions.factoryId === 'corral-projects-container');
+            if (!item) {
+                return false;
+            }
+            item.widget = { constructionOptions: { factoryId: 'corral-projects' }, innerWidgetState: '{}' };
+            localStorage.setItem(key!, JSON.stringify(JSON.stringify(layout)));
+            return true;
+        })).toBe(true);
+    }).toPass({ timeout: 60_000 });
+    await page.goto('/');
+    const panel = page.locator('#theia-right-content-panel');
+    await expect(panel.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
+    await expect(panel.locator('[data-testid="corral-changes"]')).toBeVisible();
+    await expect(page.locator('#shell-tab-corral-projects-container')).toBeVisible();
+    await expect(page.locator('#shell-tab-corral-projects')).toHaveCount(0);
+});
