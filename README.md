@@ -81,7 +81,13 @@ human checkpoint). Tests: `npm test` (unit), `npm run test:int` (real herdr, iso
 
 ## Screenshots
 
-_Coming in plan task T3.4._
+![Corral: the editor, a herdr terminal with two Claude Code tabs (api-server and web-client), and the Projects tree](docs/screenshots/hero.png)
+
+Editor, herdr terminal and Projects tree in one window: three projects, two of them with their own herdr tab
+running `claude`. The screenshot is the real app, unedited. The `claude` trust prompt is Claude Code's own
+first-run question for a new folder.
+
+Before/after shots of the chrome polish pass are in [`docs/screenshots/`](docs/screenshots/).
 
 ## License
 

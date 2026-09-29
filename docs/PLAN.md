@@ -241,7 +241,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     in Help → About is "Corral".
   - Verify: `npm run test:e2e -- branding`.
 
-- [ ] **T3.4 README screenshots and taste check**
+- [x] **T3.4 README screenshots and taste check**
   - Do: capture the hero screenshot (4 panels, 3 projects, 2 herdr tabs running) with the Playwright MCP; apply the
     `design-taste-frontend` pre-flight to the README presentation; update README §Screenshots.
   - Verify: the images render in the README preview.
@@ -292,3 +292,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T3.1 — Corral Dark theme (all tokens), JetBrains Mono bundled, font defaults (117 unit + 1 E2E)
 - 2026-09-29 T3.2 — one critique round + one fix batch (flat selection bar, quiet notification buttons); before/after shots in docs/screenshots (27 E2E)
 - 2026-09-29 T3.3 — favicon link injected at startup, About shows Corral (2 E2E)
+- 2026-09-29 T3.4 — README hero screenshot (3 projects, 2 herdr tabs, real app) and Screenshots section
