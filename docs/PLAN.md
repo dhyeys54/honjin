@@ -221,7 +221,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 ## Stage 3 — Look, feel, ship
 
-- [ ] **T3.1 Corral Dark theme and fonts**
+- [x] **T3.1 Corral Dark theme and fonts**
   - Spec: 06 §Corral Dark theme, §Typography; DESIGN.md.
   - Tests first: `browser/theme/corral-dark-theme.test.ts`: the theme JSON has every required workbench key group
     from spec 06 and all 16 ANSI colours; every colour value is a DESIGN.md token (the test imports the token
@@ -289,3 +289,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T2.5 — Rescan verified (Refresh button, scanRoots change); window title `Corral — <project>` from the active editor or last + click (3 E2E)
 - 2026-09-29 T2.6 — herdr prefix (ctrl+b c) and ⌘P verified from the focused terminal; fixed the terminal env missing HOME, which attached the in-IDE client to a different herdr server than the backend's (2 E2E)
 - 2026-09-29 G2 — spec-reviewer run; fixed collapse-all, eye/eye-closed toggle, hidden/missing row flags, E2E races; leftovers in FOR-REVIEW #8–9 (unit 102, int 11, e2e 26)
+- 2026-09-29 T3.1 — Corral Dark theme (all tokens), JetBrains Mono bundled, font defaults (117 unit + 1 E2E)

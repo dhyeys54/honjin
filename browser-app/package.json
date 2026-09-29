@@ -42,13 +42,17 @@
       "config": {
         "applicationName": "Corral",
         "defaultTheme": {
-          "light": "dark",
-          "dark": "dark"
+          "light": "corral-dark",
+          "dark": "corral-dark"
         },
         "defaultIconTheme": "theia-file-icons",
         "preferences": {
           "editor.enablePreview": true,
           "terminal.integrated.enablePersistentSessions": false,
+          "terminal.integrated.fontFamily": "JetBrains Mono, SF Mono, Menlo, monospace",
+          "terminal.integrated.fontSize": 13,
+          "editor.fontFamily": "JetBrains Mono, SF Mono, Menlo, monospace",
+          "editor.fontSize": 13,
           "workbench.startupEditor": "none",
           "security.workspace.trust.enabled": false
         }

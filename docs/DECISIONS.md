@@ -125,3 +125,7 @@ is titled "Debug", not "Run and Debug".
 **Decision.** No keybinding changes were needed: Theia already passes `ctrl+b` and its follow-up keys to the terminal. The herdr terminal now sets `HOME` explicitly in its environment.
 **Why.** With `strictEnv` the terminal had no `HOME`, so herdr resolved its socket under `$TMPDIR` and the IDE client attached to a different server than the backend's CLI calls (new tabs, status). The key test exposed it.
 **Consequences.** `ctrl+b c` in the test asks for a tab name; the test presses Enter to accept the default.
+
+## D24 — Theme registered from JSON via `registerParsedTheme` (T3.1)
+
+The theme JSON is imported by the frontend and registered in `initialize()` (before Theia applies `defaultTheme`), rather than loaded from a URI. Fonts: Regular + Medium woff2 of JetBrains Mono v2.304 (OFL.txt alongside). `@theia/monaco` is added to corral-core's dependencies (already installed by both apps at the same version). Editor/terminal font defaults live in both apps' `preferences`. Changing a colour = edit DESIGN.md, `design-tokens.ts` and the theme JSON; unit tests keep the three in step.

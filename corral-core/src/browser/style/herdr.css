@@ -1,3 +1,20 @@
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-weight: 400;
+    src: url('./fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-weight: 500;
+    src: url('./fonts/JetBrainsMono-Medium.woff2') format('woff2');
+}
+
+:root {
+    --theia-ui-font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    --theia-ui-font-size1: 12px;
+}
+
 .corral-herdr-overlay {
     display: flex;
     align-items: center;

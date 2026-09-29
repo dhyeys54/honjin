@@ -20,9 +20,12 @@ import { NewTabContribution } from './herdr/new-tab-contribution';
 import { ProjectsContribution } from './projects/projects-contribution';
 import { createProjectsWidget } from './projects/projects-container';
 import { PROJECTS_VIEW_ID } from './projects/projects-widget';
+import { CorralThemeContribution } from './theme/corral-theme-contribution';
 import { bindCorralPreferences } from './corral-preferences';
 
 export default new ContainerModule(bind => {
+    bind(CorralThemeContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(CorralThemeContribution);
     bind(CorralCoreContribution).toSelf();
     bindCorralPreferences(bind);
 
