@@ -4,16 +4,14 @@ import { CompositeTreeNode, OpenerService, TreeNode, open } from '@theia/core/li
 import { FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { EditorPlacementGuard } from '../editor-placement-guard';
-import { CorralProjectService } from '../../common/protocol';
-import { ProjectEntry, buildProjectList } from '../../common/project-list';
-import { CorralPreferences } from '../corral-preferences';
+import { ProjectEntry } from '../../common/project-list';
+import { ProjectListService } from './project-list-service';
 import { ProjectsTree } from './projects-tree';
 
 @injectable()
 export class ProjectsModel extends FileTreeModel {
 
-    @inject(CorralProjectService) protected readonly projectService: CorralProjectService;
-    @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
+    @inject(ProjectListService) protected readonly projectList: ProjectListService;
     @inject(ProjectsTree) protected readonly projectsTree: ProjectsTree;
     @inject(OpenerService) protected readonly openers: OpenerService;
     @inject(EditorPlacementGuard) protected readonly guard: EditorPlacementGuard;
@@ -22,14 +20,18 @@ export class ProjectsModel extends FileTreeModel {
     showHidden = false;
     entries: ProjectEntry[] = [];
 
+    protected override init(): void {
+        super.init();
+        this.toDispose.push(this.projectList.onDidChange(() => this.rebuild()));
+        this.rebuild();
+    }
+
     async reload(): Promise<void> {
-        await this.prefs.ready;
-        const extra = this.prefs['corral.extraProjects'];
-        const hidden = this.prefs['corral.hiddenProjects'];
-        const { scanned, missing } = await this.projectService.list({
-            scanRoots: this.prefs['corral.scanRoots'], extra, hidden
-        });
-        this.entries = buildProjectList({ scanned, extra, hidden, showHidden: this.showHidden, missing });
+        await this.projectList.reload();
+    }
+
+    protected async rebuild(): Promise<void> {
+        this.entries = this.projectList.entries(this.showHidden);
         const root: CompositeTreeNode = this.projectsTree.createRoot();
         const nodes = await Promise.all(this.entries.filter(e => !e.missing).map(async e => {
             try {

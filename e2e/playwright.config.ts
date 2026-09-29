@@ -1,12 +1,12 @@
 import { defineConfig } from '@playwright/test';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'fs';
+import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 
 // Workers re-evaluate this file, so compute once and let them inherit through env.
 process.env.CORRAL_E2E_SESSION ??= 'corral-test-e2e-' + process.pid;
 if (!process.env.CORRAL_E2E_CONFIG_DIR) {
-    const dir = join(mkdtempSync(join(tmpdir(), 'corral-e2e-')), 'corral-config');
+    const dir = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-e2e-')), 'corral-config');
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'settings.json'), JSON.stringify({
         'corral.scanRoots': [resolve(__dirname, 'fixtures/projects')],

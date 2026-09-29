@@ -32,9 +32,18 @@ export class CorralProjectServiceImpl implements CorralProjectService {
         return { scanned, missing };
     }
 
-    /** Creates the managed workspace file if absent; the frontend syncs its roots (T1.14). */
+    async workspaceFile(): Promise<string> {
+        await (this.ensured ??= this.ensureWorkspaceFile());
+        return join(await this.dir(), 'corral.code-workspace');
+    }
+
+    protected dir(): Promise<string> {
+        return typeof this.configDir === 'string' ? Promise.resolve(this.configDir) : this.configDir();
+    }
+
+    /** Creates the managed workspace file if absent; the frontend syncs its roots. */
     async ensureWorkspaceFile(): Promise<void> {
-        const dir = typeof this.configDir === 'string' ? this.configDir : await this.configDir();
+        const dir = await this.dir();
         await fs.mkdir(dir, { recursive: true });
         try {
             await fs.writeFile(join(dir, 'corral.code-workspace'), JSON.stringify({ folders: [], settings: {} }), { flag: 'wx' });

@@ -1,3 +1,4 @@
+import { ProjectListService } from '../projects/project-list-service';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
 import { Command, CommandContribution, CommandRegistry, MessageService } from '@theia/core/lib/common';
@@ -50,14 +51,15 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         return node.fileStat.isDirectory ? node.uri : node.uri.parent;
     }
 
+    @inject(ProjectListService) protected readonly projectList: ProjectListService;
+
     protected async newTab(target?: URI): Promise<void> {
         const uri = target ?? this.folderFromFocus();
-        const model = this.projects.tryGetWidget()?.model;
-        if (!uri || !model) {
+        if (!uri) {
             return;
         }
         const folderPath = fileURLToPath(uri.toString());
-        const projects = model.entries.map(e => e.path);
+        const projects = this.projectList.entries(true).map(e => e.path);
         const projectPath = owningProject(folderPath, projects);
         if (!projectPath) {
             return;

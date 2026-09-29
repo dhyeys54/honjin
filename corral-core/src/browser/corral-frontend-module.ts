@@ -4,6 +4,8 @@ import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution } from '@theia/core/lib/common';
 import { FrontendApplicationContribution, KeybindingContribution, WidgetFactory, bindViewContribution } from '@theia/core/lib/browser';
 import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/service-connection-provider';
+import { ProjectListService } from './projects/project-list-service';
+import { WorkspaceRootsSync } from './workspace-roots-sync';
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
 import { CorralCoreContribution } from './corral-core-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
@@ -26,6 +28,9 @@ export default new ContainerModule(bind => {
     bind(FrontendApplicationContribution).toService(HerdrTerminalContribution);
     bind(CommandContribution).toService(HerdrTerminalContribution);
 
+    bind(ProjectListService).toSelf().inSingletonScope();
+    bind(WorkspaceRootsSync).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(WorkspaceRootsSync);
     bind(CorralProjectService).toDynamicValue(ctx =>
         ServiceConnectionProvider.createProxy<CorralProjectService>(ctx.container, CORRAL_PROJECTS_PATH)
     ).inSingletonScope();

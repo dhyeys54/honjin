@@ -47,3 +47,12 @@ describe('CorralProjectServiceImpl.list', () => {
         expect(readFileSync(file, 'utf8')).toBe('{"folders":[{"path":"/x"}]}');
     });
 });
+
+describe('CorralProjectServiceImpl.workspaceFile', () => {
+    it('creates the managed workspace file and returns its path', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'corral-ws-'));
+        const path = await new CorralProjectServiceImpl(dir, () => undefined).workspaceFile();
+        expect(path).toBe(join(dir, 'corral.code-workspace'));
+        expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ folders: [], settings: {} });
+    });
+});

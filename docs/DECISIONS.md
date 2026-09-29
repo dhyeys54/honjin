@@ -84,3 +84,9 @@ is titled "Debug", not "Run and Debug".
 **Decision.** The "OS folder picker" is Theia's own file dialog (`FileDialogService`), which works the same in the browser and Electron. `corral.projects.chooseScanRoots` asks for confirmation (old vs new roots) before it replaces the roots. `first-run.spec.ts` starts its own backend on port 3110 with an empty config, because the shared E2E backend is seeded.
 **Why.** A native dialog cannot be driven from Playwright and would differ between the two targets.
 **Consequences.** If you want the native macOS dialog in Electron, swap `pickFolders()` only.
+
+## D16 — managed workspace, trust prompt, window title (T1.14)
+**Decision.** On first start Corral opens `<configDir>/corral.code-workspace` (one page reload); afterwards roots are added/removed live. `security.workspace.trust.enabled` is `false` in both apps' default preferences. `shell.spec.ts` now matches the title `/corral/i`, because Theia titles the window after the workspace file name until T2.5 sets the real title. The E2E config dir uses `realpathSync(tmpdir())`, since macOS `/var` symlinks stopped Theia seeing external settings edits.
+**Why.** Without trust off, Theia shows a "trust this folder" dialog on every start of a workspace made of the user's own projects.
+**Consequences.** If you want trust prompts back, remove the preference from `browser-app/package.json` and `electron-app/package.json`.
+

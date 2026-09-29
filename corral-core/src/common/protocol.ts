@@ -17,6 +17,8 @@ export interface ProjectScanResult {
 }
 export interface CorralProjectService {
     list(request: ProjectScanRequest): Promise<ProjectScanResult>;
+    /** Absolute path of the managed `corral.code-workspace`; created if missing. */
+    workspaceFile(): Promise<string>;
 }
 
 export const CorralHerdrService = Symbol('CorralHerdrService');

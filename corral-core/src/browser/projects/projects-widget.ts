@@ -5,7 +5,6 @@ import React = require('@theia/core/shared/react');
 import { CommandService } from '@theia/core/lib/common';
 import { ContextMenuRenderer, NodeProps, TreeNode, TreeProps } from '@theia/core/lib/browser';
 import { DirNode, FileTreeWidget } from '@theia/filesystem/lib/browser';
-import { CorralPreferences } from '../corral-preferences';
 import { ProjectsModel } from './projects-model';
 
 export const PROJECTS_VIEW_ID = 'corral-projects';
@@ -14,7 +13,6 @@ export const NEW_TAB_COMMAND_ID = 'corral.herdr.newTab';
 @injectable()
 export class ProjectsWidget extends FileTreeWidget {
 
-    @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
     @inject(CommandService) protected readonly commandService: CommandService;
 
     constructor(
@@ -36,12 +34,6 @@ export class ProjectsWidget extends FileTreeWidget {
     protected override init(): void {
         super.init();
         this.model.reload();
-        const projectKeys = ['corral.scanRoots', 'corral.extraProjects', 'corral.hiddenProjects'];
-        this.toDispose.push(this.prefs.onPreferenceChanged(e => {
-            if (projectKeys.includes(e.preferenceName)) {
-                this.model.reload();
-            }
-        }));
     }
 
     // The + button of every directory row; CSS shows it on hover and keyboard focus.

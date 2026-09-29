@@ -159,7 +159,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `corral.firstRunCompleted`; after a restart the picker doesn't show.
   - Verify: `npm test && npm run test:e2e -- first-run`.
 
-- [ ] **T1.14 Workspace roots sync and the managed workspace**
+- [x] **T1.14 Workspace roots sync and the managed workspace**
   - Spec: 03 §Roots sync, 01 §Other shell behaviour (managed workspace), D6.
   - Tests first: `common/roots-diff.test.ts` (add/remove sets; order-insensitive; no-op when equal).
     `e2e/roots.spec.ts`: the workspace in use is `<configDir>/corral.code-workspace`; Search (`⇧⌘F`) for a string
@@ -280,3 +280,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.11 — + button on every directory row, corral.herdr.newTab (startup command, retry when the server is down, error notification), ⌥⌘T (2 E2E)
 - 2026-09-29 T1.12 — placementFor/needsMove (common), EditorPlacementGuard moves foreign widgets out of herdr's tab bar; replaces D12's interim rule (6 unit + 1 E2E)
 - 2026-09-29 T1.13 — first run: Theia folder dialog, scan roots stored with ~, firstRunCompleted, corral.projects.chooseScanRoots with confirmation; tree reloads on pref change (8 unit + 1 E2E)
+- 2026-09-29 T1.14 — ProjectListService (single project list), WorkspaceRootsSync moves into <config>/corral.code-workspace and diffs roots without reloading; search covers visible projects only (5 unit + 1 E2E)
