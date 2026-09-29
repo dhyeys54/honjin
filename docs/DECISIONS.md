@@ -64,3 +64,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** (1) The terminal starts with `strictEnv: true` and empty `HERDR_*` values, because Theia merges `process.env` twice and herdr refuses to nest. (2) The widget is opened before `start()`, otherwise herdr aborts with "zero-sized grid". (3) Detach key is `prefix+q`, not `prefix+d` (spec 04 corrected). (4) Theia 1.76 disposes a terminal widget after its process exits, so "herdr exited" / "herdr not found" is a separate placeholder tab with the action button. (5) E2E checks the client via `pgrep`, since xterm paints on a canvas with no readable text. (6) Placement is `main` / `split-right`; "own pinned group" is not done.
 **Why.** Each was found by failing tests against real herdr 0.9.1 and Theia 1.76.
 **Consequences.** All are in `herdr-terminal-contribution.ts`, easy to change.
+
+## D12 — Projects view scope and interim editor placement (T1.10)
+**Decision.** The tree is built on `FileTree`/`FileTreeModel` with a synthetic invisible root. Missing projects are left out of the tree for now (they return with the toolbar/context menu tasks). Opening a file uses a small `editorPlacement()` in `ProjectsModel`: after the last editor, else split-left of the herdr tab. `corral.resetLayout` only reopens Projects and collapses the left and bottom panels. `@theia/editor` and `@theia/filesystem` were declared in `corral-core` (already installed, same version).
+**Why.** Without it Theia opens editors in the herdr tab's group. The general guard is T1.12, which will replace `editorPlacement()`.
+**Consequences.** Remove `editorPlacement()` when T1.12 lands.

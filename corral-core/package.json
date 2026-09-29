@@ -12,6 +12,8 @@
   ],
   "dependencies": {
     "@theia/core": "1.76.0",
+    "@theia/editor": "1.76.0",
+    "@theia/filesystem": "1.76.0",
     "@theia/terminal": "1.76.0"
   },
   "devDependencies": {

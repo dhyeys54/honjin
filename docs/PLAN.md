@@ -125,7 +125,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `corral.herdr.reattach`; `resolveBinary()` on the backend service.
   - Verify: `npm run build:browser && npm run test:e2e -- herdr-terminal`.
 
-- [ ] **T1.10 Projects view (read-only tree)**
+- [x] **T1.10 Projects view (read-only tree)**
   - Spec: 03 §The tree widget (no toolbar or context menu yet), 02 §Default layout.
   - Tests first: `e2e/projects.spec.ts`: the right panel shows the Projects view with roots `alpha` and `beta` (not
     `.hidden`), sorted; expanding `alpha` shows `src`; clicking `src/index.ts` opens an editor **in the left half**
@@ -276,3 +276,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.7 — workspace map store, resolveWorkspace, CorralHerdrServiceImpl (per-project serialised openTab), backend module + RPC binding (17 unit + 1 int tests)
 - 2026-09-29 T1.8 — scanProjects, CorralProjectServiceImpl (missing, ~ expansion, managed corral.code-workspace created on first list), RPC bound (4 int + 4 unit tests)
 - 2026-09-29 T1.9 — herdr terminal tab in main area (non-closable, env cleared, opens before start), exited/not-found placeholder tab with Reattach, R15 persistence (4 E2E)
+- 2026-09-29 T1.10 — Projects view (FileTree on a synthetic root of project DirNodes) in the right panel, default layout + corral.resetLayout, files open left of herdr (3 E2E)
