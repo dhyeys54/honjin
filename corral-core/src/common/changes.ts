@@ -1,4 +1,5 @@
 import { owningProject } from './startup-command';
+import { trimSlash } from './paths';
 import { pickChanges } from './scm-change';
 
 /** How long a written file counts as "being changed now" (spec 09 C7). */
@@ -19,35 +20,32 @@ export function changeKind(letter: string, strikeThrough?: boolean): ChangeKind 
     return letter === '!' ? 'conflict' : 'modified';
 }
 
-const trimSlash = (p: string) => p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p;
-
 /** C1–C7: the listed changes of the visible projects, in root order, with the live flags. */
-export function groupChanges(roots: string[], changes: ChangeInput[], writes: ReadonlyMap<string, number>,
-    now: number, liveMs = LIVE_MS): ChangeGroup[] {
+export function groupChanges(roots: string[], changes: ChangeInput[], writes: ReadonlyMap<string, number>, now: number): ChangeGroup[] {
     // C4: pickChange owns the "working tree beats index" order, so a file in two groups is one row.
     const byGroup = new Map<string, { id: string, resources: (ChangeInput & { sourceUri: string })[] }>();
-    for (const c of changes) {
-        const g = byGroup.get(c.group) ?? { id: c.group, resources: [] };
-        g.resources.push({ ...c, sourceUri: c.path });
-        byGroup.set(c.group, g);
+    for (const change of changes) {
+        const group = byGroup.get(change.group) ?? { id: change.group, resources: [] };
+        group.resources.push({ ...change, sourceUri: change.path });
+        byGroup.set(change.group, group);
     }
     const winners = pickChanges([...byGroup.values()]).values();
 
     const perProject = new Map<string, ChangeFile[]>();
-    for (const w of winners) {
-        const project = owningProject(w.path, roots);
+    for (const winner of winners) {
+        const project = owningProject(winner.path, roots);
         if (project === undefined) {
             continue;
         }
-        const letter = w.letter ?? 'M';
-        const written = writes.get(w.path);
+        const letter = winner.letter ?? 'M';
+        const written = writes.get(winner.path);
         const files = perProject.get(project) ?? [];
         files.push({
-            path: w.path,
-            rel: w.path.slice(trimSlash(project).length).replace(/^\//, ''),
+            path: winner.path,
+            rel: winner.path.slice(trimSlash(project).length).replace(/^\//, ''),
             letter,
-            kind: changeKind(letter, w.strikeThrough),
-            live: written !== undefined && now - written < liveMs
+            kind: changeKind(letter, winner.strikeThrough),
+            live: written !== undefined && now - written < LIVE_MS
         });
         perProject.set(project, files);
     }
@@ -60,26 +58,26 @@ export function groupChanges(roots: string[], changes: ChangeInput[], writes: Re
 /** Every folder that contains a live file, up to and including its project. */
 export function liveFolders(groups: ChangeGroup[]): Set<string> {
     const folders = new Set<string>();
-    for (const g of groups) {
-        for (const f of g.files.filter(f => f.live)) {
-            let dir = f.path;
-            while (dir.length > g.project.length) {
+    for (const group of groups) {
+        for (const file of group.files.filter(f => f.live)) {
+            let dir = file.path;
+            while (dir.length > group.project.length) {
                 dir = dir.slice(0, dir.lastIndexOf('/'));
-                if (dir.length >= g.project.length) {
+                if (dir.length >= group.project.length) {
                     folders.add(dir);
                 }
             }
-            folders.add(g.project);
+            folders.add(group.project);
         }
     }
     return folders;
 }
 
 /** When the next live mark runs out, so the view can re-render then (C8). */
-export function nextExpiry(writes: ReadonlyMap<string, number>, now: number, liveMs = LIVE_MS): number | undefined {
+export function nextExpiry(writes: ReadonlyMap<string, number>, now: number): number | undefined {
     let next: number | undefined;
-    for (const w of writes.values()) {
-        const at = w + liveMs;
+    for (const written of writes.values()) {
+        const at = written + LIVE_MS;
         if (at > now && (next === undefined || at < next)) {
             next = at;
         }

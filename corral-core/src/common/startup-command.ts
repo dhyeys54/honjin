@@ -1,10 +1,11 @@
+import { isInside } from './paths';
 import type { ProjectOverride } from './preferences-schema';
 
 /** The longest project equal to `folderPath` or a path-boundary prefix of it. */
 export function owningProject(folderPath: string, projects: string[]): string | undefined {
     let best: string | undefined;
     for (const project of projects) {
-        const owns = folderPath === project || folderPath.startsWith(project.endsWith('/') ? project : project + '/');
+        const owns = folderPath === project || isInside(folderPath, project);
         if (owns && (best === undefined || project.length > best.length)) {
             best = project;
         }

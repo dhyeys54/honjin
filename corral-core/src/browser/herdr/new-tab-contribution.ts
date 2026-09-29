@@ -3,8 +3,8 @@ import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
 import { Command, CommandContribution, CommandRegistry, MessageService } from '@theia/core/lib/common';
 import { ApplicationShell, KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/browser';
-import { fileURLToPath } from 'url';
-import { CorralHerdrService } from '../../common/protocol';
+import { FileUri } from '@theia/core/lib/common/file-uri';
+import { CorralHerdrService, OpenTabRequest } from '../../common/protocol';
 import { owningProject, resolveStartupCommand } from '../../common/startup-command';
 import { ProjectsContribution } from '../projects/projects-contribution';
 import { ProjectsWidget, NEW_TAB_COMMAND_ID } from '../projects/projects-widget';
@@ -60,7 +60,7 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         if (!uri) {
             return;
         }
-        const folderPath = fileURLToPath(uri.toString());
+        const folderPath = FileUri.fsPath(uri);
         const projects = this.projectList.entries(true).map(e => e.path);
         const projectPath = owningProject(folderPath, projects);
         if (!projectPath || this.projectList.entries(true).some(e => e.path === projectPath && e.missing)) {
@@ -81,7 +81,7 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
     }
 
     // Errors cross RPC as plain Errors, so the HerdrError code is recognised from the message (it defaults to the code).
-    protected async openWithRetry(request: { projectPath: string; folderPath: string; command: string }): Promise<void> {
+    protected async openWithRetry(request: OpenTabRequest): Promise<void> {
         try {
             await this.herdr.openTab(request);
         } catch (e) {

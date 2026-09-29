@@ -5,13 +5,11 @@ import { ChangesService } from './changes-service';
 
 export const CHANGES_ROOT_ID = 'changes-root';
 
-export interface ChangesProjectNode extends ExpandableTreeNode, SelectableTreeNode { change: ChangeGroup }
-export interface ChangesFileNode extends SelectableTreeNode { change: ChangeFile }
+export interface ChangesProjectNode extends ExpandableTreeNode, SelectableTreeNode { kind: 'changes-project'; change: ChangeGroup }
+export interface ChangesFileNode extends SelectableTreeNode { kind: 'changes-file'; change: ChangeFile }
 
-export const isProjectNode = (node: unknown): node is ChangesProjectNode =>
-    ExpandableTreeNode.is(node) && 'change' in (node as object) && 'files' in (node as ChangesProjectNode).change;
-export const isFileNode = (node: unknown): node is ChangesFileNode =>
-    SelectableTreeNode.is(node) && 'change' in (node as object) && 'rel' in (node as ChangesFileNode).change;
+export const isProjectNode = (node: unknown): node is ChangesProjectNode => (node as ChangesProjectNode | undefined)?.kind === 'changes-project';
+export const isFileNode = (node: unknown): node is ChangesFileNode => (node as ChangesFileNode | undefined)?.kind === 'changes-file';
 
 /** Spec 09 §changes-tree: project nodes over file nodes, built from ChangesService. */
 @injectable()
@@ -32,7 +30,7 @@ export class ChangesTree extends TreeImpl {
     protected projectNode(group: ChangeGroup, parent: CompositeTreeNode): ChangesProjectNode {
         const id = `changes:${group.project}`;
         const node: ChangesProjectNode = {
-            id, name: group.name, parent, change: group, selected: false, children: [],
+            kind: 'changes-project', id, name: group.name, parent, change: group, selected: false, children: [],
             // Expansion survives refreshes; a project starts expanded (C9).
             expanded: (this.getNode(id) as ExpandableTreeNode | undefined)?.expanded ?? true
         };
@@ -42,6 +40,6 @@ export class ChangesTree extends TreeImpl {
     }
 
     protected fileNode(file: ChangeFile, parent: CompositeTreeNode): ChangesFileNode {
-        return { id: `changes:${file.path}`, name: file.rel, parent, selected: false, change: file };
+        return { kind: 'changes-file', id: `changes:${file.path}`, name: file.rel, parent, selected: false, change: file };
     }
 }

@@ -394,12 +394,13 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     - Reveal in Projects scrolls the selected row into view (use what `TreeWidget` exposes in 1.76; check the `.d.ts`).
   - Verify: `npm test`; `npx playwright test -c e2e/playwright.config.ts e2e/changes-view.spec.ts e2e/changes.spec.ts`.
 
-- [ ] **T5.5 Standards cleanup**
+- [x] **T5.5 Standards cleanup**
   - Tests first: `common/paths.test.ts` for `trimSlash` and `isInside` (moved, not new behaviour).
   - Do:
     - Delete the empty `browser/corral-core-contribution.ts` and its binding.
     - Fix the misplaced `resolveBinary` comment in `common/protocol.ts` and the stale "T1.5" comment in `test/herdr-harness.ts`.
-    - Move `test/herdr-cli.int.test.ts` and `test/corral-herdr-service.int.test.ts` next to their subjects in `node/`.
+    - ~~Move the two herdr int tests into `node/`~~: kept in `test/`, because `rootDir: src` would pull the harness into
+      the shipped `lib/` (D36).
     - `common/paths.ts`: one `trimSlash` and one `isInside`, used by `project-list.ts`, `roots-diff.ts`,
       `startup-command.ts` and `changes.ts`.
     - Browser code uses `FileUri.fsPath` instead of Node's `fileURLToPath` (4 files).
@@ -408,7 +409,8 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     - `changes-tree.ts` guards on a `kind` tag instead of duck typing.
     - Readable names in `common/changes.ts`; drop the `withoutPath` alias; drop `liveMs` params the code never passes.
     - Spec 04 binary candidate order: `~/.local/bin`, then Homebrew, then `/usr/local/bin`.
-    - Split `projects-actions-contribution.ts` if a clean seam exists (SCM/Show Changes), else leave it.
+    - Split `projects-actions-contribution.ts` if a clean seam exists (SCM/Show Changes), else leave it. Left as is:
+      every command reads the same selection (D36).
   - Verify: `npm test`, `npm run test:int`, typecheck, lint, full `npm run test:e2e`.
 
 - [ ] **T5.6 Scan warnings in the Output channel "Corral" (spec 03)**
@@ -450,7 +452,8 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
   - Do: amend spec 02 (herdr tab not pinned, D11), spec 03 (no Open / Open to the Side, no Rename on roots, D21),
     spec 05 (`User` scope, D17; "Use global startup command" command, D20), spec 06 (`herdr.css`/`changes.css`,
     `--theia-*` variables, icon leftovers, D27), spec 09 (eager children, +1 ms expiry, 50 ms coalescing),
-    `AGENTS.md` CSS rule. Add D36 (this stage's dispositions).
+    `AGENTS.md` CSS rule. Add D36 (this stage's dispositions, including the int tests staying in `test/` and
+    `projects-actions-contribution.ts` staying one file).
   - Verify: `npm test`; grep that each amended spec cites its decision.
 
 - [ ] **G5 Stage 5 gate**: all suites → `spec-reviewer` on stage 5 → fix must-fix findings → **human checkpoint, stop**.
@@ -501,3 +504,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.2 — a single click in the Projects tree previews a file (italic tab), a double click pins it; honours `workbench.list.openMode` (144 unit, +1 e2e)
 - 2026-09-29 T5.3 — workspace-map writes are serialised, stale Projects rebuilds are dropped, the herdr output listener cannot leak, missing-project checks run in parallel (145 unit, 11 int)
 - 2026-09-29 T5.4 — Changes recompute is one linear pass (`pickChanges`), lookups are O(1), views re-render only when the result changed; Open Changes reuses ChangesService. Reveal already scrolls (TreeWidget scrolls to the selection), so no change there (145 unit)
+- 2026-09-29 T5.5 — shared `paths.ts` (`trimSlash`, `isInside`); one Show Changes (Changes view runs the Projects command, which ignores the menu-anchor arg); dead stub removed; `FileUri.fsPath` in browser code; kind-tagged Changes nodes; spec 04 binary order (147 unit, 11 int)

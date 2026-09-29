@@ -1,5 +1,6 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { Command, Emitter, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
+import URI from '@theia/core/lib/common/uri';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import { Widget } from '@theia/core/lib/browser';
@@ -98,7 +99,8 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
             isVisible: () => !!this.selectedChange()
         });
         commands.registerCommand(ProjectsActions.SHOW_CHANGES, {
-            execute: () => this.showChanges(),
+            // Context menus pass their anchor as the first argument; only the Changes view passes a URI.
+            execute: (arg?: unknown) => this.showChanges(arg instanceof URI ? arg : this.selectedDir()?.uri),
             isVisible: () => this.selectedDir() !== undefined
         });
         commands.registerCommand(ProjectsActions.HIDE, {
@@ -190,11 +192,10 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     }
 
     /** The Source Control view only shows the selected repository, so point it at this folder's repo first. */
-    protected async showChanges(): Promise<void> {
-        const dir = this.selectedDir();
-        const repo = dir && this.scm.findRepository(dir.uri);
+    protected async showChanges(uri: URI | undefined): Promise<void> {
+        const repo = uri && this.scm.findRepository(uri);
         if (!repo) {
-            this.messages.info(`${dir?.fileStat.name ?? 'This folder'} is not in a git repository.`);
+            this.messages.info(`${uri?.path.base ?? 'This folder'} is not in a git repository.`);
             return;
         }
         this.scm.selectedRepository = repo;

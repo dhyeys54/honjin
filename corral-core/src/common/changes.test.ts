@@ -70,7 +70,7 @@ describe('changes', () => {
         expect(liveFolders(groups)).toEqual(new Set(['/p/src/a', '/p/src', '/p']));
     });
 
-    it('nextExpiry: the smallest write + liveMs after now, else undefined', () => {
+    it('nextExpiry: the smallest write + LIVE_MS after now, else undefined', () => {
         const writes = new Map([['/a', NOW - 10_000], ['/b', NOW - 40_000], ['/c', NOW - 2_000]]);
         expect(nextExpiry(writes, NOW)).toBe(NOW - 10_000 + LIVE_MS);
         expect(nextExpiry(new Map([['/b', NOW - 40_000]]), NOW)).toBeUndefined();

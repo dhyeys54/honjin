@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import { HerdrCli } from '../src/node/herdr-cli';
 
 const run = promisify(execFile);
-// The real binary resolver arrives in T1.5; tests only need the CLI on PATH.
+// Tests only need the CLI on PATH (or HERDR_BIN), not the app's binary resolver.
 const HERDR = process.env.HERDR_BIN || 'herdr';
 
 export interface HerdrHarness {

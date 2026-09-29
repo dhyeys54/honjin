@@ -3,7 +3,7 @@ import { Emitter } from '@theia/core/lib/common';
 import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { WindowTitleContribution, WindowTitleService } from '@theia/core/lib/browser/window/window-title-service';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { fileURLToPath } from 'url';
+import { FileUri } from '@theia/core/lib/common/file-uri';
 import { owningProject } from '../common/startup-command';
 import { ProjectListService } from './projects/project-list-service';
 
@@ -42,7 +42,7 @@ export class CorralWindowTitleRefresh implements FrontendApplicationContribution
         this.editors.onCurrentEditorChanged(editor => {
             const uri = editor?.getResourceUri();
             if (uri?.scheme === 'file') {
-                this.title.focus(owningProject(fileURLToPath(uri.toString()), this.projectList.entries(true).map(e => e.path)));
+                this.title.focus(owningProject(FileUri.fsPath(uri), this.projectList.entries(true).map(e => e.path)));
             }
         });
         this.title.onDidChange(() => this.service.update({}));

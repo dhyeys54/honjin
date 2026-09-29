@@ -7,7 +7,7 @@ import { TerminalWatcher } from '@theia/terminal/lib/common/terminal-watcher';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { CorralHerdrService } from '../../common/protocol';
-import { fileURLToPath } from 'url';
+import { FileUri } from '@theia/core/lib/common/file-uri';
 import { exitReason } from '../../common/exit-reason';
 import { herdrClientEnv } from '../../common/herdr-client-env';
 
@@ -62,7 +62,7 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
 
     protected async create(): Promise<void> {
         const { binary, session } = await this.herdr.resolveBinary();
-        const home = fileURLToPath(await this.env.getHomeDirUri());
+        const home = FileUri.fsPath(await this.env.getHomeDirUri());
         // xterm measures its cell once at creation. Measured against the fallback font, the rows overflow the
         // pane (edges cut off) until something resizes it, so wait for the terminal font first.
         const family = this.preferences.get<string>('terminal.integrated.fontFamily', 'monospace');

@@ -1,16 +1,14 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import { Command, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
+import { Command, CommandContribution, CommandRegistry, CommandService, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
 import { FileUri } from '@theia/core/lib/common/file-uri';
 import URI from '@theia/core/lib/common/uri';
 import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
 import { ExpandableTreeNode, OpenerService, SelectableTreeNode, WidgetManager, open } from '@theia/core/lib/browser';
-import { MessageService } from '@theia/core/lib/common/message-service';
-import { ScmService } from '@theia/scm/lib/browser/scm-service';
-import { ScmContribution } from '@theia/scm/lib/browser/scm-contribution';
 import { colors } from '../../common/design-tokens';
 import { ProjectsContribution } from '../projects/projects-contribution';
+import { ProjectsActions } from '../projects/projects-actions-contribution';
 import { CHANGES_CONTEXT_MENU, CHANGES_VIEW_ID, ChangesWidget } from './changes-widget';
 import { ChangesFileNode, ChangesProjectNode, isFileNode, isProjectNode } from './changes-tree';
 
@@ -38,9 +36,7 @@ export class ChangesContribution implements CommandContribution, MenuContributio
     @inject(OpenerService) protected readonly openers: OpenerService;
     @inject(ClipboardService) protected readonly clipboard: ClipboardService;
     @inject(ProjectsContribution) protected readonly projectsView: ProjectsContribution;
-    @inject(ScmService) protected readonly scm: ScmService;
-    @inject(ScmContribution) protected readonly scmView: ScmContribution;
-    @inject(MessageService) protected readonly messages: MessageService;
+    @inject(CommandService) protected readonly commands: CommandService;
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(ChangesCommands.OPEN_FILE, {
@@ -113,15 +109,10 @@ export class ChangesContribution implements CommandContribution, MenuContributio
         }
     }
 
-    /** The Source Control view shows one repository, so point it at this project's first. */
     protected async showChanges(): Promise<void> {
         const project = this.selectedProject();
-        const repo = project && this.scm.findRepository(FileUri.create(project.change.project));
-        if (!repo) {
-            this.messages.info(`${project?.name ?? 'This folder'} is not in a git repository.`);
-            return;
+        if (project) {
+            await this.commands.executeCommand(ProjectsActions.SHOW_CHANGES.id, FileUri.create(project.change.project));
         }
-        this.scm.selectedRepository = repo;
-        await this.scmView.openView({ activate: true, reveal: true });
     }
 }

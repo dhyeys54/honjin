@@ -16,7 +16,6 @@ import { ProjectsViewContainerFactory } from './projects/projects-view-container
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
-import { CorralCoreContribution } from './corral-core-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
 import { FirstRunContribution } from './first-run-contribution';
 import { EditorPlacementGuard } from './editor-placement-guard';
@@ -40,7 +39,6 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(FrontendApplicationContribution).toService(CorralThemeContribution);
     bind(FaviconContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(FaviconContribution);
-    bind(CorralCoreContribution).toSelf();
     bindCorralPreferences(bind);
 
     bind(CorralHerdrService).toDynamicValue(ctx =>

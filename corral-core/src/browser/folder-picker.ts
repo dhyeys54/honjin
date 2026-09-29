@@ -4,7 +4,7 @@ import { MaybeArray } from '@theia/core/lib/common';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { FileDialogService } from '@theia/filesystem/lib/browser';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
-import { fileURLToPath } from 'url';
+import { FileUri } from '@theia/core/lib/common/file-uri';
 
 /** Theia's folder dialog (same in browser and Electron), starting in ~/Desktop/projects when it exists. */
 @injectable()
@@ -15,7 +15,7 @@ export class FolderPicker {
     @inject(EnvVariablesServer) protected readonly env: EnvVariablesServer;
 
     async home(): Promise<string> {
-        return fileURLToPath(await this.env.getHomeDirUri());
+        return FileUri.fsPath(await this.env.getHomeDirUri());
     }
 
     /** Chosen folders; empty when the dialog was cancelled. */

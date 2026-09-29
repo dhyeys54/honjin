@@ -1,3 +1,5 @@
+import { isInside, trimSlash } from './paths';
+
 export interface ProjectListInput {
     /** Absolute dirs found under scan roots (backend). */
     scanned: string[];
@@ -19,10 +21,6 @@ export interface ProjectEntry {
     manual: boolean;
 }
 
-/** Drops trailing slashes (the backend has already expanded `~`); a bare `/` stays. */
-function normalise(path: string): string {
-    return path.length > 1 ? path.replace(/\/+$/, '') || '/' : path;
-}
 
 function lastSegment(path: string): string {
     return path.slice(path.lastIndexOf('/') + 1);
@@ -33,10 +31,10 @@ function parentName(path: string): string {
 }
 
 export function buildProjectList(input: ProjectListInput): ProjectEntry[] {
-    const extra = new Set(input.extra.map(normalise));
-    const hidden = new Set(input.hidden.map(normalise));
-    const missing = new Set(input.missing.map(normalise));
-    const all = new Set([...input.scanned.map(normalise), ...extra]);
+    const extra = new Set(input.extra.map(trimSlash));
+    const hidden = new Set(input.hidden.map(trimSlash));
+    const missing = new Set(input.missing.map(trimSlash));
+    const all = new Set([...input.scanned.map(trimSlash), ...extra]);
     // Missing entries come from extra ∪ hidden, so they may not be in `all` yet (rule 4).
     missing.forEach(p => all.add(p));
 
@@ -65,10 +63,6 @@ export function buildProjectList(input: ProjectListInput): ProjectEntry[] {
     });
 }
 
-function isInside(path: string, folder: string): boolean {
-    return path.startsWith(folder === '/' ? '/' : folder + '/') && path !== folder;
-}
-
 /**
  * Projects that become Theia workspace roots. A folder that holds other projects (a scan root added by mistake) is
  * left out: as a root it would pull every project under it, hidden ones included, into the watcher, git and search.
@@ -81,7 +75,7 @@ export function visibleRoots(list: ProjectEntry[]): string[] {
 
 /** Why a folder can't be added as a project, or undefined when it can. */
 export function addProblem(folder: string, list: ProjectEntry[]): string | undefined {
-    const path = normalise(folder);
+    const path = trimSlash(folder);
     const name = lastSegment(path) || path;
     if (list.some(e => e.path === path)) {
         return `${name} is already in the list.`;

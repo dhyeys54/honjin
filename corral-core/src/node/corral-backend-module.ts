@@ -33,7 +33,7 @@ export default new ContainerModule(bind => {
         const env = ctx.container.get<EnvVariablesServer>(EnvVariablesServer);
         const resolver = new HerdrBinaryResolver({
             pathEnv: process.env.PATH ?? '',
-            candidates: ['/opt/homebrew/bin/herdr', '/usr/local/bin/herdr', join(homedir(), '.local/bin/herdr')],
+            candidates: [join(homedir(), '.local/bin/herdr'), '/opt/homebrew/bin/herdr', '/usr/local/bin/herdr'],
             shell: process.env.SHELL || '/bin/zsh',
             execFileFn: defaultExecFile
         });
