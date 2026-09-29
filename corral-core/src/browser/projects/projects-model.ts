@@ -20,6 +20,10 @@ export class ProjectsModel extends FileTreeModel {
     showHidden = false;
     entries: ProjectEntry[] = [];
 
+    get hiddenPaths(): Set<string> {
+        return new Set(this.entries.filter(e => e.hidden).map(e => e.path));
+    }
+
     protected override init(): void {
         super.init();
         this.toDispose.push(this.projectList.onDidChange(() => this.rebuild()));
@@ -28,6 +32,11 @@ export class ProjectsModel extends FileTreeModel {
 
     async reload(): Promise<void> {
         await this.projectList.reload();
+    }
+
+    toggleShowHidden(): void {
+        this.showHidden = !this.showHidden;
+        this.rebuild();
     }
 
     protected async rebuild(): Promise<void> {

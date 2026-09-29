@@ -95,3 +95,8 @@ is titled "Debug", not "Run and Debug".
 **Why.** None affects correctness of stage 1; each is small and isolated to add later.
 **Consequences.** Tree expansion resets on restart until implemented (`storeState`/`restoreState` on `ProjectsWidget`).
 
+## D18 — eye toggle and empty state (T2.1)
+**Decision.** The eye is one toolbar item with a highlighted (toggled) state instead of swapping between `eye` and `eye-closed` icons. The "No projects found" empty state has only **Change folders…** for now; **Add project…** arrives with `corral.projects.add` in T2.2. Show-hidden state lives on the model (not yet saved in widget state).
+**Why.** Keeps T2.1 small; icon swap and the extra button are cosmetic and isolated.
+**Consequences.** T2.2 adds the button; stage 3 can swap the icon.
+

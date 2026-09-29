@@ -177,7 +177,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 
 ## Stage 2 — Managing projects
 
-- [ ] **T2.1 Hide / unhide and the eye toggle; empty states**
+- [x] **T2.1 Hide / unhide and the eye toggle; empty states**
   - Spec: 03 §View toolbar, §Context menu (hide/unhide), §Empty states.
   - Tests first: `e2e/hide.spec.ts`: hide `beta` → it disappears; the eye shows it dimmed; unhide restores it;
     with no roots the empty state appears with **Choose folders…**.
@@ -282,3 +282,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.13 — first run: Theia folder dialog, scan roots stored with ~, firstRunCompleted, corral.projects.chooseScanRoots with confirmation; tree reloads on pref change (8 unit + 1 E2E)
 - 2026-09-29 T1.14 — ProjectListService (single project list), WorkspaceRootsSync moves into <config>/corral.code-workspace and diffs roots without reloading; search covers visible projects only (5 unit + 1 E2E)
 - 2026-09-29 G1 — suites green (97 unit, 11 int, 15 E2E); spec-reviewer: no must-fix; user pre-approved the human checkpoint (review pending, see FOR-REVIEW)
+- 2026-09-29 T2.1 — Hide/Unhide project context-menu items, eye toolbar toggle (hidden rows at 50%), empty states with Choose/Change folders… (2 unit + 2 E2E)

@@ -22,3 +22,15 @@
 .corral-projects .corral-new-tab:focus-visible {
     visibility: visible;
 }
+
+.corral-projects .theia-TreeNode.corral-project-hidden {
+    opacity: 0.5;
+}
+
+.corral-projects-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+}

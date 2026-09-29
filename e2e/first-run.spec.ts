@@ -51,7 +51,7 @@ test('first run asks for folders, fills the tree, and does not ask again', async
     const location = page.locator('.theia-LocationListPanel input');
     await location.fill(projectsDir);
     await location.press('Enter');
-    await page.getByRole('button', { name: 'Choose' }).click();
+    await page.getByRole('button', { name: 'Choose', exact: true }).click();
 
     await expect(projects(page).locator('.theia-TreeNode', { hasText: /^alpha$/ })).toBeVisible({ timeout: 30_000 });
     await expect.poll(() => readFileSync(join(configDir, 'settings.json'), 'utf8')).toContain('"corral.firstRunCompleted": true');

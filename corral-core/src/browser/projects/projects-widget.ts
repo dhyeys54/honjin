@@ -5,15 +5,20 @@ import React = require('@theia/core/shared/react');
 import { CommandService } from '@theia/core/lib/common';
 import { ContextMenuRenderer, NodeProps, TreeNode, TreeProps } from '@theia/core/lib/browser';
 import { DirNode, FileTreeWidget } from '@theia/filesystem/lib/browser';
+import { CorralPreferences } from '../corral-preferences';
+import { ProjectListService } from './project-list-service';
 import { ProjectsModel } from './projects-model';
 
 export const PROJECTS_VIEW_ID = 'corral-projects';
+export const PROJECTS_CONTEXT_MENU = ['corral-projects-context-menu'];
 export const NEW_TAB_COMMAND_ID = 'corral.herdr.newTab';
 
 @injectable()
 export class ProjectsWidget extends FileTreeWidget {
 
     @inject(CommandService) protected readonly commandService: CommandService;
+    @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
 
     constructor(
         @inject(TreeProps) props: TreeProps,
@@ -34,6 +39,31 @@ export class ProjectsWidget extends FileTreeWidget {
     protected override init(): void {
         super.init();
         this.model.reload();
+        this.toDispose.push(this.projectList.onDidChange(() => this.update()));
+    }
+
+    // Spec 03 §Empty states. Hidden projects count as projects, so hiding the last one is not "empty".
+    protected override render(): React.ReactNode {
+        if (!this.projectList.loaded || this.projectList.entries(true).length > 0) {
+            return super.render();
+        }
+        const roots = this.prefs['corral.scanRoots'];
+        const button = (label: string, command: string) => React.createElement('button',
+            { className: 'theia-button', onClick: () => this.commandService.executeCommand(command) }, label);
+        const noRoots = roots.length === 0 && this.prefs['corral.extraProjects'].length === 0;
+        return React.createElement('div', { className: 'corral-projects-empty', 'data-testid': 'corral-projects-empty' },
+            React.createElement('p', undefined, noRoots
+                ? 'Choose the folders that hold your projects'
+                : `No projects found in ${roots.join(', ')}`),
+            button(noRoots ? 'Choose folders…' : 'Change folders…', 'corral.projects.chooseScanRoots'));
+    }
+
+    protected override createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
+        const classes = super.createNodeClassNames(node, props);
+        if (DirNode.is(node) && this.model.hiddenPaths.has(node.uri.path.toString())) {
+            classes.push('corral-project-hidden');
+        }
+        return classes;
     }
 
     // The + button of every directory row; CSS shows it on hover and keyboard focus.

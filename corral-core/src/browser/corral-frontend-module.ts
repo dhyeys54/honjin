@@ -1,10 +1,12 @@
 import '../../src/browser/style/herdr.css';
 
 import { ContainerModule } from '@theia/core/shared/inversify';
-import { CommandContribution } from '@theia/core/lib/common';
+import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { FrontendApplicationContribution, KeybindingContribution, WidgetFactory, bindViewContribution } from '@theia/core/lib/browser';
+import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/service-connection-provider';
 import { ProjectListService } from './projects/project-list-service';
+import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
 import { CorralCoreContribution } from './corral-core-contribution';
@@ -42,6 +44,10 @@ export default new ContainerModule(bind => {
     bind(NewTabContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(NewTabContribution);
     bind(KeybindingContribution).toService(NewTabContribution);
+    bind(ProjectsActionsContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(ProjectsActionsContribution);
+    bind(MenuContribution).toService(ProjectsActionsContribution);
+    bind(TabBarToolbarContribution).toService(ProjectsActionsContribution);
     bindViewContribution(bind, ProjectsContribution);
     bind(FrontendApplicationContribution).toService(ProjectsContribution);
     bind(WidgetFactory).toDynamicValue(ctx => ({

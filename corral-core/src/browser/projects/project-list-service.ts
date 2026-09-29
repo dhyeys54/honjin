@@ -14,6 +14,8 @@ export class ProjectListService {
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
 
     protected all: ProjectEntry[] = [];
+    /** False until the first list arrives, so the view does not flash an empty state. */
+    loaded = false;
     protected generation = 0;
     protected readonly changed = new Emitter<void>();
     readonly onDidChange: Event<void> = this.changed.event;
@@ -47,6 +49,7 @@ export class ProjectListService {
             return; // a newer reload is in flight and will publish
         }
         this.all = buildProjectList({ scanned, extra, hidden, showHidden: true, missing });
+        this.loaded = true;
         this.changed.fire();
     }
 }
