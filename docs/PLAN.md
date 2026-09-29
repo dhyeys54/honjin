@@ -352,6 +352,109 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - [ ] **G4 Stage 4 gate**: all suites → `spec-reviewer` on spec 09 and stage 4 → fix must-fix findings →
   **human checkpoint, stop**.
 
+## Stage 5 — Review fixes (full-app code review, 2026-09-29)
+
+Findings from the two-axis review (standards + spec) of `22ada6e...HEAD` and the G4 spec-review should-fixes,
+each checked against the code. Not acted on, with the reason recorded in D36: `describe.skip` when herdr is
+missing (spec 08 sanctions it); hand-built backend services (constructor injection keeps them unit-testable);
+`server_not_running` matched by message (the RPC boundary drops the `HerdrError` class).
+
+- [ ] **T5.1 Missing projects always listed (spec 03 rule 4)**
+  - Tests first: `common/project-list.test.ts`: `shownEntries(all, false)` keeps a hidden **missing** project and
+    drops a hidden present one; `shownEntries(all, true)` keeps all.
+  - Do: `shownEntries` in `common/project-list.ts`; `ProjectListService.entries` calls it.
+  - Verify: `npm test`, typecheck, lint.
+
+- [ ] **T5.2 Single click previews a file (spec 03 §Opening files)**
+  - Tests first: `e2e/projects.spec.ts`: one click on a file opens an editor tab that is a preview
+    (`.theia-editor-preview-title-unpinned`, or the class Theia 1.76 really uses: check `@theia/editor`);
+    a double click pins it.
+  - Do: `ProjectsWidget.tapNode` calls `model.previewNode` when `workbench.list.openMode` is `singleClick`
+    (same as `NavigatorWidget.tapNode`).
+  - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/projects.spec.ts e2e/placement.spec.ts`.
+
+- [ ] **T5.3 Robustness fixes**
+  - Tests first:
+    - `node/workspace-map-store.test.ts`: two concurrent `set`s for different projects both persist.
+    - `common/project-list.test.ts` or a new unit: none for the model race (wiring); covered by existing E2E.
+  - Do:
+    - `WorkspaceMapStore`: serialise read-modify-write through one promise chain.
+    - `ProjectsModel.rebuild`: generation guard so an older rebuild cannot publish after a newer one.
+    - `HerdrTerminalContribution`: register the dispose of the `output` listener before `widget.start()`.
+    - `CorralProjectServiceImpl.list`: dedupe with a `Set`, check paths in parallel.
+    - `corral-backend-module.ts`: one `resourcesPath` constant instead of the repeated cast.
+  - Verify: `npm test`, `npm run test:int`, typecheck, lint.
+
+- [ ] **T5.4 Changes: cheaper recompute, Reveal scrolls**
+  - Tests first: `common/changes.test.ts`: `sameGroups(a, b)` is true for equal results and false when a
+    letter, a live flag or a file differs. `common/scm-change.test.ts`: `pickChange` behaviour unchanged.
+  - Do:
+    - `ChangesService`: index files and live folders in `Map`/`Set` during `recompute`, so `fileFor`/`isLive`
+      are O(1); one pass over SCM groups; fire `onDidChange` only when `sameGroups` is false.
+    - Reveal in Projects scrolls the selected row into view (use what `TreeWidget` exposes in 1.76; check the `.d.ts`).
+  - Verify: `npm test`; `npx playwright test -c e2e/playwright.config.ts e2e/changes-view.spec.ts e2e/changes.spec.ts`.
+
+- [ ] **T5.5 Standards cleanup**
+  - Tests first: `common/paths.test.ts` for `trimSlash` and `isInside` (moved, not new behaviour).
+  - Do:
+    - Delete the empty `browser/corral-core-contribution.ts` and its binding.
+    - Fix the misplaced `resolveBinary` comment in `common/protocol.ts` and the stale "T1.5" comment in `test/herdr-harness.ts`.
+    - Move `test/herdr-cli.int.test.ts` and `test/corral-herdr-service.int.test.ts` next to their subjects in `node/`.
+    - `common/paths.ts`: one `trimSlash` and one `isInside`, used by `project-list.ts`, `roots-diff.ts`,
+      `startup-command.ts` and `changes.ts`.
+    - Browser code uses `FileUri.fsPath` instead of Node's `fileURLToPath` (4 files).
+    - One `showChanges` implementation: the Changes view runs the Projects command.
+    - `new-tab-contribution.ts` uses `OpenTabRequest`.
+    - `changes-tree.ts` guards on a `kind` tag instead of duck typing.
+    - Readable names in `common/changes.ts`; drop the `withoutPath` alias; drop `liveMs` params the code never passes.
+    - Spec 04 binary candidate order: `~/.local/bin`, then Homebrew, then `/usr/local/bin`.
+    - Split `projects-actions-contribution.ts` if a clean seam exists (SCM/Show Changes), else leave it.
+  - Verify: `npm test`, `npm run test:int`, typecheck, lint, full `npm run test:e2e`.
+
+- [ ] **T5.6 Scan warnings in the Output channel "Corral" (spec 03)**
+  - Tests first: `node/project-scanner.int.test.ts` (or unit): `list()` returns the warning for an unreadable
+    scan root in `ProjectScanResult.warnings`.
+  - Do: carry warnings over RPC; the frontend appends them to an `OutputChannel` named `Corral`
+    (`@theia/output`, already in the app; declare it in `corral-core/package.json`, D36).
+  - Verify: `npm test`, `npm run test:int`, typecheck, lint.
+
+- [ ] **T5.7 Projects tree state survives a restart (spec 03, closes D17/D18 deferrals)**
+  - Tests first: `e2e/projects.spec.ts`: expand a project and turn on show-hidden, reload the page, both are kept.
+  - Do: `ProjectsWidget.storeState`/`restoreState` save expanded project/folder ids and `showHidden`; re-apply
+    them after the first rebuild.
+  - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/projects.spec.ts e2e/hide.spec.ts`.
+
+- [ ] **T5.8 Reset Layout sets sizes (spec 02)**
+  - Tests first: `e2e/panels.spec.ts`: after `corral.resetLayout`, the right panel is 300 px ± 2 and the left
+    panel opens at 280 px ± 2.
+  - Do: `ApplicationShell.resize(size, area)` in `applyDefaultLayout`. The 50/50 editor/herdr split only if a
+    public API does it; otherwise amend spec 02 in this commit.
+  - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/panels.spec.ts e2e/shell.spec.ts`.
+
+- [ ] **T5.9 Stage 4 test gaps**
+  - Tests first, all in `e2e/changes-view.spec.ts`:
+    - a saved layout with Projects outside the container is fixed up on reload (C14);
+    - Open File opens the plain editor, Copy Path puts the path on the clipboard (C10);
+    - Enter on a file opens the diff, click on a project row toggles it, expansion survives a refresh (C9);
+    - a hidden project's changes are not listed (C1).
+  - Do: fix whatever these tests expose.
+  - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/changes-view.spec.ts`.
+
+- [ ] **T5.10 E2E hygiene**
+  - Do: `e2e/helpers.ts` for the copied helpers (`row`, `settingsFile`, `writeSettings`, `closeMenu`, `git`, temp
+    dirs); replace fixed `waitForTimeout` sleeps with polled expectations where a condition exists; await
+    `stopServer()` in `first-run.spec.ts`.
+  - Verify: full `npm run test:e2e` twice.
+
+- [ ] **T5.11 Specs match decisions**
+  - Do: amend spec 02 (herdr tab not pinned, D11), spec 03 (no Open / Open to the Side, no Rename on roots, D21),
+    spec 05 (`User` scope, D17; "Use global startup command" command, D20), spec 06 (`herdr.css`/`changes.css`,
+    `--theia-*` variables, icon leftovers, D27), spec 09 (eager children, +1 ms expiry, 50 ms coalescing),
+    `AGENTS.md` CSS rule. Add D36 (this stage's dispositions).
+  - Verify: `npm test`; grep that each amended spec cites its decision.
+
+- [ ] **G5 Stage 5 gate**: all suites → `spec-reviewer` on stage 5 → fix must-fix findings → **human checkpoint, stop**.
+
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
