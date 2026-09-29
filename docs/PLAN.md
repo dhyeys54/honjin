@@ -283,7 +283,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     `owningProject` (`common/startup-command.ts`) and the group order of `pickChange` (`common/scm-change.ts`).
   - Verify: `npx jest -c corral-core/test/jest.config.ts changes`, then `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T4.2 ChangesService**
+- [x] **T4.2 ChangesService**
   - Spec: 09 §`browser/changes/changes-service.ts`, C7, C8.
   - Tests first: none at unit level (pure wiring, like `ProjectListService`); exercised by T4.4/T4.5 E2E.
   - Do: implement it; bind `ChangesService` `toSelf().inSingletonScope()` in `corral-frontend-module.ts`. Open and
@@ -389,3 +389,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 T3.5 — `npm run package:mac` builds electron-app/dist/mac-arm64/Corral.app; smoke-tested: title "Corral — alpha", herdr terminal attached with a minimal PATH, Corral Dark applied
 - 2026-09-29 G3 — all suites green (117 unit, 11 int, 29 E2E); spec-reviewer found no must-fix; ticked per the standing "do not stop at gates" instruction, awaiting human review
 - 2026-09-29 T4.1 — common/changes.ts: groupChanges (C1–C7), changeKind, liveFolders, nextExpiry (10 tests)
+- 2026-09-29 T4.2 — ChangesService: git repos + file writes + project list → groups, live flags, one expiry timer; bound as a singleton (0 new tests, wiring; E2E in T4.4)

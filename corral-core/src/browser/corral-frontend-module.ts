@@ -7,6 +7,7 @@ import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar
 import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/service-connection-provider';
 import { FolderPicker } from './folder-picker';
 import { ProjectListService } from './projects/project-list-service';
+import { ChangesService } from './changes/changes-service';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
@@ -46,6 +47,7 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
     bind(FolderPicker).toSelf().inSingletonScope();
     bind(ProjectListService).toSelf().inSingletonScope();
+    bind(ChangesService).toSelf().inSingletonScope();
     bind(WorkspaceRootsSync).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(WorkspaceRootsSync);
     bind(CorralProjectService).toDynamicValue(ctx =>
