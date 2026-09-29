@@ -19,7 +19,7 @@ against one (AGENTS.md).
 | C5 | Files within a project are sorted by their path relative to the project root (`a.localeCompare(b)`). Projects keep C1 order. |
 | C6 | Row letter = `resource.decorations?.letter ?? 'M'`. `changeKind(letter, strikeThrough)`: `A` or `U` → `added`; `D` → `deleted`; `!` → `conflict`; anything else → `modified`. `strikeThrough === true` gives `deleted` whatever the letter. |
 | C7 | **Live:** a listed file is live if its last write was less than `LIVE_MS` (30 000 ms) ago; a write exactly 30 000 ms ago is not live. Writes come from `FileService.onDidFilesChange`: each `event.changes[i]` of type `FileChangeType.UPDATED` or `ADDED` records `Date.now()` for `change.resource.path.toString()`. Paths containing `/.git/` are ignored (`files.watcherExclude`, D33, already filters the rest). A write to an unlisted file creates no row, but is remembered in case git lists it later. A project row is live if any of its files is live. |
-| C8 | When the earliest live mark expires, the view re-renders. Use a single `setTimeout` set to `nextExpiry(...) - Date.now()`, re-armed after every change. There is no polling interval. |
+| C8 | When the earliest live mark expires, the view re-renders. Use a single `setTimeout` set to `nextExpiry(...) - Date.now() + 1` (a mark expires once the 30 000 ms have passed, not at them), re-armed after every change. Bursts of events are coalesced into one recompute 50 ms after the first (D36). There is no polling interval. |
 | C9 | Click or Enter on a file row calls that change's `ScmResource.open()` (git's diff against HEAD, the same as **Open Changes**). Click or Enter on a project row toggles it. Project rows start expanded, and their expansion survives refreshes. |
 | C10 | File context menu: **Open File** (`open(openerService, uri)` from `@theia/core/lib/browser/opener-service`), **Reveal in Projects** (select and reveal that file in the Projects tree), **Copy Path** (absolute path). Project context menu: **Show Changes** (the existing `corral.projects.showChanges` behaviour for that project). No other items. |
 | C11 | Empty state (no listed files in any project): the text `No uncommitted changes` in `fg-muted`, with `data-testid="corral-changes-empty"`. |
@@ -43,11 +43,11 @@ export interface ChangeGroup { project: string; name: string; files: ChangeFile[
 export function changeKind(letter: string, strikeThrough?: boolean): ChangeKind;
 /** C1–C7. `name` is the last path segment of `project`. */
 export function groupChanges(roots: string[], changes: ChangeInput[], writes: ReadonlyMap<string, number>,
-    now: number, liveMs?: number): ChangeGroup[];
+    now: number): ChangeGroup[];
 /** Every ancestor folder of each live file, up to and including its project. Nothing above the project. */
 export function liveFolders(groups: ChangeGroup[]): Set<string>;
-/** The earliest `write + liveMs` that is still after `now`, or undefined. */
-export function nextExpiry(writes: ReadonlyMap<string, number>, now: number, liveMs?: number): number | undefined;
+/** The earliest `write + LIVE_MS` that is still after `now`, or undefined. */
+export function nextExpiry(writes: ReadonlyMap<string, number>, now: number): number | undefined;
 ```
 
 For C4, reuse `pickChange`: give it `{ id: group, resources: [{ sourceUri: path, ...input }] }` groups, or apply
@@ -83,7 +83,7 @@ An `@injectable()` class bound `inSingletonScope()`. It is the only owner of cha
 
 - The root is a hidden `CompositeTreeNode`, `{ id: 'changes-root', name: '', visible: false, parent: undefined, children: [] }`. The widget sets it once with `model.root = ...`.
 - `protected override async resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]>`:
-  - **For the root:** one node per `ChangeGroup`. Each is `ExpandableTreeNode & SelectableTreeNode`, with id `changes:<project>`, `name = group.name`, `expanded = (this.getNode(id) as ExpandableTreeNode | undefined)?.expanded ?? true`, `children: []`, `selected: false`, and `parent`.
+  - **For the root:** one node per `ChangeGroup`. Each is `ExpandableTreeNode & SelectableTreeNode`, with id `changes:<project>`, `name = group.name`, `expanded = (this.getNode(id) as ExpandableTreeNode | undefined)?.expanded ?? true`, `selected: false`, and `parent`. Its file children are built eagerly, so an expanded project never flashes empty on refresh (D36).
   - **For a project node:** one `SelectableTreeNode` per file, with id `changes:<file.path>` and `name = file.rel`.
   - Store the `ChangeGroup` or `ChangeFile` on the node as a `change` property. Export `isProjectNode` / `isFileNode` type guards (the lint config forbids namespaces).
 

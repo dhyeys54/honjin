@@ -2,7 +2,7 @@
 
 ## Preference schema: `common/preferences-schema.ts`
 
-Every key lives under `corral.*` with scope `application` (user settings file `~/.corral/settings.json`). Workspace-
+Every key lives under `corral.*` with scope `User` (D17; the user settings file `~/.corral/settings.json`). Workspace-
 or folder-scoped values are ignored, so project repos are never touched.
 
 | Key | Type | Default | Meaning |
@@ -44,7 +44,8 @@ override and nested projects (the longest wins).
   placeholder `Leave empty for a plain shell · Esc to cancel`.
 - Enter with a value: write `projectOverrides[path].startupCommand`. Enter with an empty value: store `""`, an
   explicit plain shell.
-- A second item, "Use global default (<global>)", deletes the override entry.
+- A separate context-menu command, "Use global startup command", deletes the override entry. It is shown only
+  when the project has an override (D20).
 
 ## First run: `browser/first-run-contribution.ts`
 

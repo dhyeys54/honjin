@@ -104,4 +104,4 @@ The full loop is in `.claude/skills/next-task/SKILL.md`. The test layers are in 
 - Theia DI: `@injectable()` classes, bound in `corral-frontend-module.ts` / `corral-backend-module.ts`.
 - Name files `kebab-case.ts`; tests sit next to their subject as `*.test.ts` (unit) or `*.int.test.ts` (integration).
 - Comments explain *why*, not *what*. No commented-out code.
-- CSS: only the tokens in `DESIGN.md` (as `--corral-*` variables). No hard-coded colours in components.
+- CSS: only the `DESIGN.md` tokens, read as the `--theia-*` variables the theme maps them to (D27). No hard-coded colours in components.

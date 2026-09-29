@@ -448,7 +448,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     `stopServer()` in `first-run.spec.ts`.
   - Verify: full `npm run test:e2e` twice.
 
-- [ ] **T5.11 Specs match decisions**
+- [x] **T5.11 Specs match decisions**
   - Do: amend spec 02 (herdr tab not pinned, D11), spec 03 (no Open / Open to the Side, no Rename on roots, D21),
     spec 05 (`User` scope, D17; "Use global startup command" command, D20), spec 06 (`herdr.css`/`changes.css`,
     `--theia-*` variables, icon leftovers, D27), spec 09 (eager children, +1 ms expiry, 50 ms coalescing),
@@ -510,3 +510,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.8 — Reset Layout sets the right panel to 300 px and the left to reopen at 280 px; the 50/50 main split is only the initial split (spec 02 amended, D36) (+1 e2e)
 - 2026-09-29 T5.9 — Changes E2E covers the old-layout fix-up (C14, checked red with the fix-up off), Open File / Copy Path (C10), Enter, project toggle and collapsed-through-refresh (C9), hidden projects (C1); nothing needed fixing (+2 e2e)
 - 2026-09-30 T5.10 — e2e/helpers.ts replaces 13 copies of the settings/row/git/herdr/temp-dir helpers; ai-disabled waits for .theia-preload instead of 2 s; first-run awaits the server going down. Kept: the two sleeps guarding negative checks (nested, startup-override) and the herdr TUI pacing sleeps (no observable condition). Two full runs: 39/40, the known roots flake, which passes alone (40 e2e)
+- 2026-09-30 T5.11 — specs 02, 03, 05, 06, 09 and the AGENTS.md CSS rule now describe what was built (D11, D17, D20, D21, D25, D27, D36); D36 records the Changes-code details (docs only; 148 unit)

@@ -76,8 +76,8 @@ Build it on `@theia/filesystem`'s `FileTreeWidget` / `FileTreeModel`, following 
 
 | Target | Items |
 |---|---|
-| Any directory | New herdr tab here · New File… · New Folder… · Rename… · Delete · Show Changes · Copy Path · Reveal in Finder |
-| Any file | Open · Open to the Side · Rename… · Delete · Open Changes (changed files only) · Copy Path · Reveal in Finder |
+| Any directory | New herdr tab here · New File… · New Folder… · Rename… (not on project roots, D21) · Delete · Show Changes · Copy Path · Reveal in Finder |
+| Any file | Rename… · Delete · Open Changes (changed files only) · Copy Path · Reveal in Finder (a click opens the file, so no Open / Open to the Side, D21) |
 | Project root (additional) | Hide project / Unhide project · Set startup command… · Remove from list (manual projects only) · Remove from herdr mapping |
 
 - **Hide / Unhide** adds the path to, or removes it from, `corral.hiddenProjects`.

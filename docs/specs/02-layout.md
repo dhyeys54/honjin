@@ -40,7 +40,7 @@ before collapsing it, and keeps the width it reopens at. Nothing animates while 
 | `cwd` | the user's home directory |
 | `destroyTermOnClose` | `true` |
 | `closable` | `false` (the tab has no close button) |
-| Placement | main area, `mode: 'split-right'` of the editor area; the tab is pinned in its own group |
+| Placement | main area, `mode: 'split-right'` of the editor area; not pinned, and no group of its own (D11) |
 
 Check the real `TerminalWidgetOptions` and `WidgetOpenerOptions` fields in
 `node_modules/@theia/terminal/lib/browser/base/terminal-widget.d.ts` and `.../terminal-service.d.ts` before
