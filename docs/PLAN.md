@@ -113,11 +113,11 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     §Roots sync; the sync itself comes in T1.14).
   - Verify: `npm test && npm run test:int`.
 
-- [ ] **T1.9 herdr terminal widget**
+- [x] **T1.9 herdr terminal widget**
   - Spec: 02 §The herdr terminal widget.
   - Tests first: `e2e/herdr-terminal.spec.ts`: on startup a main-area tab titled `herdr` exists, with no close
     button; the e2e session's `status server --json` reports running and the terminal's xterm buffer shows herdr's
-    UI (look at it once with the Playwright MCP and pin a stable string); typing `ctrl+b` then `d` (detach) shows the
+    UI (look at it once with the Playwright MCP and pin a stable string); typing `ctrl+b` then `q` (detach) shows the
     "herdr exited · Reattach" overlay; clicking Reattach attaches again. **Survives the IDE (R15):** create a
     workspace labelled `persist-check` through the CLI, close the page, check `status server --json` still reports
     running, open a new page → the widget attaches and `workspace list` still has `persist-check`.
@@ -275,3 +275,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.6 — HerdrCli against real headless herdr; fixed pane run empty stdout; harness now returns cli; int test lives in corral-core/test/ (3 int + 1 unit tests)
 - 2026-09-29 T1.7 — workspace map store, resolveWorkspace, CorralHerdrServiceImpl (per-project serialised openTab), backend module + RPC binding (17 unit + 1 int tests)
 - 2026-09-29 T1.8 — scanProjects, CorralProjectServiceImpl (missing, ~ expansion, managed corral.code-workspace created on first list), RPC bound (4 int + 4 unit tests)
+- 2026-09-29 T1.9 — herdr terminal tab in main area (non-closable, env cleared, opens before start), exited/not-found placeholder tab with Reattach, R15 persistence (4 E2E)

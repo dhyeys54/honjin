@@ -11,8 +11,14 @@ export class CorralHerdrServiceImpl implements CorralHerdrService {
 
     constructor(
         protected readonly getClient: () => Promise<{ cli: HerdrClient; session: string }>,
-        protected readonly store: WorkspaceMapStore
+        protected readonly store: WorkspaceMapStore,
+        protected readonly binaryResolver: () => Promise<{ binary: string | undefined; session: string }> =
+            async () => ({ binary: undefined, session: '' })
     ) { }
+
+    resolveBinary(): Promise<{ binary: string | undefined; session: string }> {
+        return this.binaryResolver();
+    }
 
     async status(): Promise<{ running: boolean }> {
         const { cli } = await this.getClient();

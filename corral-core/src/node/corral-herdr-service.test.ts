@@ -89,6 +89,14 @@ describe('CorralHerdrServiceImpl.openTab', () => {
     });
 });
 
+describe('CorralHerdrServiceImpl.resolveBinary', () => {
+    it('delegates to the resolver', async () => {
+        const service = new CorralHerdrServiceImpl(
+            async () => { throw new Error('unused'); }, undefined as never, async () => ({ binary: '/bin/herdr', session: 's' }));
+        expect(await service.resolveBinary()).toEqual({ binary: '/bin/herdr', session: 's' });
+    });
+});
+
 describe('CorralHerdrServiceImpl.status', () => {
     it('reports running', async () => {
         expect(await setup().service.status()).toEqual({ running: true });

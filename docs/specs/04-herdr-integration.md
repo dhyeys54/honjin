@@ -31,7 +31,7 @@ prints herdr's own agent guide.
 - IDs are opaque (`w1`, `w1:t1`, `w1:p1`) and are never reused after close.
 - `agent_status` is one of `idle | working | blocked | done | unknown`.
 - Default keys (`~/.config/herdr/config.toml` can override them; the user's file has no overrides as of
-  2026-09-29): prefix `ctrl+b`, detach `prefix+d`, new tab `prefix+c`, new workspace `prefix+n`, help `prefix+?`.
+  2026-09-29): prefix `ctrl+b`, detach `prefix+q`, new tab `prefix+c`, new workspace `prefix+n`, help `prefix+?`.
 
 ## `node/herdr-cli.ts`
 

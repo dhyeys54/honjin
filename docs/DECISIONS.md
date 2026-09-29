@@ -59,3 +59,8 @@ add a Corral preference/contribution that hides the chat view, and update `e2e/a
 `@theia/scm-extra` has no 1.76 release (its features live in `@theia/scm`); the activity-bar tab for `@theia/debug`
 is titled "Debug", not "Run and Debug".
 **Consequences.** Spec 01 updated; E2E asserts the real titles.
+
+## D11 — herdr terminal widget details (T1.9)
+**Decision.** (1) The terminal starts with `strictEnv: true` and empty `HERDR_*` values, because Theia merges `process.env` twice and herdr refuses to nest. (2) The widget is opened before `start()`, otherwise herdr aborts with "zero-sized grid". (3) Detach key is `prefix+q`, not `prefix+d` (spec 04 corrected). (4) Theia 1.76 disposes a terminal widget after its process exits, so "herdr exited" / "herdr not found" is a separate placeholder tab with the action button. (5) E2E checks the client via `pgrep`, since xterm paints on a canvas with no readable text. (6) Placement is `main` / `split-right`; "own pinned group" is not done.
+**Why.** Each was found by failing tests against real herdr 0.9.1 and Theia 1.76.
+**Consequences.** All are in `herdr-terminal-contribution.ts`, easy to change.
