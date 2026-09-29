@@ -33,8 +33,9 @@ Rules (each one gets a unit test):
   symlinks that point to files. Symlinked directories are included, resolved with `realpath`; duplicates are
   removed.
 - A scan root that doesn't exist or can't be read adds no projects and produces one warning in the Output channel
-  "Corral".
-- `CorralProjectService.list()` returns `{ scanned, missing }`. `missing` = the entries of `extra` ∪ `hidden` that
+  "Corral". A warning is written once per new problem: a later scan that reports the same warning stays quiet, and
+  one that reappears after a clean scan is written again (D36).
+- `CorralProjectService.list()` returns `{ scanned, missing, warnings }`. `warnings` = one line per unreadable scan root. `missing` = the entries of `extra` ∪ `hidden` that
   no longer exist.
 - Rescan: on startup, on the view's **Refresh** button, and when `corral.scanRoots` changes.
 
