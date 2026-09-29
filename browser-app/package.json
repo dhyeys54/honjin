@@ -55,7 +55,23 @@
           "editor.fontSize": 13,
           "editor.lineHeight": 1.6,
           "workbench.startupEditor": "none",
-          "security.workspace.trust.enabled": false
+          "security.workspace.trust.enabled": false,
+          "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/node_modules/**": true,
+            "**/dist/**": true,
+            "**/build/**": true,
+            "**/out/**": true,
+            "**/.next/**": true,
+            "**/.nuxt/**": true,
+            "**/.turbo/**": true,
+            "**/.cache/**": true,
+            "**/coverage/**": true,
+            "**/.venv/**": true,
+            "**/__pycache__/**": true,
+            "**/target/**": true
+          }
         }
       }
     },

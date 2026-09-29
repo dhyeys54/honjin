@@ -62,6 +62,9 @@ that.
 }
 ```
 
+- Both apps also set `files.watcherExclude` to Theia's two `.git` defaults plus `node_modules`, `dist`, `build`,
+  `out`, `.next`, `.nuxt`, `.turbo`, `.cache`, `coverage`, `.venv`, `__pycache__` and `target` (D33). The frontend
+  config replaces the default object whole, so the `.git` entries must stay in the list.
 - Until task T3.1 registers the `corral-dark` theme, use `"dark"` for `defaultTheme`.
 - Check every preference key in this block against the installed packages (search `node_modules/@theia/**/lib/**/*preferences*.js`
   for the key). If a key was renamed, use the new name and record it in `DECISIONS.md`.
