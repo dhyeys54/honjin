@@ -203,7 +203,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     half; Rename; Delete (confirm) → it's gone.
   - Verify: `npm run test:e2e -- file-ops`.
 
-- [ ] **T2.5 Rescan triggers and window title**
+- [x] **T2.5 Rescan triggers and window title**
   - Spec: 03 §Discovery (rescan), 01 §Other shell behaviour.
   - Tests first: `e2e/rescan.spec.ts`: create `e2e/fixtures/projects/gamma` at runtime → it appears after Refresh;
     change `corral.scanRoots` in settings → the tree updates without Refresh; the title becomes `Corral — alpha`
@@ -286,3 +286,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T2.2 — Add project… (folder dialog → extraProjects), Remove from list (manual only, never deletes files), Refresh, missing projects struck through with + disabled; FolderPicker shared with first run (1 E2E)
 - 2026-09-29 T2.3 — Set startup command… (QuickInput, empty = plain shell), Use global startup command, Remove from herdr mapping (forgetProject RPC, workspace stays) (2 unit + 1 E2E)
 - 2026-09-29 T2.4 — Tree context menu: New File…/New Folder…/Rename…/Delete (Theia WorkspaceCommands), Copy Path, Reveal in Finder (backend `open -R`); tree refreshes on disk changes (1 unit + 1 E2E)
+- 2026-09-29 T2.5 — Rescan verified (Refresh button, scanRoots change); window title `Corral — <project>` from the active editor or last + click (3 E2E)

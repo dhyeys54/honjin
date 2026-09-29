@@ -115,3 +115,8 @@ is titled "Debug", not "Run and Debug".
 **Decision.** File operations reuse Theia's `WorkspaceCommands` (New File/Folder, Rename, Delete). Rename is not offered on project roots (Theia disables it for workspace roots). Open / Open to the Side are left out; a click already opens in the left half. Reveal in Finder runs `open -R` in the backend via `execFile`.
 **Why.** Same dialogs and confirmations as the rest of Theia, no new UI to maintain.
 **Consequences.** `ProjectsTree` ids nodes by `uri.toString()` so `FileTreeModel.getNodesByUri` finds them, and project nodes are handed out through `resolveChildren` so they are registered. Theia only watches the workspace file, so each expanded folder gets one shallow `files.watch`; a recursive watch per project starved the backend search and broke the roots E2E.
+
+## D22 — window title (T2.5)
+**Decision.** The title comes from a `WindowTitleContribution` (`Corral — <project>`, plain `Corral` before any project is focused). The contribution holds no injected services; a separate `FrontendApplicationContribution` listens to the editor manager and pushes updates.
+**Why.** `WindowTitleService` resolves its contributions while initialising, and `EditorManager` reaches back to it, which blanked the app with a DI cycle.
+**Consequences.** Rescan on startup, Refresh and `corral.scanRoots` changes were already implemented in T1.14/T2.2; T2.5 only added tests for them.

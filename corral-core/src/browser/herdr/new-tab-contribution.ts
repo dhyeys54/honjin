@@ -8,6 +8,7 @@ import { CorralHerdrService } from '../../common/protocol';
 import { owningProject, resolveStartupCommand } from '../../common/startup-command';
 import { ProjectsContribution } from '../projects/projects-contribution';
 import { ProjectsWidget, NEW_TAB_COMMAND_ID } from '../projects/projects-widget';
+import { CorralWindowTitle } from '../window-title-contribution';
 import { CorralPreferences } from '../corral-preferences';
 import { HerdrCommands } from './herdr-terminal-contribution';
 
@@ -52,6 +53,7 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
     }
 
     @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(CorralWindowTitle) protected readonly windowTitle: CorralWindowTitle;
 
     protected async newTab(target?: URI): Promise<void> {
         const uri = target ?? this.folderFromFocus();
@@ -64,6 +66,7 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         if (!projectPath || this.projectList.entries(true).some(e => e.path === projectPath && e.missing)) {
             return;
         }
+        this.windowTitle.focus(projectPath);
         const command = resolveStartupCommand(folderPath, projects, this.prefs['corral.startupCommand'], this.prefs['corral.projectOverrides']);
         try {
             await this.openWithRetry({ projectPath, folderPath, command });
