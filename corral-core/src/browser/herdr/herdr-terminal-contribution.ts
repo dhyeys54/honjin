@@ -7,6 +7,7 @@ import { TerminalWatcher } from '@theia/terminal/lib/common/terminal-watcher';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { CorralHerdrService } from '../../common/protocol';
 import { fileURLToPath } from 'url';
+import { exitReason } from '../../common/exit-reason';
 
 export const HerdrCommands = {
     FOCUS: { id: 'corral.herdr.focus', label: 'Corral: Focus herdr' } as Command,
@@ -93,15 +94,20 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
                 () => this.commands.executeCommand(CommonCommands.OPEN_PREFERENCES.id));
             return;
         }
+        // Keep a short tail of output: when herdr quits, its error is the last thing it printed.
+        let tail = '';
+        const output = widget.onOutput(data => { tail = (tail + data).slice(-4096); });
         await widget.start();
         const listener = this.watcher.onTerminalExit(e => {
             if (e.terminalId === widget.terminalId) {
                 listener.dispose();
+                output.dispose();
+                const reason = exitReason(tail);
                 // Theia disposes the terminal widget once its process is gone, so the message needs its own tab.
-                this.showPlaceholder('herdr exited', 'Reattach', () => this.commands.executeCommand(HerdrCommands.REATTACH.id));
+                this.showPlaceholder(reason ? `herdr exited: ${reason}` : 'herdr exited', 'Reattach', () => this.commands.executeCommand(HerdrCommands.REATTACH.id));
             }
         });
-        widget.onDidDispose(() => listener.dispose());
+        widget.onDidDispose(() => { listener.dispose(); output.dispose(); });
     }
 
     protected async showPlaceholder(message: string, action: string, run: () => unknown): Promise<void> {

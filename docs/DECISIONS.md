@@ -149,3 +149,8 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 **Decision.** `electron-builder.yml` adds `lib/prebuilds/**` to `asarUnpack`.
 **Why.** Theia's bundle loads node-pty's `spawn-helper` from `lib/prebuilds/<arch>/`, not from `node_modules`. It stayed inside `app.asar`, so the packaged Corral.app failed with `posix_spawn failed: No such file or directory` and the herdr pane stayed blank. The browser and dev builds were unaffected, so E2E never caught it.
 **Consequences.** Verified by launching the rebuilt app: a herdr client now runs on its own tty.
+
+## D29 — "herdr exited" shows herdr's last output line (post-plan fix)
+**Decision.** The herdr terminal keeps the last 4 KB of output, and on exit the overlay shows the last readable line (`common/exit-reason.ts`). Spec 02 was updated.
+**Why.** A wedged `default` server made every new client quit with "server did not become ready within 15s", but the overlay only said "herdr exited", so the cause was invisible.
+**Consequences.** Nothing new is persisted. The tail is dropped with the widget.

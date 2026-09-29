@@ -37,7 +37,8 @@ writing code.
    above.
 2. Command `corral.herdr.focus` ("Corral: Focus herdr") reveals and activates it.
 3. If the herdr process exits (the user detaches, or herdr crashes), the widget shows an overlay: "herdr exited ·
-   **Reattach**". Reattach runs `corral.herdr.reattach`, which disposes the widget and recreates it at the same
+   **Reattach**". When herdr printed something before exiting, its last line follows ("herdr exited: <line>"), so
+   errors such as a server that won't accept clients are visible. Reattach runs `corral.herdr.reattach`, which disposes the widget and recreates it at the same
    placement. It never recreates it automatically in a loop.
 4. Closing the widget or quitting Corral ends only the herdr **client**. The herdr server and its agents keep
    running; Corral never stops the server. On the next launch step 1 attaches to it again (R15, tested in T1.9).
