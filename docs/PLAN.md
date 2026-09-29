@@ -362,7 +362,9 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - [x] **T5.1 Missing projects always listed (spec 03 rule 4)**
   - Tests first: `common/project-list.test.ts`: `shownEntries(all, false)` keeps a hidden **missing** project and
     drops a hidden present one; `shownEntries(all, true)` keeps all.
-  - Do: `shownEntries` in `common/project-list.ts`; `ProjectListService.entries` calls it.
+  - Do: `shownEntries` in `common/project-list.ts`; `ProjectListService.entries` calls it. *(Done instead by
+    `entries(false)` calling `buildProjectList`, whose rule-4 unit test already covers this; plus the
+    `add-remove.spec.ts` E2E.)*
   - Verify: `npm test`, typecheck, lint.
 
 - [x] **T5.2 Single click previews a file (spec 03 §Opening files)**

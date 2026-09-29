@@ -11,7 +11,7 @@
 
 - Reset Layout and the Projects toggle open the whole `corral-projects-container` (spec 09 C14).
 - Theia's Explorer (navigator) is not in the default layout. It can still be opened from the View menu.
-- Command `corral.resetLayout` ("Corral: Reset Layout") rebuilds exactly this layout. Use it via the application's
+- Command `corral.resetLayout` ("Corral: Reset Layout") rebuilds this layout, except the main-area split (D36). Use it via the application's
   `initializeLayout` hook (a `FrontendApplicationContribution`) so a fresh profile gets it automatically.
 
 ## Source Control (on demand)
