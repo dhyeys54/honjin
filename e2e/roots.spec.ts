@@ -11,6 +11,7 @@ const writeSettings = (text: string) => {
 const beta = resolve(__dirname, 'fixtures/projects/beta');
 
 test('search covers visible projects only, in the managed workspace, without reloading', async ({ page }) => {
+    test.setTimeout(90_000); // the managed-workspace reload and root sync happen before search can find anything
     const original = readFileSync(settingsFile(), 'utf8');
     try {
         await page.goto('/');

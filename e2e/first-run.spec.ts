@@ -24,7 +24,11 @@ async function startServer(): Promise<void> {
 
 function stopServer(): void {
     if (server?.pid) {
-        process.kill(-server.pid);
+        try {
+            process.kill(-server.pid);
+        } catch {
+            // already gone (ESRCH): nothing to stop
+        }
     }
     server = undefined;
 }
