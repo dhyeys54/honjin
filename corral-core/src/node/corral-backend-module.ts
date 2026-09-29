@@ -15,7 +15,7 @@ import { WorkspaceMapStore } from './workspace-map-store';
 // The packaged app carries the built-in extensions in Resources/plugins (electron-app/electron-builder.yml).
 // Theia only looks there when told, and the .app has no start script to pass --plugins.
 const packagedPlugins = join((process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ?? '', 'plugins');
-if (!process.env.THEIA_DEFAULT_PLUGINS && (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath && existsSync(join(packagedPlugins, 'ms-vscode.js-debug'))) {
+if (!process.env.THEIA_DEFAULT_PLUGINS && (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath && existsSync(packagedPlugins)) {
     process.env.THEIA_DEFAULT_PLUGINS = `local-dir:${packagedPlugins}`;
 }
 

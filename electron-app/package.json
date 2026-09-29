@@ -57,6 +57,7 @@
           "terminal.integrated.fontSize": 13,
           "editor.fontFamily": "JetBrains Mono, SF Mono, Menlo, monospace",
           "editor.fontSize": 13,
+          "editor.lineHeight": 1.6,
           "workbench.startupEditor": "none",
           "security.workspace.trust.enabled": false
         }

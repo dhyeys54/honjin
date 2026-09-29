@@ -137,3 +137,10 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 ## D26 — Packaging details (T3.5)
 
 `electron-builder` 26.15.3 is added to `electron-app` devDependencies (spec 07 names it). `asar: true` with `node-pty`, `@vscode/ripgrep`, `drivelist` and Theia `.node` files unpacked; the built-in extensions from `plugins/` ship as `Resources/plugins`. A packaged app has no start script to pass `--plugins`, so the backend module sets `THEIA_DEFAULT_PLUGINS` to that folder when it exists (guarded, so dev runs are untouched). `package:mac` runs `theia build` and `electron-builder` from inside `electron-app`. Smoke check ran the binary with an `env -i` PATH of `/usr/bin:/bin` and herdr was still found. Not checked: launching from Finder with `open`, and the icon in the Dock (icns is wired via `mac.icon`).
+
+## D27 — Stage 3 review leftovers (code-review, 2026-09-29)
+
+- Chrome rules stay in `herdr.css` (spec 06 names `corral.css`); a rename is churn and the file already holds all Corral CSS. Uppercase view titles and square tabs come from the theme and Theia defaults; nothing custom was needed after the T3.2 critique.
+- CSS reads `--theia-*` variables, which the theme maps from the DESIGN.md tokens; no `--corral-*` aliases exist. Add them only if a rule needs a token the theme does not expose.
+- `editor.lineHeight` is 1.6 (DESIGN.md `code`). The terminal keeps Theia's default: herdr is a TUI and a 1.6 line height breaks its box drawing.
+- Not done: favicon `.ico` fallback link, Electron dev-window icon (`icon-512.png`); both listed in FOR-REVIEW.
