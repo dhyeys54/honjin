@@ -2,13 +2,12 @@ appId: dev.corral.ide
 productName: Corral
 directories:
   output: dist
-# The Theia bundle lives in lib/ and src-gen/; plugins ship as a resource and are found through THEIA_DEFAULT_PLUGINS
-# (set in scripts/ in the main process before Theia starts).
+# The Theia bundle lives in lib/ and src-gen/; plugins ship as a resource and corral-backend-module points
+# THEIA_DEFAULT_PLUGINS at them.
 files:
   - package.json
   - lib/**/*
   - src-gen/**/*
-  - scripts/**/*
 extraResources:
   - from: ../plugins
     to: plugins
