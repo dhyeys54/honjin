@@ -4,6 +4,7 @@ import { inject, injectable } from '@theia/core/shared/inversify';
 import { TerminalService } from '@theia/terminal/lib/browser/base/terminal-service';
 import { TerminalWidget } from '@theia/terminal/lib/browser/base/terminal-widget';
 import { TerminalWatcher } from '@theia/terminal/lib/common/terminal-watcher';
+import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { CorralHerdrService } from '../../common/protocol';
 import { fileURLToPath } from 'url';
@@ -25,6 +26,7 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
     @inject(CorralHerdrService) protected readonly herdr: CorralHerdrService;
     @inject(EnvVariablesServer) protected readonly env: EnvVariablesServer;
     @inject(CommandRegistry) protected readonly commands: CommandRegistry;
+    @inject(PreferenceService) protected readonly preferences: PreferenceService;
 
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
 
@@ -61,6 +63,11 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
     protected async create(): Promise<void> {
         const { binary, session } = await this.herdr.resolveBinary();
         const home = fileURLToPath(await this.env.getHomeDirUri());
+        // xterm measures its cell once at creation. Measured against the fallback font, the rows overflow the
+        // pane (edges cut off) until something resizes it, so wait for the terminal font first.
+        const family = this.preferences.get<string>('terminal.integrated.fontFamily', 'monospace');
+        const size = this.preferences.get<number>('terminal.integrated.fontSize', 11);
+        await document.fonts.load(`${size}px ${family}`).catch(() => undefined);
         // Without a binary the widget would fall back to the user's shell, so start it only when herdr exists.
         const widget = await this.terminals.newTerminal({
             id: HERDR_TERMINAL_ID,
