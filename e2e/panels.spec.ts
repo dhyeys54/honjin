@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 test('the Projects panel slides shut and reopens at the same width', async ({ page }) => {
     await page.goto('/');
     const panel = page.locator('#theia-right-content-panel'); // the tab strip plus the view
-    const tab = page.locator('.theia-app-right #shell-tab-corral-projects');
+    const tab = page.locator('.theia-app-right #shell-tab-corral-projects-container');
     const width = async () => Math.round((await panel.boundingBox())?.width ?? 0);
     await expect.poll(width, { timeout: 30_000 }).toBeGreaterThan(100);
     await expect(tab).toHaveClass(/lm-mod-current/);

@@ -24,6 +24,16 @@
     color: var(--theia-foreground);
 }
 
+/* Inside a view container part the tree gets no height from the dock panel (Theia's navigator does the same). */
+.corral-projects {
+    height: 100%;
+}
+
+/* Add project / Refresh are the primary actions: keep them visible, not hover-only like other parts. */
+.lm-Widget.part[id$="--corral-projects"] .theia-view-container-part-header .theia-view-container-part-title {
+    display: flex;
+}
+
 .corral-projects .corral-new-tab {
     margin-left: auto;
     padding: 0 4px;

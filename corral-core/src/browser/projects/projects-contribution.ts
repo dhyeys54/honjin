@@ -2,6 +2,7 @@ import { injectable } from '@theia/core/shared/inversify';
 import { Command, CommandRegistry } from '@theia/core/lib/common';
 import { AbstractViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PROJECTS_VIEW_ID, ProjectsWidget } from './projects-widget';
+import { PROJECTS_CONTAINER_ID } from './projects-view-container';
 
 export const ProjectsCommands = {
     RESET_LAYOUT: { id: 'corral.resetLayout', label: 'Corral: Reset Layout' } as Command
@@ -13,6 +14,7 @@ export class ProjectsContribution extends AbstractViewContribution<ProjectsWidge
     constructor() {
         super({
             widgetId: PROJECTS_VIEW_ID,
+            viewContainerId: PROJECTS_CONTAINER_ID,
             widgetName: 'Projects',
             defaultWidgetOptions: { area: 'right', rank: 100 },
             toggleCommandId: 'corral.projects.toggle'
@@ -21,6 +23,15 @@ export class ProjectsContribution extends AbstractViewContribution<ProjectsWidge
 
     async initializeLayout(): Promise<void> {
         await this.applyDefaultLayout();
+    }
+
+    // Layouts saved before spec 09 hold Projects as its own right-panel tab: move it into the container.
+    async onDidInitializeLayout(): Promise<void> {
+        const standalone = this.tryGetWidget();
+        if (standalone && this.shell.getTabBarFor(standalone)) {
+            await this.shell.closeWidget(standalone.id);
+            await this.openView({ activate: false, reveal: true });
+        }
     }
 
     override registerCommands(commands: CommandRegistry): void {

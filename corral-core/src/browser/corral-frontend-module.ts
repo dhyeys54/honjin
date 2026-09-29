@@ -8,6 +8,8 @@ import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/ser
 import { FolderPicker } from './folder-picker';
 import { ProjectListService } from './projects/project-list-service';
 import { ChangesService } from './changes/changes-service';
+import { CHANGES_VIEW_ID, ChangesWidget } from './changes/changes-widget';
+import { ProjectsViewContainerFactory } from './projects/projects-view-container';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
 import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
@@ -73,6 +75,13 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(SidePanelHandler).to(CorralSidePanelHandler);
     bind(CorralScmContribution).toSelf().inSingletonScope();
     rebind(ScmContribution).toService(CorralScmContribution);
+    bind(ChangesWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: CHANGES_VIEW_ID,
+        createWidget: () => ctx.container.get(ChangesWidget)
+    })).inSingletonScope();
+    bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
+    bind(WidgetFactory).toService(ProjectsViewContainerFactory);
     bindViewContribution(bind, ProjectsContribution);
     bind(FrontendApplicationContribution).toService(ProjectsContribution);
     bind(WidgetFactory).toDynamicValue(ctx => ({

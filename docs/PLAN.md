@@ -293,7 +293,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     `FileChangeType` is a `const enum`: import it from `@theia/filesystem/lib/common/files`.
   - Verify: `npm run typecheck && npm run lint && npm test && npm run build:browser`.
 
-- [ ] **T4.3 Projects + Changes view container**
+- [x] **T4.3 Projects + Changes view container**
   - Spec: 09 C14, C11; 02 §Default layout.
   - Tests first:
     - `e2e/panels.spec.ts`: the tab locator becomes `.theia-app-right #shell-tab-corral-projects-container`.
@@ -390,3 +390,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 G3 — all suites green (117 unit, 11 int, 29 E2E); spec-reviewer found no must-fix; ticked per the standing "do not stop at gates" instruction, awaiting human review
 - 2026-09-29 T4.1 — common/changes.ts: groupChanges (C1–C7), changeKind, liveFolders, nextExpiry (10 tests)
 - 2026-09-29 T4.2 — ChangesService: git repos + file writes + project list → groups, live flags, one expiry timer; bound as a singleton (0 new tests, wiring; E2E in T4.4)
+- 2026-09-29 T4.3 — Projects over Changes in one `corral-projects-container` view container; old layouts fixed up; Projects toolbar stays visible (144 unit, 34 e2e)
