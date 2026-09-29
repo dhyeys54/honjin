@@ -48,7 +48,7 @@ Build it on `@theia/filesystem`'s `FileTreeWidget` / `FileTreeModel`, following 
 
 - The view id is `corral-projects`, label "Projects", in the right area, opened by default. Its root is a
   `CompositeTreeNode` whose children are one `DirNode` per `ProjectEntry`. Project roots start collapsed.
-  Expanded state persists across restarts (`StatefulWidget`).
+  Expanded folders and the show-hidden toggle persist across restarts (`StatefulWidget`, D36).
 - Children load lazily through `FileService` and respect `files.exclude`. File icons come from the active icon
   theme.
 - **Project root row:** the name, plus the path as a tooltip. Hidden roots render at 50% opacity with an eye-off

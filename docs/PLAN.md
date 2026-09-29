@@ -420,7 +420,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
     (`@theia/output`, already in the app; declare it in `corral-core/package.json`, D36).
   - Verify: `npm test`, `npm run test:int`, typecheck, lint.
 
-- [ ] **T5.7 Projects tree state survives a restart (spec 03, closes D17/D18 deferrals)**
+- [x] **T5.7 Projects tree state survives a restart (spec 03, closes D17/D18 deferrals)**
   - Tests first: `e2e/projects.spec.ts`: expand a project and turn on show-hidden, reload the page, both are kept.
   - Do: `ProjectsWidget.storeState`/`restoreState` save expanded project/folder ids and `showHidden`; re-apply
     them after the first rebuild.
@@ -506,3 +506,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.4 — Changes recompute is one linear pass (`pickChanges`), lookups are O(1), views re-render only when the result changed; Open Changes reuses ChangesService. Reveal already scrolls (TreeWidget scrolls to the selection), so no change there (145 unit)
 - 2026-09-29 T5.5 — shared `paths.ts` (`trimSlash`, `isInside`); one Show Changes (Changes view runs the Projects command, which ignores the menu-anchor arg); dead stub removed; `FileUri.fsPath` in browser code; kind-tagged Changes nodes; spec 04 binary order (147 unit, 11 int)
 - 2026-09-29 T5.6 — an unreadable scan root is reported once in the Output channel "Corral" (warnings come back from `list()` over RPC; `@theia/output` declared, D36) (148 unit, 11 int)
+- 2026-09-29 T5.7 — Projects tree keeps expanded folders and show-hidden across a restart (widget state holds ids only; re-applied after the first list) (+1 e2e)

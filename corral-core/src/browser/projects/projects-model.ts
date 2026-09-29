@@ -1,14 +1,14 @@
 import { Disposable, DisposableCollection } from '@theia/core/lib/common';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
-import { CompositeTreeNode, OpenerService, TreeNode, open } from '@theia/core/lib/browser';
+import { BreadthFirstTreeIterator, CompositeTreeNode, ExpandableTreeNode, OpenerService, TreeNode, open } from '@theia/core/lib/browser';
 import { DirNode, FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
 import { FileStat } from '@theia/filesystem/lib/common/files';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { EditorPlacementGuard } from '../editor-placement-guard';
 import { ProjectEntry } from '../../common/project-list';
 import { ProjectListService } from './project-list-service';
-import { ProjectsTree } from './projects-tree';
+import { PROJECTS_ROOT_ID, ProjectsTree } from './projects-tree';
 
 /** A stand-in stat so a vanished project can still be listed (struck through) and removed. */
 const missingStat = (resource: URI): FileStat => ({
@@ -46,6 +46,21 @@ export class ProjectsModel extends FileTreeModel {
 
     async reload(): Promise<void> {
         await this.projectList.reload();
+    }
+
+    /** Expanded folder ids, parents before children, for the widget's saved state. */
+    get expandedIds(): string[] {
+        return this.root ? [...new BreadthFirstTreeIterator(this.root, { pruneCollapsed: true })]
+            .filter(n => n.id !== PROJECTS_ROOT_ID && ExpandableTreeNode.isExpanded(n)).map(n => n.id) : [];
+    }
+
+    /** Restart persistence: the tree is rebuilt from the project list, so saved expansion is re-applied once it loads. */
+    protected pendingExpanded?: string[];
+
+    restoreView(expanded: string[], showHidden: boolean): void {
+        this.showHidden = showHidden;
+        this.pendingExpanded = expanded;
+        this.rebuild();
     }
 
     toggleShowHidden(): void {
@@ -94,6 +109,17 @@ export class ProjectsModel extends FileTreeModel {
         }
         this.projectsTree.projects = nodes.filter((n): n is NonNullable<typeof n> => !!n);
         this.root = root;
+        if (this.pendingExpanded && this.projectList.loaded) {
+            const expanded = this.pendingExpanded;
+            this.pendingExpanded = undefined;
+            await this.refresh();
+            for (const id of expanded) {
+                const node = this.getNode(id);
+                if (ExpandableTreeNode.is(node)) {
+                    await this.expandNode(node);
+                }
+            }
+        }
     }
 
     // Files open in an editor (single click previews, double click / Enter pins); folders toggle as usual.

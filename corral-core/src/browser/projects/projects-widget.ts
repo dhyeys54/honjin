@@ -45,7 +45,6 @@ export class ProjectsWidget extends FileTreeWidget {
         this.toDispose.push(this.changes.onDidChange(() => this.update()));
     }
 
-    // Spec 03 §Empty states. Hidden projects count as projects, so hiding the last one is not "empty".
     // Spec 03: a single click previews a file, as in Theia's Explorer.
     protected override tapNode(node?: TreeNode): void {
         if (node && this.corePreferences['workbench.list.openMode'] === 'singleClick') {
@@ -54,6 +53,16 @@ export class ProjectsWidget extends FileTreeWidget {
         super.tapNode(node);
     }
 
+    // Only expansion and show-hidden are kept: the tree itself is rebuilt from the project list.
+    override storeState(): object {
+        return { expanded: this.model.expandedIds, showHidden: this.model.showHidden };
+    }
+
+    override restoreState(state: { expanded?: string[], showHidden?: boolean }): void {
+        this.model.restoreView(state.expanded ?? [], !!state.showHidden);
+    }
+
+    // Spec 03 §Empty states. Hidden projects count as projects, so hiding the last one is not "empty".
     protected override render(): React.ReactNode {
         if (!this.projectList.loaded || this.projectList.entries(true).length > 0) {
             return super.render();
