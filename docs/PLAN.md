@@ -246,7 +246,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     `design-taste-frontend` pre-flight to the README presentation; update README §Screenshots.
   - Verify: the images render in the README preview.
 
-- [ ] **T3.5 Package Corral.app**
+- [x] **T3.5 Package Corral.app**
   - Spec: 07.
   - Do: `electron-builder` config and the `package:mac` script (`.app` only, no DMG).
   - Verify: `npm run package:mac` produces `electron-app/dist/mac-arm64/Corral.app`; `open` it; the window title
@@ -293,3 +293,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T3.2 — one critique round + one fix batch (flat selection bar, quiet notification buttons); before/after shots in docs/screenshots (27 E2E)
 - 2026-09-29 T3.3 — favicon link injected at startup, About shows Corral (2 E2E)
 - 2026-09-29 T3.4 — README hero screenshot (3 projects, 2 herdr tabs, real app) and Screenshots section
+- 2026-09-29 T3.5 — `npm run package:mac` builds electron-app/dist/mac-arm64/Corral.app; smoke-tested: title "Corral — alpha", herdr terminal attached with a minimal PATH, Corral Dark applied

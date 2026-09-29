@@ -19,7 +19,7 @@
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "typecheck": "tsc --noEmit -p corral-core",
     "lint": "eslint .",
-    "package:mac": "echo \"see T3.5\" && exit 1",
+    "package:mac": "npm run build -w corral-core && npm --prefix electron-app run download:plugins && npm --prefix electron-app run rebuild && cd electron-app && theia build --mode production && electron-builder --mac --dir",
     "download:plugins": "npm --prefix browser-app run download:plugins"
   },
   "devDependencies": {

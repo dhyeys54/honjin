@@ -1,7 +1,7 @@
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { ConnectionHandler, RpcConnectionHandler } from '@theia/core/lib/common/messaging';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -11,6 +11,13 @@ import { CorralProjectServiceImpl } from './corral-project-service';
 import { defaultExecFile, HerdrCli } from './herdr-cli';
 import { HerdrBinaryResolver } from './herdr-binary';
 import { WorkspaceMapStore } from './workspace-map-store';
+
+// The packaged app carries the built-in extensions in Resources/plugins (electron-app/electron-builder.yml).
+// Theia only looks there when told, and the .app has no start script to pass --plugins.
+const packagedPlugins = join((process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ?? '', 'plugins');
+if (!process.env.THEIA_DEFAULT_PLUGINS && (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath && existsSync(join(packagedPlugins, 'ms-vscode.js-debug'))) {
+    process.env.THEIA_DEFAULT_PLUGINS = `local-dir:${packagedPlugins}`;
+}
 
 async function readSettings(configDir: string): Promise<Record<string, unknown>> {
     try {
