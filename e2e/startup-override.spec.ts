@@ -1,18 +1,11 @@
 import { expect, test, Page } from '@playwright/test';
-import { execFileSync } from 'child_process';
 import { readFileSync, renameSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { herdr, row, settingsFile } from './helpers';
 
-const session = () => process.env.CORRAL_E2E_SESSION!;
-const herdr = (...args: string[]) => execFileSync('herdr', ['--session', session(), ...args], { encoding: 'utf8' });
 const json = (...args: string[]) => JSON.parse(herdr(...args));
 type Pane = { pane_id: string; cwd: string };
 const panes = (dir: string): Pane[] => json('pane', 'list').result.panes.filter((p: Pane) => p.cwd.endsWith(dir));
 const workspaces = (label: string) => json('workspace', 'list').result.workspaces.filter((w: { label: string }) => w.label === label);
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
-
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
 
 async function plus(page: Page, name: string) {
     await row(page, name).hover();

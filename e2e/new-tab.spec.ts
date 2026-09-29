@@ -1,12 +1,7 @@
-import { expect, test, Page } from '@playwright/test';
-import { execFileSync } from 'child_process';
+import { expect, test } from '@playwright/test';
+import { herdr, projects, row } from './helpers';
 
-const session = () => process.env.CORRAL_E2E_SESSION!;
-const herdr = (...args: string[]) => execFileSync('herdr', ['--session', session(), ...args], { encoding: 'utf8' });
 const json = (...args: string[]) => JSON.parse(herdr(...args));
-
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
 
 test('the + on a folder opens a herdr tab in the project workspace', async ({ page }) => {
     await page.goto('/');

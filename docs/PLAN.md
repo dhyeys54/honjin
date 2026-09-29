@@ -442,7 +442,7 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
   - Do: fix whatever these tests expose.
   - Verify: `npx playwright test -c e2e/playwright.config.ts e2e/changes-view.spec.ts`.
 
-- [ ] **T5.10 E2E hygiene**
+- [x] **T5.10 E2E hygiene**
   - Do: `e2e/helpers.ts` for the copied helpers (`row`, `settingsFile`, `writeSettings`, `closeMenu`, `git`, temp
     dirs); replace fixed `waitForTimeout` sleeps with polled expectations where a condition exists; await
     `stopServer()` in `first-run.spec.ts`.
@@ -509,3 +509,4 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 - 2026-09-29 T5.7 — Projects tree keeps expanded folders and show-hidden across a restart (widget state holds ids only; re-applied after the first list) (+1 e2e)
 - 2026-09-29 T5.8 — Reset Layout sets the right panel to 300 px and the left to reopen at 280 px; the 50/50 main split is only the initial split (spec 02 amended, D36) (+1 e2e)
 - 2026-09-29 T5.9 — Changes E2E covers the old-layout fix-up (C14, checked red with the fix-up off), Open File / Copy Path (C10), Enter, project toggle and collapsed-through-refresh (C9), hidden projects (C1); nothing needed fixing (+2 e2e)
+- 2026-09-30 T5.10 — e2e/helpers.ts replaces 13 copies of the settings/row/git/herdr/temp-dir helpers; ai-disabled waits for .theia-preload instead of 2 s; first-run awaits the server going down. Kept: the two sleeps guarding negative checks (nested, startup-override) and the herdr TUI pacing sleeps (no observable condition). Two full runs: 39/40, the known roots flake, which passes alone (40 e2e)

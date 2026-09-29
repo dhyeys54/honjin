@@ -1,28 +1,14 @@
 import { expect, test, Page } from '@playwright/test';
-import { execFileSync } from 'child_process';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { closeMenu, git, projects, settingsFile, tempDir, writeSettings } from './helpers';
 
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
 const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { has: page.getByText(name, { exact: true }) });
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
-const writeSettings = (value: object) => {
-    const tmp = settingsFile() + '.tmp';
-    writeFileSync(tmp, JSON.stringify(value));
-    renameSync(tmp, settingsFile());
-};
-const closeMenu = async (page: Page) => {
-    // Theia's context menu ignores Escape here; a click outside it closes it, as Lumino menus do.
-    await page.locator('#theia-statusBar').click({ position: { x: 1, y: 1 } });
-    await expect(page.locator('.lm-Menu:visible')).toHaveCount(0);
-};
-const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd });
 
 test('Open Changes diffs a changed file; Show Changes opens that project\'s Source Control on the right', async ({ page }) => {
     test.setTimeout(120_000);
     const original = readFileSync(settingsFile(), 'utf8');
-    const repo = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-git-')), 'delta');
+    const repo = join(tempDir('corral-git-'), 'delta');
     mkdirSync(repo);
     git(repo, 'init', '-q');
     writeFileSync(join(repo, 'a.txt'), 'one\n');

@@ -1,13 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { readFileSync, renameSync, writeFileSync } from 'fs';
-import { join, resolve } from 'path';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { settingsFile, writeSettings } from './helpers';
 
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
-// Replace the file (as editors do) so the watcher sees a change even when the inode would stay the same.
-const writeSettings = (text: string) => {
-    writeFileSync(settingsFile() + '.tmp', text);
-    renameSync(settingsFile() + '.tmp', settingsFile());
-};
 const beta = resolve(__dirname, 'fixtures/projects/beta');
 
 test('search covers visible projects only, in the managed workspace, without reloading', async ({ page }) => {

@@ -3,6 +3,7 @@ import { ChildProcess, spawn } from 'child_process';
 import { mkdirSync, mkdtempSync, readFileSync } from 'fs';
 import { homedir, tmpdir } from 'os';
 import { join, resolve } from 'path';
+import { row } from './helpers';
 
 // Needs its own backend: the shared one is seeded with settings, first run needs an empty profile.
 const PORT = 3110;
@@ -22,7 +23,7 @@ async function startServer(): Promise<void> {
     await expect.poll(async () => fetch(url).then(r => r.ok, () => false), { timeout: 90_000 }).toBe(true);
 }
 
-function stopServer(): void {
+async function stopServer(): Promise<void> {
     if (server?.pid) {
         try {
             process.kill(-server.pid);
@@ -31,9 +32,9 @@ function stopServer(): void {
         }
     }
     server = undefined;
+    await expect.poll(async () => fetch(url).then(() => true, () => false), { timeout: 30_000 }).toBe(false);
 }
 
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
 const dialog = (page: Page) => page.locator('.theia-dialog-shell, .dialogBlock').first();
 
 test.beforeAll(async () => {
@@ -54,15 +55,14 @@ test('first run asks for folders, fills the tree, and does not ask again', async
     await expect(page.locator('.theia-FileTree, .dialogContent').getByText('alpha', { exact: true }).first()).toBeVisible({ timeout: 15_000 }); // navigation done; Choose earlier picks the previous folder
     await page.getByRole('button', { name: 'Choose', exact: true }).click();
 
-    await expect(projects(page).locator('.theia-TreeNode', { hasText: /^alpha$/ })).toBeVisible({ timeout: 30_000 });
+    await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
     await expect.poll(() => readFileSync(join(configDir, 'settings.json'), 'utf8')).toContain('"corral.firstRunCompleted": true');
     expect(JSON.parse(readFileSync(join(configDir, 'settings.json'), 'utf8'))['corral.scanRoots']).toEqual([projectsDir.startsWith(homedir() + '/') ? '~' + projectsDir.slice(homedir().length) : projectsDir]); // spec 05: stored with ~
 
-    stopServer();
-    await new Promise(r => setTimeout(r, 1500));
+    await stopServer();
     await startServer();
     await page.goto(url);
-    await expect(projects(page).locator('.theia-TreeNode', { hasText: /^alpha$/ })).toBeVisible({ timeout: 60_000 });
+    await expect(row(page, 'alpha')).toBeVisible({ timeout: 60_000 });
     await expect(page.getByText('Choose the folders that hold your projects')).toHaveCount(0);
     expect(await dialog(page).count()).toBeLessThanOrEqual(1);
 });

@@ -1,10 +1,9 @@
 import { expect, test, Page } from '@playwright/test';
 import { existsSync, rmSync } from 'fs';
 import { resolve } from 'path';
+import { row } from './helpers';
 
 const src = resolve(__dirname, 'fixtures/projects/alpha/src');
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
 
 async function menu(page: Page, name: string, item: string) {
     await row(page, name).click({ button: 'right' });

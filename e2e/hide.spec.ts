@@ -1,10 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync, renameSync, writeFileSync } from 'fs';
-import { join } from 'path';
-
-const projects = (page: import('@playwright/test').Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: import('@playwright/test').Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
+import { row, settingsFile } from './helpers';
 
 test('hide removes a project, the eye shows it dimmed, unhide restores it', async ({ page }) => {
     const original = readFileSync(settingsFile(), 'utf8');

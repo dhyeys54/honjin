@@ -1,16 +1,10 @@
-import { expect, test, Page } from '@playwright/test';
-import { existsSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { expect, test } from '@playwright/test';
+import { existsSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
+import { row, settingsFile, writeSettings } from './helpers';
 
 const scanRoot = resolve(__dirname, 'fixtures/projects');
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
 const workspaceFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'corral.code-workspace');
-const writeSettings = (text: string) => {
-    writeFileSync(settingsFile() + '.tmp', text);
-    renameSync(settingsFile() + '.tmp', settingsFile());
-};
 const roots = () => existsSync(workspaceFile())
     ? (JSON.parse(readFileSync(workspaceFile(), 'utf8')).folders as { path: string }[]).map(f => decodeURIComponent(f.path.replace('file://', '')))
     : [];

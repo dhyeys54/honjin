@@ -1,18 +1,16 @@
 import { expect, test, Page } from '@playwright/test';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs';
 import { join, resolve } from 'path';
+import { projects, settingsFile, tempDir, writeSettings } from './helpers';
 
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
 const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}(missing)?$`) });
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
 const alpha = resolve(__dirname, 'fixtures/projects/alpha');
 const toolbar = (page: Page, id: string) => page.locator(`[id="${id}"]`).first();
 
 test('add a folder outside the scan root, remove it, then see a deleted one as missing', async ({ page }) => {
     test.setTimeout(120_000);
     const original = readFileSync(settingsFile(), 'utf8');
-    const outside = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-add-')), 'gamma');
+    const outside = join(tempDir('corral-add-'), 'gamma');
     mkdirSync(outside);
     try {
         await page.goto('/');
@@ -33,9 +31,7 @@ test('add a folder outside the scan root, remove it, then see a deleted one as m
         expect(existsSync(outside)).toBe(true);
 
         // Put it back through settings, delete it on disk, and refresh.
-        const tmp = settingsFile() + '.tmp';
-        writeFileSync(tmp, JSON.stringify({ ...JSON.parse(original), 'corral.extraProjects': [outside] }));
-        renameSync(tmp, settingsFile());
+        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [outside] });
         await expect(row(page, 'gamma')).toBeVisible({ timeout: 20_000 });
         rmSync(outside, { recursive: true });
         await toolbar(page, 'corral.projects.refresh').click();
@@ -44,13 +40,10 @@ test('add a folder outside the scan root, remove it, then see a deleted one as m
         await expect(row(page, 'gamma').locator('[data-testid="corral-new-tab"]')).toBeDisabled();
 
         // Spec 03 rule 4: a missing project stays listed even when hidden, so it can be removed or unhidden.
-        writeFileSync(tmp, JSON.stringify({ ...JSON.parse(original), 'corral.extraProjects': [outside], 'corral.hiddenProjects': [outside, alpha] }));
-        renameSync(tmp, settingsFile());
+        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [outside], 'corral.hiddenProjects': [outside, alpha] });
         await expect(row(page, 'alpha')).toHaveCount(0, { timeout: 20_000 }); // the hidden list has been applied
         await expect(row(page, 'gamma')).toHaveClass(/corral-project-missing/);
     } finally {
-        const tmp = settingsFile() + '.tmp';
-        writeFileSync(tmp, original);
-        renameSync(tmp, settingsFile());
+        writeSettings(original);
     }
 });

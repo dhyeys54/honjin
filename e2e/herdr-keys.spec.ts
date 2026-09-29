@@ -1,8 +1,6 @@
 import { expect, test, Page } from '@playwright/test';
-import { execFileSync } from 'child_process';
+import { herdr } from './helpers';
 
-const session = () => process.env.CORRAL_E2E_SESSION!;
-const herdr = (...args: string[]) => execFileSync('herdr', ['--session', session(), ...args], { encoding: 'utf8' });
 // Across all workspaces: the client may focus a different workspace than the CLI created.
 const tabCount = () => (JSON.parse(herdr('workspace', 'list')).result?.workspaces ?? []).reduce((n: number, w: { tab_count: number }) => n + w.tab_count, 0);
 

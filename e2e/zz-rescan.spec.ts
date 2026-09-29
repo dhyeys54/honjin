@@ -1,13 +1,10 @@
 // Named zz- so it runs last: it churns workspace roots, which left the shared backend's search slow for the next spec (see FOR-REVIEW).
-import { expect, test, Page } from '@playwright/test';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { expect, test } from '@playwright/test';
+import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
+import { row, settingsFile, tempDir } from './helpers';
 
 const gamma = resolve(__dirname, 'fixtures/projects/gamma');
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
 let original = '';
 let extraRoot = '';
 
@@ -35,7 +32,7 @@ test('changing corral.scanRoots updates the tree without Refresh', async ({ page
     await page.goto('/');
     await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
     // Only adds a root: removing roots here left the shared backend's search index stale for the next spec.
-    extraRoot = mkdtempSync(join(realpathSync(tmpdir()), 'corral-scan-'));
+    extraRoot = tempDir('corral-scan-');
     mkdirSync(join(extraRoot, 'delta', '.git'), { recursive: true });
     const settings = JSON.parse(original);
     settings['corral.scanRoots'] = [...(settings['corral.scanRoots'] ?? []), extraRoot];

@@ -1,23 +1,10 @@
 import { expect, test, Page } from '@playwright/test';
-import { execFileSync } from 'child_process';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { closeMenu, git, settingsFile, tempDir, writeSettings } from './helpers';
 
-const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
-const writeSettings = (value: object) => {
-    const tmp = settingsFile() + '.tmp';
-    writeFileSync(tmp, JSON.stringify(value));
-    renameSync(tmp, settingsFile());
-};
-const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd });
 const changes = (page: Page) => page.locator('[data-testid="corral-changes"]');
 const changeRow = (page: Page, name: string) => changes(page).locator('.theia-TreeNode', { hasText: name });
-const closeMenu = async (page: Page) => {
-    // Theia's context menu ignores Escape here; a click outside it closes it, as Lumino menus do.
-    await page.locator('#theia-statusBar').click({ position: { x: 1, y: 1 } });
-    await expect(page.locator('.lm-Menu:visible')).toHaveCount(0);
-};
 
 test('Projects and Changes are stacked in one right-panel container', async ({ page }) => {
     await page.goto('/');
@@ -34,7 +21,7 @@ test('Projects and Changes are stacked in one right-panel container', async ({ p
 test('Changes lists uncommitted files by project, marks live ones, opens diffs and clears on commit', async ({ page }) => {
     test.setTimeout(180_000);
     const original = readFileSync(settingsFile(), 'utf8');
-    const repo = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-git-')), 'delta');
+    const repo = join(tempDir('corral-git-'), 'delta');
     mkdirSync(repo);
     git(repo, 'init', '-q');
     writeFileSync(join(repo, 'a.txt'), 'one\n');
@@ -109,7 +96,7 @@ test('Changes lists uncommitted files by project, marks live ones, opens diffs a
 
 // A repo with one modified and one untracked file, listed through corral.extraProjects.
 function makeRepo(): string {
-    const repo = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-git-')), 'delta');
+    const repo = join(tempDir('corral-git-'), 'delta');
     mkdirSync(repo);
     git(repo, 'init', '-q');
     writeFileSync(join(repo, 'a.txt'), 'one\n');

@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test';
-
-const projects = (page: import('@playwright/test').Page) => page.locator('[data-testid="corral-projects"]');
-const row = (page: import('@playwright/test').Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
+import { projects, row } from './helpers';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/');

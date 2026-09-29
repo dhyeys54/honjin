@@ -1,8 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
 import { execFileSync } from 'child_process';
+import { herdr, session } from './helpers';
 
-const session = () => process.env.CORRAL_E2E_SESSION!;
-const herdr = (...args: string[]) => execFileSync('herdr', ['--session', session(), ...args], { encoding: 'utf8' });
 const serverRunning = () => JSON.parse(herdr('status', 'server', '--json')).running === true;
 
 const herdrTab = (page: Page) => page.locator('.lm-TabBar-tab', { hasText: /^herdr$/ });
