@@ -1,4 +1,5 @@
 import '../../src/browser/style/herdr.css';
+import '../../src/browser/style/changes.css';
 
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
@@ -8,7 +9,9 @@ import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/ser
 import { FolderPicker } from './folder-picker';
 import { ProjectListService } from './projects/project-list-service';
 import { ChangesService } from './changes/changes-service';
-import { CHANGES_VIEW_ID, ChangesWidget } from './changes/changes-widget';
+import { CHANGES_VIEW_ID, createChangesWidget } from './changes/changes-widget';
+import { ChangesContribution } from './changes/changes-contribution';
+import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ProjectsViewContainerFactory } from './projects/projects-view-container';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
@@ -75,10 +78,13 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(SidePanelHandler).to(CorralSidePanelHandler);
     bind(CorralScmContribution).toSelf().inSingletonScope();
     rebind(ScmContribution).toService(CorralScmContribution);
-    bind(ChangesWidget).toSelf();
+    bind(ChangesContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(ChangesContribution);
+    bind(MenuContribution).toService(ChangesContribution);
+    bind(ColorContribution).toService(ChangesContribution);
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: CHANGES_VIEW_ID,
-        createWidget: () => ctx.container.get(ChangesWidget)
+        createWidget: () => createChangesWidget(ctx.container)
     })).inSingletonScope();
     bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ProjectsViewContainerFactory);

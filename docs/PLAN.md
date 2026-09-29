@@ -308,7 +308,7 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
     `onDidInitializeLayout` (pattern: `browser/scm/corral-scm-contribution.ts`).
   - Verify: `npm run build:browser && npx playwright test -c e2e/playwright.config.ts panels changes-view shell projects placement`.
 
-- [ ] **T4.4 Changes tree**
+- [x] **T4.4 Changes tree**
   - Spec: 09 C2, C3, C5, C7, C9–C11, C13; §changes-tree, §changes-widget, §changes-contribution, §CSS.
   - Tests first: in `e2e/changes-view.spec.ts` add one test that builds a temp repo exactly like `e2e/changes.spec.ts`
     (`mkdtempSync` under `realpathSync(tmpdir())`, `git init`, commit `a.txt` and `.gitignore` containing `ignored.log`,
@@ -391,3 +391,4 @@ Spec 09 is the contract; its rule ids (C1–C14) are cited below. Before coding 
 - 2026-09-29 T4.1 — common/changes.ts: groupChanges (C1–C7), changeKind, liveFolders, nextExpiry (10 tests)
 - 2026-09-29 T4.2 — ChangesService: git repos + file writes + project list → groups, live flags, one expiry timer; bound as a singleton (0 new tests, wiring; E2E in T4.4)
 - 2026-09-29 T4.3 — Projects over Changes in one `corral-projects-container` view container; old layouts fixed up; Projects toolbar stays visible (144 unit, 34 e2e)
+- 2026-09-29 T4.4 — Changes tree: projects over files, letters/counts, live dot, diff on click, context menus, colours (144 unit, 35 e2e)
