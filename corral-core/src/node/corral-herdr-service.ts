@@ -20,6 +20,10 @@ export class CorralHerdrServiceImpl implements CorralHerdrService {
         return this.binaryResolver();
     }
 
+    forgetProject(projectPath: string): Promise<void> {
+        return this.store.delete(projectPath);
+    }
+
     async status(): Promise<{ running: boolean }> {
         const { cli } = await this.getClient();
         return { running: (await cli.status()).running };

@@ -190,7 +190,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     Refresh → it shows as missing and its + is disabled.
   - Verify: `npm run test:e2e -- add-remove`.
 
-- [ ] **T2.3 Per-project startup command; remove mapping**
+- [x] **T2.3 Per-project startup command; remove mapping**
   - Spec: 05 §"Set startup command…", 03 §Context menu.
   - Tests first: `e2e/startup-override.spec.ts`: set `alpha`'s command to `echo alpha-override` → + on alpha runs
     it, while + on beta still runs the global command; set an empty value → a plain shell (no command sent);
@@ -284,3 +284,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 G1 — suites green (97 unit, 11 int, 15 E2E); spec-reviewer: no must-fix; user pre-approved the human checkpoint (review pending, see FOR-REVIEW)
 - 2026-09-29 T2.1 — Hide/Unhide project context-menu items, eye toolbar toggle (hidden rows at 50%), empty states with Choose/Change folders… (2 unit + 2 E2E)
 - 2026-09-29 T2.2 — Add project… (folder dialog → extraProjects), Remove from list (manual only, never deletes files), Refresh, missing projects struck through with + disabled; FolderPicker shared with first run (1 E2E)
+- 2026-09-29 T2.3 — Set startup command… (QuickInput, empty = plain shell), Use global startup command, Remove from herdr mapping (forgetProject RPC, workspace stays) (2 unit + 1 E2E)

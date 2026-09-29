@@ -105,3 +105,8 @@ is titled "Debug", not "Run and Debug".
 **Why.** Removing a vanished project must stay possible from the UI.
 **Consequences.** Spec 03's toolbar has `collapse-all` still unimplemented (not in any T2.x task yet; add in stage 3 or T2.5).
 
+## D20 — startup command menu (T2.3)
+**Decision.** Spec 05's second QuickInput item "Use global default (<global>)" is a separate context-menu command, "Use global startup command", shown only when the project has an override.
+**Why.** Theia's `QuickInputService.input` is a single text box; a two-item picker would need a custom quick pick.
+**Consequences.** The global value is not shown in the menu label; add it to the label if wanted.
+

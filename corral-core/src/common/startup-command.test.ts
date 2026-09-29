@@ -1,4 +1,4 @@
-import { owningProject, resolveStartupCommand } from './startup-command';
+import { withOverride, owningProject, resolveStartupCommand } from './startup-command';
 
 const projects = ['/w/app', '/w/app/packages/inner', '/w/other'];
 
@@ -51,5 +51,14 @@ describe('resolveStartupCommand', () => {
 
     it('returns global when no project owns the folder', () => {
         expect(resolveStartupCommand('/elsewhere', projects, 'claude', { '/w/app': { startupCommand: 'codex' } })).toBe('claude');
+    });
+});
+
+describe('withOverride', () => {
+    it('sets, keeps an explicit empty string, and drops', () => {
+        expect(withOverride({}, '/p/a', 'x')).toEqual({ '/p/a': { startupCommand: 'x' } });
+        expect(withOverride({ '/p/a': { startupCommand: 'x' } }, '/p/a', '')).toEqual({ '/p/a': { startupCommand: '' } });
+        expect(withOverride({ '/p/a': { startupCommand: 'x' }, '/p/b': { startupCommand: 'y' } }, '/p/a', undefined))
+            .toEqual({ '/p/b': { startupCommand: 'y' } });
     });
 });

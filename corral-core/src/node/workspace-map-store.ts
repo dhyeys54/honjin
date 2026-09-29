@@ -18,6 +18,19 @@ export class WorkspaceMapStore {
     async set(projectPath: string, session: string, workspaceId: string): Promise<void> {
         const map = await this.read();
         map[projectPath] = { workspaceId, session };
+        await this.write(map);
+    }
+
+    /** Forgets the link only; the herdr workspace itself is left alone. */
+    async delete(projectPath: string): Promise<void> {
+        const map = await this.read();
+        if (projectPath in map) {
+            delete map[projectPath];
+            await this.write(map);
+        }
+    }
+
+    protected async write(map: MapFile): Promise<void> {
         const file = await this.file;
         await fs.mkdir(dirname(file), { recursive: true });
         const tmp = `${file}.${process.pid}.tmp`;

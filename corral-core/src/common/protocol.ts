@@ -41,6 +41,8 @@ export interface CorralHerdrService {
     status(): Promise<HerdrStatus>;
     openTab(request: OpenTabRequest): Promise<OpenTabResult>;
     /** The herdr binary to launch in the terminal (undefined if not found) and the effective session ('' = default). */
+    /** Forgets the project → herdr workspace link; the workspace stays open in herdr. */
+    forgetProject(projectPath: string): Promise<void>;
     resolveBinary(): Promise<{ binary: string | undefined; session: string }>;
 }
 

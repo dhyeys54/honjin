@@ -5,7 +5,10 @@ import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-s
 import { Widget } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { DirNode } from '@theia/filesystem/lib/browser';
+import { QuickInputService } from '@theia/core/lib/browser';
 import { withHidden, withoutPath } from '../../common/hidden-projects';
+import { resolveStartupCommand, withOverride } from '../../common/startup-command';
+import { CorralHerdrService } from '../../common/protocol';
 import { FolderPicker } from '../folder-picker';
 import { CorralPreferences } from '../corral-preferences';
 import { ProjectListService } from './project-list-service';
@@ -17,6 +20,9 @@ export const ProjectsActions = {
     HIDE: { id: 'corral.projects.hide', label: 'Hide project' } as Command,
     ADD: { id: 'corral.projects.add', label: 'Corral: Add Project…' } as Command,
     REMOVE: { id: 'corral.projects.remove', label: 'Remove from list' } as Command,
+    SET_STARTUP: { id: 'corral.projects.setStartupCommand', label: 'Set startup command…' } as Command,
+    USE_GLOBAL: { id: 'corral.projects.useGlobalCommand', label: 'Use global startup command' } as Command,
+    FORGET: { id: 'corral.projects.forgetMapping', label: 'Remove from herdr mapping' } as Command,
     REFRESH: { id: 'corral.projects.refresh', label: 'Corral: Refresh Projects' } as Command,
     UNHIDE: { id: 'corral.projects.unhide', label: 'Unhide project' } as Command
 };
@@ -29,6 +35,8 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
 
     @inject(ProjectsContribution) protected readonly view: ProjectsContribution;
     @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(QuickInputService) protected readonly quickInput: QuickInputService;
+    @inject(CorralHerdrService) protected readonly herdr: CorralHerdrService;
     @inject(FolderPicker) protected readonly picker: FolderPicker;
     @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
@@ -44,6 +52,15 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
             execute: () => this.remove(),
             isVisible: () => this.isManual(this.selectedProject())
         });
+        commands.registerCommand(ProjectsActions.SET_STARTUP, { execute: () => this.setStartupCommand(), isVisible: () => !!this.selectedProject() });
+        commands.registerCommand(ProjectsActions.USE_GLOBAL, {
+            execute: () => this.useGlobalCommand(),
+            isVisible: () => { const p = this.selectedProject(); return !!p && p in this.prefs['corral.projectOverrides']; }
+        });
+        commands.registerCommand(ProjectsActions.FORGET, {
+            execute: () => this.herdr.forgetProject(this.selectedProject()!),
+            isVisible: () => !!this.selectedProject()
+        });
         commands.registerCommand(ProjectsActions.HIDE, {
             execute: () => this.setHidden(true),
             isVisible: () => !!this.selectedProject() && !this.isHidden(this.selectedProject()!)
@@ -58,6 +75,9 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.HIDE.id, order: 'a' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.UNHIDE.id, order: 'b' });
         menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.REMOVE.id, order: 'c' });
+        menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.SET_STARTUP.id, order: 'd' });
+        menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.USE_GLOBAL.id, order: 'e' });
+        menus.registerMenuAction(ROOT_GROUP, { commandId: ProjectsActions.FORGET.id, order: 'f' });
     }
 
     registerToolbarItems(toolbar: TabBarToolbarRegistry): void {
@@ -120,6 +140,30 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         if (path) {
             await this.preferenceService.set('corral.extraProjects',
                 withoutPath(this.prefs['corral.extraProjects'], path), PreferenceScope.User);
+        }
+    }
+
+    protected async setStartupCommand(): Promise<void> {
+        const path = this.selectedProject();
+        if (!path) {
+            return;
+        }
+        const overrides = this.prefs['corral.projectOverrides'];
+        const value = await this.quickInput.input({
+            title: `Startup command for ${path.slice(path.lastIndexOf('/') + 1)}`,
+            value: resolveStartupCommand(path, [path], this.prefs['corral.startupCommand'], overrides),
+            placeHolder: 'Leave empty for a plain shell · Esc to cancel'
+        });
+        if (value !== undefined) { // Esc gives undefined; Enter on empty stores '' (an explicit plain shell)
+            await this.preferenceService.set('corral.projectOverrides', withOverride(overrides, path, value), PreferenceScope.User);
+        }
+    }
+
+    protected async useGlobalCommand(): Promise<void> {
+        const path = this.selectedProject();
+        if (path) {
+            await this.preferenceService.set('corral.projectOverrides',
+                withOverride(this.prefs['corral.projectOverrides'], path, undefined), PreferenceScope.User);
         }
     }
 }

@@ -49,4 +49,15 @@ describe('WorkspaceMapStore', () => {
         await store.set('/p/b', '', 'w2');
         expect(await store.get('/p/a', '')).toBe('w1');
     });
+
+    it('forgets one mapping and keeps the others', async () => {
+        const file = join(tmp(), 'm.json');
+        const store = new WorkspaceMapStore(file, () => undefined);
+        await store.set('/p/a', '', 'w1');
+        await store.set('/p/b', '', 'w2');
+        await store.delete('/p/a');
+        expect(await store.get('/p/a', '')).toBeUndefined();
+        expect(await store.get('/p/b', '')).toBe('w2');
+        await store.delete('/p/never'); // no-op, no throw
+    });
 });
