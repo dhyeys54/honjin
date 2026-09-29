@@ -174,3 +174,8 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 **Decision.** Both apps' default preferences set `files.watcherExclude` to Theia's `.git/objects` and `.git/subtree-cache` entries plus `node_modules`, `dist`, `build`, `out`, `.next`, `.nuxt`, `.turbo`, `.cache`, `coverage`, `.venv`, `__pycache__` and `target`. Spec 01 updated.
 **Why.** Every visible project is a workspace root, so the watcher cost grows with the files under all of them, and most of those files sit in generated folders nobody edits by hand. `FileService` applies this preference to every watcher, plugin and language-server watchers included.
 **Consequences.** Edits made inside those folders by other tools do not refresh the explorer until it is refreshed or the folder is reopened. They still appear in search, which uses `search.exclude`. A user setting replaces this list whole, so anyone overriding it has to repeat the entries they want to keep.
+
+## D34 — The herdr terminal defaults to 11px text (post-plan fix)
+**Decision.** `terminal.integrated.fontSize` defaults to 11 in both apps, down from 13. Spec 06 updated.
+**Why.** herdr in Corral looked much larger than the same TUI in macOS Terminal, whose default Basic profile is 11 pt SF Mono. At 13, herdr's panes had fewer rows and columns than the user sees in their own terminal.
+**Consequences.** The editor stays at 13 (the DESIGN.md `code` size). Users change the terminal size in settings as before.

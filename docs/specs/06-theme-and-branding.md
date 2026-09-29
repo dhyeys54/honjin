@@ -22,7 +22,7 @@ The design tokens, type and rationale live in `/DESIGN.md`; this spec covers how
 - UI font: JetBrains Mono, bundled as woff2 (OFL-1.1). Put the licence file next to the fonts in
   `corral-core/src/browser/style/fonts/`. Fallbacks: `"SF Mono", Menlo, monospace`.
 - Set `editor.fontFamily` / `terminal.integrated.fontFamily` defaults to the same stack. Sizes: editor 13, terminal
-  13, UI 12. Line height is in DESIGN.md.
+  11 (macOS Terminal's default, D34), UI 12. Line height is in DESIGN.md.
 
 ## Chrome styling: `corral-core/src/browser/style/corral.css`
 
