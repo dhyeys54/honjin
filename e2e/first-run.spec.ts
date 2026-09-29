@@ -55,7 +55,7 @@ test('first run asks for folders, fills the tree, and does not ask again', async
 
     await expect(projects(page).locator('.theia-TreeNode', { hasText: /^alpha$/ })).toBeVisible({ timeout: 30_000 });
     await expect.poll(() => readFileSync(join(configDir, 'settings.json'), 'utf8')).toContain('"corral.firstRunCompleted": true');
-    expect(JSON.parse(readFileSync(join(configDir, 'settings.json'), 'utf8'))['corral.scanRoots']).toEqual([projectsDir.startsWith(homedir() + '/') ? '~' + projectsDir.slice(homedir().length) : projectsDir]) // spec 05: stored with ~;
+    expect(JSON.parse(readFileSync(join(configDir, 'settings.json'), 'utf8'))['corral.scanRoots']).toEqual([projectsDir.startsWith(homedir() + '/') ? '~' + projectsDir.slice(homedir().length) : projectsDir]); // spec 05: stored with ~
 
     stopServer();
     await new Promise(r => setTimeout(r, 1500));

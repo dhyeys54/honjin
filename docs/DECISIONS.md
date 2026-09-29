@@ -90,3 +90,8 @@ is titled "Debug", not "Run and Debug".
 **Why.** Without trust off, Theia shows a "trust this folder" dialog on every start of a workspace made of the user's own projects.
 **Consequences.** If you want trust prompts back, remove the preference from `browser-app/package.json` and `electron-app/package.json`.
 
+## D17 — stage 1 review leftovers (G1)
+**Decision.** Deferred, not built: persisted expanded state of the Projects tree (spec 03 says `StatefulWidget`), an E2E for the `+` on keyboard focus, a Quick Open case in `placement.spec.ts`, and asserting the exact managed-workspace path in `roots.spec.ts`. Preferences use `User` scope where spec 05 / T1.2 say `application` (same intent: settings live in the user file, never the workspace).
+**Why.** None affects correctness of stage 1; each is small and isolated to add later.
+**Consequences.** Tree expansion resets on restart until implemented (`storeState`/`restoreState` on `ProjectsWidget`).
+

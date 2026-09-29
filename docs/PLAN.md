@@ -167,7 +167,7 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
     preference service → the same search finds nothing; the window didn't reload (a marker set on `window` survives).
   - Verify: `npm test && npm run test:e2e -- roots`.
 
-- [ ] **G1 Stage 1 gate**
+- [x] **G1 Stage 1 gate**
   1. Run all suites: `npm test && npm run test:int && npm run test:e2e`.
   2. Run the `spec-reviewer` agent for stage 1 and fix every finding marked must-fix (each fix is its own commit).
   3. **Human checkpoint. Stop the loop.** Print to the user: how to run it (`npm run build:electron && npm run start:electron`; this uses their real herdr session, which is intended),
@@ -281,3 +281,4 @@ Paths are relative to `corral-core/src/` unless they start with a top-level fold
 - 2026-09-29 T1.12 — placementFor/needsMove (common), EditorPlacementGuard moves foreign widgets out of herdr's tab bar; replaces D12's interim rule (6 unit + 1 E2E)
 - 2026-09-29 T1.13 — first run: Theia folder dialog, scan roots stored with ~, firstRunCompleted, corral.projects.chooseScanRoots with confirmation; tree reloads on pref change (8 unit + 1 E2E)
 - 2026-09-29 T1.14 — ProjectListService (single project list), WorkspaceRootsSync moves into <config>/corral.code-workspace and diffs roots without reloading; search covers visible projects only (5 unit + 1 E2E)
+- 2026-09-29 G1 — suites green (97 unit, 11 int, 15 E2E); spec-reviewer: no must-fix; user pre-approved the human checkpoint (review pending, see FOR-REVIEW)
