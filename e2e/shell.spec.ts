@@ -10,9 +10,10 @@ test('the document title contains Corral', async ({ page }) => {
     await expect(page).toHaveTitle(/corral/i);
 });
 
-test('the left activity bar has Search, Source Control and Debug', async ({ page }) => {
-    // Theia titles the @theia/debug view container "Debug" (DECISIONS D10).
-    for (const name of ['Search', 'Source Control', 'Debug']) {
-        await expect(page.locator(`.theia-app-left .lm-TabBar-tab[title="${name}"], .lm-TabBar-tab[title="${name}"]`).first()).toBeAttached({ timeout: 30_000 });
+test('the left activity bar has Search and Debug, and no Source Control (D31)', async ({ page }) => {
+    // Side-bar tabs carry no title attribute; their ids are `shell-tab-<view container id>`.
+    for (const id of ['search-view-container', 'debug']) {
+        await expect(page.locator(`.theia-app-left #shell-tab-${id}`)).toBeAttached({ timeout: 30_000 });
     }
+    await expect(page.locator('.theia-app-left #shell-tab-scm-view-container')).toHaveCount(0);
 });

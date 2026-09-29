@@ -23,8 +23,13 @@ import { PROJECTS_VIEW_ID } from './projects/projects-widget';
 import { CorralThemeContribution } from './theme/corral-theme-contribution';
 import { FaviconContribution } from './favicon-contribution';
 import { bindCorralPreferences } from './corral-preferences';
+import { ScmContribution } from '@theia/scm/lib/browser/scm-contribution';
+import { CorralScmContribution } from './scm/corral-scm-contribution';
+import { ApplicationShellOptions } from '@theia/core/lib/browser/shell/application-shell';
+import { SidePanelHandler } from '@theia/core/lib/browser/shell/side-panel-handler';
+import { CorralSidePanelHandler, corralShellOptions } from './shell/corral-side-panel-handler';
 
-export default new ContainerModule(bind => {
+export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(CorralThemeContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(CorralThemeContribution);
     bind(FaviconContribution).toSelf().inSingletonScope();
@@ -62,6 +67,10 @@ export default new ContainerModule(bind => {
     bind(CommandContribution).toService(ProjectsActionsContribution);
     bind(MenuContribution).toService(ProjectsActionsContribution);
     bind(TabBarToolbarContribution).toService(ProjectsActionsContribution);
+    rebind(ApplicationShellOptions).toConstantValue(corralShellOptions);
+    rebind(SidePanelHandler).to(CorralSidePanelHandler);
+    bind(CorralScmContribution).toSelf().inSingletonScope();
+    rebind(ScmContribution).toService(CorralScmContribution);
     bindViewContribution(bind, ProjectsContribution);
     bind(FrontendApplicationContribution).toService(ProjectsContribution);
     bind(WidgetFactory).toDynamicValue(ctx => ({

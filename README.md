@@ -11,7 +11,7 @@ and runs your coding agents (Claude Code) in herdr, not in a chat panel built in
 ```
 ┌────────┬──────────────────────────┬──────────────────────────┬──────────────┐
 │ search │ editor                   │ herdr                    │ PROJECTS     │
-│ git    │                          │  alpha ▸ 1 claude · 2 sh │ alpha      ▾ │
+│ debug  │                          │  alpha ▸ 1 claude · 2 sh │ alpha      ▾ │
 │ debug  │                          │                          │  src/    [+] │
 │        │                          │                          │ beta       ▸ │
 └────────┴──────────────────────────┴──────────────────────────┴──────────────┘

@@ -15,6 +15,7 @@
     "@theia/editor": "1.76.0",
     "@theia/filesystem": "1.76.0",
     "@theia/monaco": "1.76.0",
+    "@theia/scm": "1.76.0",
     "@theia/terminal": "1.76.0",
     "@theia/workspace": "1.76.0"
   },

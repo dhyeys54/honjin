@@ -11,8 +11,8 @@ A macOS IDE built on **Eclipse Theia** (1.76.x) for working on many projects fro
 ┌────────┬──────────────────────────┬──────────────────────────┬──────────────┐
 │ Left   │ Editor                   │ herdr terminal           │ Projects     │
 │ search │ (Monaco tabs)            │ (TUI: workspaces/tabs/   │ app-a      ▾ │
-│ git    │                          │  panes running `claude`) │  src/    [+] │
-│ debug  │                          │                          │ app-b      ▸ │
+│ debug  │                          │  panes running `claude`) │  src/    [+] │
+│        │                          │                          │ app-b      ▸ │
 └────────┴──────────────────────────┴──────────────────────────┴──────────────┘
 ```
 

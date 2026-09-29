@@ -4,7 +4,7 @@
 
 | Region | Content | Default size |
 |---|---|---|
-| Left panel | Search, Source Control, Run and Debug. **Collapsed**; the activity bar stays visible. | 280px when opened |
+| Left panel | Search, Run and Debug. **Collapsed**; the activity bar stays visible. | 280px when opened |
 | Main area | Editor group on the left, herdr terminal on the right | 50/50 split |
 | Right panel | Projects view, **expanded** | 300px |
 | Bottom panel | Collapsed (Problems/Output live here when opened) | — |
@@ -12,6 +12,19 @@
 - Theia's Explorer (navigator) is not in the default layout. It can still be opened from the View menu.
 - Command `corral.resetLayout` ("Corral: Reset Layout") rebuilds exactly this layout. Use it via the application's
   `initializeLayout` hook (a `FrontendApplicationContribution`) so a fresh profile gets it automatically.
+
+## Source Control (on demand)
+
+Source Control is not in the left bar (DECISIONS D31). `CorralScmContribution` replaces Theia's `ScmContribution`:
+its view opens in the **right** panel (rank 200, after Projects) and only when asked, from the Projects view's
+**Show Changes** (spec 03). A layout saved with it in the left bar closes it there on startup. Theia's
+`scmView:toggle` (⌃⇧G) opens it on the right too; it then shows the repository that was last selected.
+
+## Panel transitions
+
+Side and bottom panels slide instead of snapping: `expandDuration` is 150 ms for all three
+(`ApplicationShellOptions`). Theia only animates opening, so `CorralSidePanelHandler` also slides a side panel shut
+before collapsing it, and keeps the width it reopens at. Nothing animates while the layout is being restored.
 
 ## The herdr terminal widget
 

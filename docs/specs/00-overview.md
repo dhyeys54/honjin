@@ -6,7 +6,7 @@ A single-window macOS IDE for 4–8 active projects at once. The window has four
 
 | Region | Contents |
 |---|---|
-| Left side panel | Search, Source Control (git), Run and Debug. These are stock Theia views. |
+| Left side panel | Search, Run and Debug. These are stock Theia views. Git changes open per file or per project from the Projects view (spec 03). |
 | Main area, left half | Editors (Monaco). |
 | Main area, right half | One terminal widget attached to **herdr**. |
 | Right side panel | The **Projects** view: all projects as collapsible roots, each a VS Code-style file tree. Every folder gets a hover **+** action. |

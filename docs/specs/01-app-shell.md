@@ -30,7 +30,7 @@ version**:
 | Group | Packages |
 |---|---|
 | Generator defaults | `@theia/core editor filesystem markers messages monaco navigator preferences process terminal workspace` |
-| Left panel | `@theia/search-in-workspace` `@theia/scm` `@theia/scm-extra` `@theia/debug` |
+| Left panel | `@theia/search-in-workspace` `@theia/debug` (plus `@theia/scm` `@theia/scm-extra`, whose view opens on demand on the right, spec 02) |
 | VS Code extension host (LSP, git, debug adapters) | `@theia/plugin-ext` `@theia/plugin-ext-vscode` `@theia/vsx-registry` |
 | Nice-to-have core | `@theia/keymaps` `@theia/outline-view` `@theia/output` `@theia/getting-started` (then hidden, spec 06) |
 | AI (not shipped in v1, DECISIONS D9) | none: `@theia/ai-core` `@theia/ai-chat` `@theia/ai-chat-ui` are left out |
