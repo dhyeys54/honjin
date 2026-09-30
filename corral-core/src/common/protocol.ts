@@ -1,7 +1,9 @@
 // RPC contract between the frontend widgets and the Node backend (spec 00 §Components).
+import type { Runaway, Summary } from './resource-usage';
 
 export const CORRAL_PROJECTS_PATH = '/services/corral-projects';
 export const CORRAL_HERDR_PATH = '/services/corral-herdr';
+export const CORRAL_RESOURCES_PATH = '/services/corral-resources';
 
 export const CorralProjectService = Symbol('CorralProjectService');
 export interface ProjectScanRequest {
@@ -58,4 +60,14 @@ export class HerdrError extends Error {
         super(message ?? code);
         this.name = 'HerdrError';
     }
+}
+
+export const CorralResourceService = Symbol('CorralResourceService');
+export interface ResourceSample extends Summary { totalMemBytes: number; runaways: Runaway[] }
+export interface ResourceBreakdownRow extends Summary { label: string }
+export interface CorralResourceService {
+    /** Totals for Corral plus the herdr session's process tree (spec 10). */
+    sample(): Promise<ResourceSample>;
+    /** The same totals split into Corral, the herdr server and each workspace; heaviest first. */
+    breakdown(): Promise<ResourceBreakdownRow[]>;
 }
