@@ -495,7 +495,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
   - Do: implement exactly the signatures in spec 10. Pure: no imports from Theia, the DOM or Node.
   - Verify: `npx jest -c corral-core/test/jest.config.ts resource-usage`, then `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T6.2 herdr listing calls**
+- [x] **T6.2 herdr listing calls**
   - Spec: 10 §Code layout `node/herdr-cli.ts`.
   - Tests first: in `node/herdr-cli.test.ts`, with the file's `fake` / `ok` helpers:
     - `listWorkspaces()` sends `['workspace','list']` and maps `{workspaces:[{workspace_id:'w1',label:'a'}]}` to
@@ -648,3 +648,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 T5.11 — specs 02, 03, 05, 06, 09 and the AGENTS.md CSS rule now describe what was built (D11, D17, D20, D21, D25, D27, D36); D36 records the Changes-code details (docs only; 148 unit)
 - 2026-09-30 G4, G5 — approved by the user after checking the packaged app
 - 2026-09-30 T6.1 — resource-usage logic: ps parsing, subtree, totals, levels, runaways, notification steps, formatting (13 tests)
+- 2026-09-30 T6.2 — HerdrCli.listWorkspaces / listPanes / paneShellPid (4 tests)

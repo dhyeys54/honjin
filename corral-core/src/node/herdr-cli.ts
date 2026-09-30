@@ -58,6 +58,22 @@ export class HerdrCli {
         }
     }
 
+    async listWorkspaces(): Promise<{ workspaceId: string; label: string }[]> {
+        const { result } = await this.run(['workspace', 'list']);
+        return result.workspaces.map((w: { workspace_id: string; label: string }) => ({ workspaceId: w.workspace_id, label: w.label }));
+    }
+
+    async listPanes(): Promise<{ paneId: string; workspaceId: string }[]> {
+        const { result } = await this.run(['pane', 'list']);
+        return result.panes.map((p: { pane_id: string; workspace_id: string }) => ({ paneId: p.pane_id, workspaceId: p.workspace_id }));
+    }
+
+    /** The pid of the pane's shell; its parent is the herdr server (spec 10 R2). */
+    async paneShellPid(paneId: string): Promise<number | undefined> {
+        const { result } = await this.run(['pane', 'process-info', '--pane', paneId]);
+        return result.process_info?.shell_pid;
+    }
+
     async focusWorkspace(id: string): Promise<void> {
         await this.run(['workspace', 'focus', id]);
     }

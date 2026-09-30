@@ -118,3 +118,36 @@ describe('HerdrCli errors', () => {
         await expect(cli(down).getWorkspace('w9')).rejects.toMatchObject({ code: 'server_not_running' });
     });
 });
+
+describe('HerdrCli listing calls (spec 10)', () => {
+    it('listWorkspaces maps workspace_id and label', async () => {
+        const { exec, calls } = fake(ok({ workspaces: [{ workspace_id: 'w1', label: 'a' }, { workspace_id: 'w2', label: 'b c' }] }));
+        expect(await new HerdrCli({ binary: 'h' }, exec).listWorkspaces()).toEqual([
+            { workspaceId: 'w1', label: 'a' }, { workspaceId: 'w2', label: 'b c' }
+        ]);
+        expect(calls[0].args).toEqual(['workspace', 'list']);
+    });
+
+    it('listPanes maps pane_id and workspace_id', async () => {
+        const { exec, calls } = fake(ok({ panes: [{ pane_id: 'w1:p1', workspace_id: 'w1', tab_id: 'w1:t1' }] }));
+        expect(await new HerdrCli({ binary: 'h' }, exec).listPanes()).toEqual([{ paneId: 'w1:p1', workspaceId: 'w1' }]);
+        expect(calls[0].args).toEqual(['pane', 'list']);
+    });
+
+    it('paneShellPid returns shell_pid, or undefined when it is missing', async () => {
+        const { exec, calls } = fake(ok({ process_info: { shell_pid: 41889, pane_id: 'w1:p1' } }), ok({ process_info: { pane_id: 'w1:p2' } }));
+        const cli = new HerdrCli({ binary: 'h' }, exec);
+        expect(await cli.paneShellPid('w1:p1')).toBe(41889);
+        expect(calls[0].args).toEqual(['pane', 'process-info', '--pane', 'w1:p1']);
+        expect(await cli.paneShellPid('w1:p2')).toBeUndefined();
+    });
+
+    it('every listing call is prefixed with --session', async () => {
+        const { exec, calls } = fake(ok({ workspaces: [] }), ok({ panes: [] }), ok({ process_info: {} }));
+        const cli = new HerdrCli({ binary: 'h', session: 's' }, exec);
+        await cli.listWorkspaces();
+        await cli.listPanes();
+        await cli.paneShellPid('w1:p1');
+        expect(calls.map(c => c.args.slice(0, 2))).toEqual([['--session', 's'], ['--session', 's'], ['--session', 's']]);
+    });
+});
