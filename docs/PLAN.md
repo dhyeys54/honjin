@@ -545,7 +545,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
     add a DECISIONS note.
   - Verify: `npm run test:int`; `herdr session list` shows no `corral-test-*` session left over.
 
-- [ ] **T6.5 Settings**
+- [x] **T6.5 Settings**
   - Spec: 10 R12; spec 05.
   - Tests first: in `common/preferences-schema.test.ts`, add the four keys to `expected` (types `boolean`, `number`,
     `number`, `number`; defaults `true`, 50, 75, 5). Add one `it` that each has `scope` `PreferenceScope.User`, and that
@@ -652,3 +652,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 Agent hibernate (outside the stage plan, D39, spec 11) — `herdr-plugin/` fork of herdr-agent-hibernate: Corral-workspace scope, shell guard, Codex opt-in (29 plugin tests, `npm run test:plugin`)
 - 2026-09-30 T6.3 — CorralResourceServiceImpl (ps sampling, herdr server pid, runaways, breakdown) bound on /services/corral-resources; herdr access shared in the backend module (7 tests)
 - 2026-09-30 T6.4 — CorralResourceServiceImpl verified against a real herdr session: server pid, per-workspace row (1 int test)
+- 2026-09-30 T6.5 — four corral.resourceMonitor.* settings (enabled, warningPercent, dangerPercent, intervalSeconds) with R12 ranges in the preference schema (2 tests added, 181 total)

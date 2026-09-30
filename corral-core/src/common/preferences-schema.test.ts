@@ -9,7 +9,11 @@ const expected: Record<string, { type: string; default: unknown }> = {
     'corral.projectOverrides': { type: 'object', default: {} },
     'corral.herdr.path': { type: 'string', default: 'herdr' },
     'corral.herdr.session': { type: 'string', default: '' },
-    'corral.firstRunCompleted': { type: 'boolean', default: false }
+    'corral.firstRunCompleted': { type: 'boolean', default: false },
+    'corral.resourceMonitor.enabled': { type: 'boolean', default: true },
+    'corral.resourceMonitor.warningPercent': { type: 'number', default: 50 },
+    'corral.resourceMonitor.dangerPercent': { type: 'number', default: 75 },
+    'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5 }
 };
 
 describe('corral preference schema', () => {
@@ -33,6 +37,14 @@ describe('corral preference schema', () => {
         for (const key of ['corral.scanRoots', 'corral.extraProjects', 'corral.hiddenProjects']) {
             expect(corralPreferenceSchema.properties[key].items).toEqual({ type: 'string' });
         }
+    });
+
+    it('resource monitor numbers carry the ranges of spec 10 R12', () => {
+        const p = corralPreferenceSchema.properties;
+        for (const key of ['corral.resourceMonitor.warningPercent', 'corral.resourceMonitor.dangerPercent']) {
+            expect([p[key].minimum, p[key].maximum]).toEqual([1, 100]);
+        }
+        expect(p['corral.resourceMonitor.intervalSeconds'].minimum).toBe(1);
     });
 
     it('exposes a typed key constant for every property', () => {

@@ -9,7 +9,11 @@ export const CorralPreferenceKeys = {
     projectOverrides: 'corral.projectOverrides',
     herdrPath: 'corral.herdr.path',
     herdrSession: 'corral.herdr.session',
-    firstRunCompleted: 'corral.firstRunCompleted'
+    firstRunCompleted: 'corral.firstRunCompleted',
+    resourceMonitorEnabled: 'corral.resourceMonitor.enabled',
+    resourceMonitorWarningPercent: 'corral.resourceMonitor.warningPercent',
+    resourceMonitorDangerPercent: 'corral.resourceMonitor.dangerPercent',
+    resourceMonitorIntervalSeconds: 'corral.resourceMonitor.intervalSeconds'
 } as const;
 
 export interface ProjectOverride {
@@ -26,6 +30,10 @@ export interface CorralConfiguration {
     'corral.herdr.path': string;
     'corral.herdr.session': string;
     'corral.firstRunCompleted': boolean;
+    'corral.resourceMonitor.enabled': boolean;
+    'corral.resourceMonitor.warningPercent': number;
+    'corral.resourceMonitor.dangerPercent': number;
+    'corral.resourceMonitor.intervalSeconds': number;
 }
 
 // User scope only: project repos must never be touched by Corral settings (spec 05).
@@ -50,6 +58,16 @@ export const corralPreferenceSchema: PreferenceSchema = {
         },
         'corral.herdr.path': { type: 'string', default: 'herdr', scope, description: 'herdr binary name or absolute path.' },
         'corral.herdr.session': { type: 'string', default: '', scope, description: 'herdr session name. Empty means herdr\'s default session.' },
-        'corral.firstRunCompleted': { type: 'boolean', default: false, scope, description: 'Set once the first-run folder picker has been shown.' }
+        'corral.firstRunCompleted': { type: 'boolean', default: false, scope, description: 'Set once the first-run folder picker has been shown.' },
+        'corral.resourceMonitor.enabled': { type: 'boolean', default: true, scope, description: 'Show the memory, CPU and process total of Corral and its herdr session in the status bar.' },
+        'corral.resourceMonitor.warningPercent': {
+            type: 'number', default: 50, minimum: 1, maximum: 100, scope,
+            description: 'Share of the machine\'s RAM at which the resource entry turns warning-coloured.'
+        },
+        'corral.resourceMonitor.dangerPercent': {
+            type: 'number', default: 75, minimum: 1, maximum: 100, scope,
+            description: 'Share of the machine\'s RAM at which the resource entry turns danger-coloured and one notification is shown.'
+        },
+        'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5, minimum: 1, scope, description: 'Seconds between resource samples.' }
     }
 };
