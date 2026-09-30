@@ -15,7 +15,8 @@ import { ColorContribution } from '@theia/core/lib/browser/color-application-con
 import { ProjectsViewContainerFactory } from './projects/projects-view-container';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
-import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CorralHerdrService, CorralProjectService } from '../common/protocol';
+import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralHerdrService, CorralProjectService, CorralResourceService } from '../common/protocol';
+import { ResourceStatusContribution } from './resource-monitor/resource-status-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
 import { FirstRunContribution } from './first-run-contribution';
 import { EditorPlacementGuard } from './editor-placement-guard';
@@ -47,6 +48,12 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(HerdrTerminalContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(HerdrTerminalContribution);
     bind(CommandContribution).toService(HerdrTerminalContribution);
+
+    bind(CorralResourceService).toDynamicValue(ctx =>
+        ServiceConnectionProvider.createProxy<CorralResourceService>(ctx.container, CORRAL_RESOURCES_PATH)
+    ).inSingletonScope();
+    bind(ResourceStatusContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(ResourceStatusContribution);
 
     bind(FolderPicker).toSelf().inSingletonScope();
     bind(ProjectListService).toSelf().inSingletonScope();

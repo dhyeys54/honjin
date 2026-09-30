@@ -554,7 +554,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
     key table.
   - Verify: `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T6.6 Status-bar entry (frontend)**
+- [x] **T6.6 Status-bar entry (frontend)**
   - Spec: 10 R7–R12, §Code layout `browser/resource-monitor/…`, `browser/corral-frontend-module.ts`, `browser/theme/…`.
   - Tests first: `e2e/resource-monitor.spec.ts` (use `writeSettings`, `settingsFile` from `e2e/helpers.ts`; restore the
     original settings in `finally`, as `changes-view.spec.ts` does):
@@ -653,3 +653,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 T6.3 — CorralResourceServiceImpl (ps sampling, herdr server pid, runaways, breakdown) bound on /services/corral-resources; herdr access shared in the backend module (7 tests)
 - 2026-09-30 T6.4 — CorralResourceServiceImpl verified against a real herdr session: server pid, per-workspace row (1 int test)
 - 2026-09-30 T6.5 — four corral.resourceMonitor.* settings (enabled, warningPercent, dangerPercent, intervalSeconds) with R12 ranges in the preference schema (2 tests added, 181 total)
+- 2026-09-30 T6.6 — ResourceStatusContribution: right-side status-bar entry polling the resource service, warning/danger colours from the theme, hover breakdown, one notification per episode, enabled setting removes/restores it (2 E2E tests, 42 total)
