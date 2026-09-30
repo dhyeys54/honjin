@@ -62,3 +62,4 @@ ResourceStatusContribution (status bar) ── RPC ──► CorralResourceServi
 | 08-testing | TDD layers, tools, fixtures, commands |
 | 09-changes-view | Changes view under Projects, live-write marker |
 | 10-resource-monitor | Status-bar memory / CPU / process total, warnings, per-workspace tooltip |
+| 11-agent-hibernate | herdr plugin: sleeps idle agents in Corral workspaces, never with a shell running |

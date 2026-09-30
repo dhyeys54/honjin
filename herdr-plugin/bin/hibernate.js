@@ -34,6 +34,9 @@
  * is a detached child spawned by the `startup` hook, kept to one instance
  * via watcher.pid.
  *
+ * Corral changes (docs/specs/11): only panes in Corral's workspaces are slept,
+ * never while a shell runs under the agent, and Codex is opt-in.
+ *
  * Env injected by Herdr:
  *   HERDR_BIN_PATH, HERDR_PLUGIN_STATE_DIR, HERDR_PLUGIN_CONTEXT_JSON,
  *   HERDR_PLUGIN_EVENT_JSON (event hooks)
@@ -66,6 +69,13 @@ const LOOP_PID = path.join(STATE_DIR, "watcher.pid");
 const LOG = process.env.HIBERNATE_LOG || path.join(STATE_DIR, "watch.log");
 const LOG_MAX_BYTES = 1_000_000;
 
+// --- Corral additions: scope + shell guard inputs (see docs/specs/11) -----------
+// Corral (the IDE) records which herdr workspace it made for each project in
+// this file; only those workspaces are ever slept.
+const CORRAL_MAP = path.join(process.env.CORRAL_CONFIG_DIR || path.join(process.env.HOME || ".", ".corral"), "herdr-workspaces.json");
+const PS = process.env.HIBERNATE_PS_PATH || "ps";
+const SHELLS = new Set(["sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "nu"]);
+
 // --- tunables (env overrides) -------------------------------------------------
 function numberEnv(name, fallback) {
   const raw = process.env[name];
@@ -77,11 +87,6 @@ function numberEnv(name, fallback) {
   }
   return n;
 }
-// Corral (the IDE) records which herdr workspace it made for each project in
-// this file; only those workspaces are ever slept.
-const CORRAL_MAP = path.join(process.env.CORRAL_CONFIG_DIR || path.join(process.env.HOME || ".", ".corral"), "herdr-workspaces.json");
-const PS = process.env.HIBERNATE_PS_PATH || "ps";
-const SHELLS = new Set(["sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "nu"]);
 const IDLE_WINDOW_MS = numberEnv("HIBERNATE_IDLE_MINUTES", 30) * 60_000;
 const POLL_MS = numberEnv("HIBERNATE_POLL_SECONDS", 60) * 1000;
 const EXIT_TIMEOUT_MS = numberEnv("HIBERNATE_EXIT_TIMEOUT_SECONDS", 15) * 1000;
@@ -238,13 +243,20 @@ function paneWorkspaces() {
   return new Map(panes.map((p) => [p.pane_id, p.workspace_id]));
 }
 
+/** A predicate over pane ids: true for panes in a Corral workspace of this
+ *  session. Throws when the map or pane list can't be read (callers fail closed). */
+function corralPaneFilter() {
+  const allowed = corralWorkspaces();
+  const ws = paneWorkspaces();
+  return (paneId) => allowed.has(ws.get(paneId));
+}
+
 function assertCorralPane(paneId) {
-  let allowed;
-  try { allowed = corralWorkspaces(); } catch (e) {
+  let inScope;
+  try { inScope = corralPaneFilter(); } catch (e) {
     throw new Error(`${paneId}: cannot read the Corral workspace map ${CORRAL_MAP} (${e.message}) — not sleeping`);
   }
-  const ws = paneWorkspaces().get(paneId);
-  if (!ws || !allowed.has(ws)) throw new Error(`${paneId} is not in a Corral workspace — refusing to sleep it`);
+  if (!inScope(paneId)) throw new Error(`${paneId} is not in a Corral workspace — refusing to sleep it`);
 }
 
 /** Refuse while the agent has a shell running under it (a background task or
@@ -254,19 +266,22 @@ function assertNoShell(paneId, kind) {
   const root = agentPid(paneId, kind);
   const r = spawnSync(PS, ["-A", "-o", "pid=,ppid=,comm="], { encoding: "utf8" });
   if (r.status !== 0) throw new Error(`${paneId}: ps failed (${r.error?.message || r.status}) — not sleeping`);
-  const procs = new Map(); // pid -> { name, kids }
-  const kids = new Map(); // ppid -> [pid]
+  const names = new Map(); // pid -> executable name
+  const children = new Map(); // ppid -> [pid]
   for (const line of r.stdout.split("\n")) {
     const m = /^\s*(\d+)\s+(\d+)\s+(.+?)\s*$/.exec(line);
     if (!m) continue;
+    const [pid, ppid] = [Number(m[1]), Number(m[2])];
     // comm is a full path on macOS and "-zsh" for login shells.
-    procs.set(Number(m[1]), path.basename(m[3]).replace(/^-/, ""));
-    (kids.get(Number(m[2])) || kids.set(Number(m[2]), []).get(Number(m[2]))).push(Number(m[1]));
+    names.set(pid, path.basename(m[3]).replace(/^-/, ""));
+    if (!children.has(ppid)) children.set(ppid, []);
+    children.get(ppid).push(pid);
   }
-  const queue = [...(kids.get(root) || [])];
+  // Breadth-first over every descendant of the agent; the queue grows as we go.
+  const queue = [...(children.get(root) || [])];
   for (const pid of queue) {
-    if (SHELLS.has(procs.get(pid))) throw new BusyError(`${paneId} has a running shell (${procs.get(pid)} pid ${pid}) under ${kind} — not sleeping`);
-    queue.push(...(kids.get(pid) || []));
+    if (SHELLS.has(names.get(pid))) throw new BusyError(`${paneId} has a running shell (${names.get(pid)} pid ${pid}) under ${kind} — not sleeping`);
+    queue.push(...(children.get(pid) || []));
   }
 }
 
@@ -532,10 +547,9 @@ function watchLoop() {
   let lastScopeError = "";
   const inCorralScope = (agents) => {
     try {
-      const allowed = corralWorkspaces();
-      const ws = paneWorkspaces();
+      const inScope = corralPaneFilter();
       lastScopeError = "";
-      return agents.filter((a) => allowed.has(ws.get(a.pane_id)));
+      return agents.filter((a) => inScope(a.pane_id));
     } catch (e) {
       if (e.code === "server_not_running") throw e;
       if (lastScopeError !== e.message) log(`scope-error: ${e.message} — sleeping nothing`);
@@ -585,6 +599,15 @@ function watchLoop() {
       const sleepable = (p.state === "idle" || p.state === "done") && !p.focused;
       if (!sleepable) { idleSince.delete(p.pane_id); continue; }
       if (seqChanged || !idleSince.has(p.pane_id)) idleSince.set(p.pane_id, now);
+      // Look for a shell on every poll, not just when the window expires: a
+      // shell that came and went inside the window must still restart the clock.
+      try {
+        assertNoShell(p.pane_id, p.kind);
+      } catch (e) {
+        if (e instanceof BusyError) idleSince.set(p.pane_id, now);
+        log(`${e instanceof BusyError ? "sleep-refused" : "shell-check-error"} ${p.pane_id}: ${e.message}`);
+        continue;
+      }
       if (now - idleSince.get(p.pane_id) < IDLE_WINDOW_MS) continue;
       try {
         sleepPane(p.pane_id);

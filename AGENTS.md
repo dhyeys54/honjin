@@ -45,6 +45,7 @@ corral-core/            the one Theia extension: all Corral code
 browser-app/            Theia browser target: used for dev and Playwright E2E
 electron-app/           Theia electron target: the shipped Corral.app
 e2e/                    Playwright tests (against browser-app)
+herdr-plugin/           standalone herdr plugin (fork of herdr-agent-hibernate, spec 11): plain Node, own tests
 branding/               icon.svg / favicon.svg masters; generated/ is produced by scripts/make-icons.sh
 docs/                   specs, plan, decisions
 ```
@@ -56,6 +57,7 @@ docs/                   specs, plan, decisions
 | Install | `npm install` (root; npm workspaces) |
 | Build the extension | `npm run build -w corral-core` |
 | Unit tests | `npm test` |
+| Hibernate plugin tests | `npm run test:plugin` |
 | Integration tests (real herdr) | `npm run test:int` |
 | E2E (Playwright + browser-app) | `npm run test:e2e` |
 | Typecheck | `npm run typecheck` |

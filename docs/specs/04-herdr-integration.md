@@ -81,7 +81,8 @@ herdr's default session). The env variable exists so E2E and dev runs never touc
 `node/workspace-map-store.ts` persists `{ [projectPath]: { workspaceId, session } }` as JSON in
 `<configDir>/herdr-workspaces.json`. Write atomically (temp file + rename) and tolerate a missing or corrupt file
 (treat it as empty and log a warning). Entries are keyed by project path **and** session, so switching sessions
-never reuses the wrong id.
+never reuses the wrong id. The herdr plugin in `herdr-plugin/` (spec 11) also reads this file directly; a change to
+its path or shape must update that plugin and its tests.
 
 `common/workspace-resolution.ts` (pure) decides between:
 - `{ kind: 'reuse', workspaceId }`: the mapping has an id and `getWorkspace(id)` found it.

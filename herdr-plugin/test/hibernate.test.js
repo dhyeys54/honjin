@@ -20,6 +20,8 @@ process.on("exit", () => {
   tmpDirs.forEach((d) => fs.rmSync(d, { recursive: true, force: true }));
 });
 
+const sleepSync = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
 function setup(state, extraEnv = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hibernate-test-"));
   tmpDirs.push(dir);
@@ -45,7 +47,7 @@ function setup(state, extraEnv = {}) {
   const setState = (patch) => {
     const lock = stateFile + ".lock";
     for (;;) {
-      try { fs.mkdirSync(lock); break; } catch { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5); }
+      try { fs.mkdirSync(lock); break; } catch { sleepSync(5); }
     }
     try {
       fs.writeFileSync(stateFile, JSON.stringify({ ...JSON.parse(fs.readFileSync(stateFile, "utf8")), ...patch }));
@@ -458,9 +460,80 @@ test("after a shell ends the watcher waits a full idle window before sleeping", 
     const endedAt = Date.now();
     t.setState({ ps: [] });
     assert.ok(await waitFor(() => t.registry()["w1:p2"]), "not slept after the shell ended");
-    // Without the clock reset it would sleep within a poll or two (~250 ms).
-    assert.ok(Date.now() - endedAt >= window / 2, `slept ${Date.now() - endedAt} ms after the shell ended`);
+    // Last sighting was at most a poll (+ call latency) before the end; without the reset it sleeps within ~250 ms.
+    assert.ok(Date.now() - endedAt >= window - 300, `slept ${Date.now() - endedAt} ms after the shell ended`);
   } finally {
     stopWatcher(t);
+  }
+});
+
+test("a shell that came and went inside the idle window still restarts the clock", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const window = 1200;
+  const t = setup(
+    { agents: [agent({ pid: proc.pid })] },
+    { HIBERNATE_IDLE_MINUTES: String(window / 60_000), HIBERNATE_POLL_SECONDS: "0.1" },
+  );
+  const startedAt = Date.now();
+  t.run("startup");
+  try {
+    await new Promise((r) => setTimeout(r, 400));
+    t.setState({ ps: [{ pid: 9001, ppid: proc.pid, comm: "/bin/zsh" }] });
+    await new Promise((r) => setTimeout(r, 300));
+    t.setState({ ps: [] }); // gone again before the window ends, never present at expiry
+    assert.ok(await waitFor(() => t.registry()["w1:p2"], 6000), "not slept at all");
+    // Shell last seen at ~700 ms, so no sleep before ~700 + window. Checking only at expiry would sleep at ~1200.
+    assert.ok(Date.now() - startedAt >= 1600, `slept after only ${Date.now() - startedAt} ms`);
+  } finally {
+    stopWatcher(t);
+  }
+});
+
+// --- watcher fails closed ------------------------------------------------------
+test("the watcher sleeps nothing when the Corral map is missing, corrupt or for another session", async () => {
+  const cases = [
+    ["missing", (t) => fs.rmSync(path.join(t.env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"))],
+    ["corrupt", (t) => t.writeMap("{ not json")],
+    ["other session", (t) => t.writeMap({ "/proj": { workspaceId: "w1", session: "work" } })],
+  ];
+  for (const [name, arrange] of cases) {
+    const proc = fakeAgentProcess();
+    await new Promise((r) => setTimeout(r, 200));
+    const t = setup({ agents: [agent({ pid: proc.pid })] }, { HIBERNATE_IDLE_MINUTES: "0.005", HIBERNATE_POLL_SECONDS: "0.1" });
+    arrange(t);
+    t.run("startup");
+    try {
+      await new Promise((r) => setTimeout(r, 900));
+      assert.equal(proc.alive(), true, name);
+      assert.deepEqual(t.registry(), {}, name);
+    } finally {
+      stopWatcher(t);
+    }
+  }
+});
+
+test("the watcher sleeps nothing while ps is failing", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup({ agents: [agent({ pid: proc.pid })], psFail: true }, { HIBERNATE_IDLE_MINUTES: "0.005", HIBERNATE_POLL_SECONDS: "0.1" });
+  t.run("startup");
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    assert.equal(proc.alive(), true);
+    assert.deepEqual(t.registry(), {});
+  } finally {
+    stopWatcher(t);
+  }
+});
+
+test("OpenCode and Claude are slept by default", async () => {
+  for (const kind of ["opencode", "claude"]) {
+    const proc = fakeAgentProcess();
+    await new Promise((r) => setTimeout(r, 200));
+    const t = setup({ agents: [agent({ agent: kind, pid: proc.pid })] }); // no HIBERNATE_AGENTS
+    const r = t.run("sleep-pane", "w1:p2");
+    assert.equal(r.status, 0, `${kind}: ${r.stderr}`);
+    assert.equal(t.registry()["w1:p2"].kind, kind);
   }
 });
