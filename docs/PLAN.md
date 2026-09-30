@@ -531,7 +531,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
     - `corralRoot` follows R1.
   - Verify: `npx jest -c corral-core/test/jest.config.ts corral-resource-service`, then `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T6.4 Integration against real herdr**
+- [x] **T6.4 Integration against real herdr**
   - Spec: 10 R1–R2, R10; spec 08 (integration tests live in `corral-core/test/`).
   - Tests first: `corral-core/test/corral-resource-service.int.test.ts`, written like `corral-herdr-service.int.test.ts`
     (an `installed` check and `describe.skip` when herdr is missing):
@@ -651,3 +651,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 T6.2 — HerdrCli.listWorkspaces / listPanes / paneShellPid (4 tests)
 - 2026-09-30 Agent hibernate (outside the stage plan, D39, spec 11) — `herdr-plugin/` fork of herdr-agent-hibernate: Corral-workspace scope, shell guard, Codex opt-in (29 plugin tests, `npm run test:plugin`)
 - 2026-09-30 T6.3 — CorralResourceServiceImpl (ps sampling, herdr server pid, runaways, breakdown) bound on /services/corral-resources; herdr access shared in the backend module (7 tests)
+- 2026-09-30 T6.4 — CorralResourceServiceImpl verified against a real herdr session: server pid, per-workspace row (1 int test)
