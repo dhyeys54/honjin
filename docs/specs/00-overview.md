@@ -38,9 +38,10 @@ HerdrTerminalContribution                            ├─ HerdrCli (execFile h
 EditorPlacementGuard (keeps editors left of herdr)
 WorkspaceRootsSync (visible projects → Theia workspace roots)
 FirstRunContribution, CorralThemeContribution
+ResourceStatusContribution (status bar) ── RPC ──► CorralResourceService (ps + herdr CLI, spec 10)
 ```
 
-- **Frontend ↔ backend:** Theia JSON-RPC services at `/services/corral-projects` and `/services/corral-herdr`.
+- **Frontend ↔ backend:** Theia JSON-RPC services at `/services/corral-projects` `/services/corral-herdr` and `/services/corral-resources`.
   The paths and interfaces are defined in `src/common/protocol.ts`.
 - **Configuration:** Theia preferences under `corral.*`, application/user scope only (spec 05). The config folder
   is `~/.corral` (spec 01).
@@ -59,3 +60,5 @@ FirstRunContribution, CorralThemeContribution
 | 06-theme-and-branding | Corral Dark theme, fonts, icons |
 | 07-packaging | Building the signed-less local macOS `.app` |
 | 08-testing | TDD layers, tools, fixtures, commands |
+| 09-changes-view | Changes view under Projects, live-write marker |
+| 10-resource-monitor | Status-bar memory / CPU / process total, warnings, per-workspace tooltip |

@@ -15,6 +15,10 @@ or folder-scoped values are ignored, so project repos are never touched.
 | `corral.herdr.path` | `string` | `"herdr"` | herdr binary name or absolute path. |
 | `corral.herdr.session` | `string` | `""` | herdr session name; `""` means herdr's default session. |
 | `corral.firstRunCompleted` | `boolean` | `false` | Set once the first-run picker has been shown. |
+| `corral.resourceMonitor.enabled` | `boolean` | `true` | Show the resource entry in the status bar (spec 10 R12). |
+| `corral.resourceMonitor.warningPercent` | `number` (1–100) | `50` | Share of RAM at which the entry turns warning-coloured. |
+| `corral.resourceMonitor.dangerPercent` | `number` (1–100) | `75` | Share of RAM at which it turns danger-coloured and notifies once. |
+| `corral.resourceMonitor.intervalSeconds` | `number` (min 1) | `5` | Seconds between samples. |
 
 Check how 1.76 declares and binds a preference schema (`PreferenceContribution`, `PreferenceSchema`,
 `createPreferenceProxy`) in `node_modules/@theia/core/lib/common/preferences/` or `lib/browser/preferences/`

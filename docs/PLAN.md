@@ -460,6 +460,139 @@ missing (spec 08 sanctions it); hand-built backend services (constructor injecti
 
 - [x] **G5 Stage 5 gate**: all suites → `spec-reviewer` on stage 5 → fix must-fix findings → **human checkpoint, stop**.
 
+## Stage 6 — Resource monitor (spec 10)
+
+Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia API it names was checked in
+`node_modules` (`status-bar-types.d.ts`, `status-bar.js`, `message-service.d.ts`, `preference-proxy.d.ts`,
+`markdown-string.d.ts`, `electron-main-application.js`); open a `.d.ts` before using any other. Unit tests run with
+`npx jest -c corral-core/test/jest.config.ts <name>` from the repo root.
+
+- [ ] **T6.1 Resource logic**
+  - Spec: 10 R3–R9, §Code layout `common/resource-usage.ts`.
+  - Tests first: `common/resource-usage.test.ts`, one `it` per rule:
+    - R3 `parsePs`: `'  12    1  2048  3.5 /bin/zsh\n  13   12  1024 97.0 Corral Helper (Renderer)\n'` gives two rows
+      (`{pid:12,ppid:1,rssKb:2048,cpu:3.5,command:'/bin/zsh'}`, and the second with command `Corral Helper (Renderer)`);
+      blank and malformed lines (`'garbage'`, `'1 2 x 4 y'`) are skipped.
+    - `subtree`: rows 1←2←3, 1←4 and 9 (ppid 8) give `subtree(rows, 1)` = {1,2,3,4}; a root that is not in the rows gives
+      an empty set.
+    - R4 `summarize`: rss 1024 and 2048 KiB → `memBytes` 3 145 728; cpu 50 and 30 with 10 cores → `cpuPct` 8; `count` 2;
+      pids outside the set are ignored.
+    - R5 `memLevel` with total 1000 and limits 50/75: 499 → normal, 500 → warning, 749 → warning, 750 → danger; with
+      limits 50/40 (danger below warning), 499 → normal and 500 → danger.
+    - R6 `trackRunaways`, `now` = 1 000 000: a pid in scope hot since 700 000 is a runaway with `sinceMs` 300 000; hot since
+      700 001 is not (but stays in the map); a first-time hot pid is stored with `now`; a pid at cpu 89.9 is dropped from
+      the map; a pid outside the set is ignored; a pid missing from the rows is dropped; `command` `/usr/bin/ruby-lsp`
+      becomes `ruby-lsp`.
+    - R7 `entryLevel`: (normal, [r]) → warning; (danger, [r]) → danger; (warning, []) → warning; (normal, []) → normal.
+    - R8 `notifyStep`: armed + danger → `{notify:'danger', armed:false}`; disarmed + danger → no notify, stays disarmed;
+      disarmed + warning → stays disarmed; disarmed + normal + no runaways → `armed:true`, no notify; disarmed + normal +
+      a runaway → stays disarmed; armed + normal + a runaway whose pid is not in `previous` → notifies that runaway,
+      `armed:false`; the same runaway with its pid in `previous` → no notify, stays armed; armed + danger + a new
+      runaway → notifies `'danger'`.
+    - R9: `formatBytes(500 * 1024 ** 2)` = `500 MB`; `formatBytes(1024 ** 3 * 1.44)` = `1.4 GB`;
+      `formatBytes(1024 ** 3)` = `1.0 GB`; `formatEntry({memBytes: 1024 ** 3 * 1.44, cpuPct: 11.6, count: 38})` =
+      `$(pulse) 1.4 GB · 12% · 38`.
+  - Do: implement exactly the signatures in spec 10. Pure: no imports from Theia, the DOM or Node.
+  - Verify: `npx jest -c corral-core/test/jest.config.ts resource-usage`, then `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T6.2 herdr listing calls**
+  - Spec: 10 §Code layout `node/herdr-cli.ts`.
+  - Tests first: in `node/herdr-cli.test.ts`, with the file's `fake` / `ok` helpers:
+    - `listWorkspaces()` sends `['workspace','list']` and maps `{workspaces:[{workspace_id:'w1',label:'a'}]}` to
+      `[{workspaceId:'w1',label:'a'}]`.
+    - `listPanes()` sends `['pane','list']` and maps `{panes:[{pane_id:'w1:p1',workspace_id:'w1'}]}` to
+      `[{paneId:'w1:p1',workspaceId:'w1'}]`.
+    - `paneShellPid('w1:p1')` sends `['pane','process-info','--pane','w1:p1']` and returns 41889 from
+      `{process_info:{shell_pid:41889}}`, and `undefined` when `shell_pid` is missing.
+    - With `session: 's'` a call is prefixed `['--session','s', …]`.
+  - Do: add the three methods, in the style of the existing ones.
+  - Verify: `npx jest -c corral-core/test/jest.config.ts herdr-cli`, then `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T6.3 CorralResourceService (backend)**
+  - Spec: 10 R1–R6, R10, §Code layout `node/corral-resource-service.ts`, `common/protocol.ts`, `node/corral-backend-module.ts`.
+  - Tests first: `node/corral-resource-service.test.ts` with a fake `ExecFileFn` that returns fixed `ps` text (`exitCode` 0)
+    and a fake herdr object (a plain object with the three methods, counting calls). Tree: Corral root 100 → 101 and 102;
+    herdr server 200 → shell 201 (pane `w1:p1`, workspace `w1` "alpha") → 202 (`claude`) → 203 (`node`); server 200 → shell
+    211 (pane `w2:p1`, workspace `w2` "beta"); an unrelated pid 300. Give every row `rss` 1024 except 202, which gets 4096.
+    - `sample()` counts {100,101,102,200,201,202,203,211} (`count` 8) and not 300; `totalMemBytes` is the constructor value.
+    - The server pid is resolved once: a second `sample()` makes no herdr calls. When a later `ps` text no longer contains
+      200, the next `sample()` resolves it again.
+    - A herdr object whose `listPanes` rejects gives the Corral subtree only (`count` 3), and `sample()` still resolves.
+    - A `ps` exit code of 1 makes `sample()` reject.
+    - Runaways: `now` stubbed; 202 at cpu 97 in a sample at t = 0 and another at t = 300 000 → the second `sample()` has
+      `runaways[0]` with `pid` 202 and `sinceMs` 300 000; the first has none.
+    - `breakdown()` returns the rows `Corral` (3), `herdr server` (pid 200 only, `count` 1), `alpha` (201–203, `count` 3)
+      and `beta` (`count` 1), sorted by `memBytes` descending (so `alpha` first).
+    - `breakdown()` with herdr throwing returns only `Corral`.
+  - Do:
+    - Implement the service and add the protocol additions.
+    - In `corral-backend-module.ts`, move the herdr binding's `resolveBinary` closure to module scope as a function of the
+      environment, so the herdr and resource bindings share it; then bind the service and its `RpcConnectionHandler`.
+    - `corralRoot` follows R1.
+  - Verify: `npx jest -c corral-core/test/jest.config.ts corral-resource-service`, then `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T6.4 Integration against real herdr**
+  - Spec: 10 R1–R2, R10; spec 08 (integration tests live in `corral-core/test/`).
+  - Tests first: `corral-core/test/corral-resource-service.int.test.ts`, written like `corral-herdr-service.int.test.ts`
+    (an `installed` check and `describe.skip` when herdr is missing):
+    - `startHerdr()` gives a `corral-test-*` session; `harness.cli.createWorkspace(os.tmpdir(), 'res-int')`.
+    - Build `CorralResourceServiceImpl` with `async () => harness.cli`, `defaultExecFile`, `process.pid`,
+      `os.cpus().length` and `os.totalmem()`.
+    - `sample().count` is greater than 1 and `memBytes` is greater than 0.
+    - `breakdown()` contains a row labelled `res-int` with `count ≥ 1`, and a `herdr server` row.
+    - `afterAll` calls `harness.stop()`.
+  - Do: fix whatever real herdr output breaks. If the real output differs from spec 10, correct the spec in this commit and
+    add a DECISIONS note.
+  - Verify: `npm run test:int`; `herdr session list` shows no `corral-test-*` session left over.
+
+- [ ] **T6.5 Settings**
+  - Spec: 10 R12; spec 05.
+  - Tests first: in `common/preferences-schema.test.ts`, add the four keys to `expected` (types `boolean`, `number`,
+    `number`, `number`; defaults `true`, 50, 75, 5). Add one `it` that each has `scope` `PreferenceScope.User`, and that
+    `warningPercent` and `dangerPercent` have `minimum` 1 and `maximum` 100 and `intervalSeconds` has `minimum` 1.
+  - Do: add them to `CorralPreferenceKeys`, `CorralConfiguration` and `corralPreferenceSchema`; add the rows to spec 05's
+    key table.
+  - Verify: `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T6.6 Status-bar entry (frontend)**
+  - Spec: 10 R7–R12, §Code layout `browser/resource-monitor/…`, `browser/corral-frontend-module.ts`, `browser/theme/…`.
+  - Tests first: `e2e/resource-monitor.spec.ts` (use `writeSettings`, `settingsFile` from `e2e/helpers.ts`; restore the
+    original settings in `finally`, as `changes-view.spec.ts` does):
+    - after `page.goto('/')`, `#status-bar-corral-resources` is visible within 30 s and its text matches
+      `/\d+(\.\d)? (MB|GB) · \d+% · \d+/`;
+    - hovering it shows `.theia-hover` containing `Corral` and `Memory`, within 15 s;
+    - writing `"corral.resourceMonitor.enabled": false` makes the entry disappear, and restoring the settings brings it back.
+  - Do:
+    - Implement `ResourceStatusContribution` and bind it and the RPC proxy in `corral-frontend-module.ts`.
+    - The colours are only the `var(--theia-statusBarItem-*)` strings from R9, never literals.
+    - Add the four `statusBarItem.*` colours to `browser/theme/corral-dark-color-theme.json`, next to the `statusBar.*`
+      keys (values in spec 10 §Code layout).
+  - Verify: `npx jest -c corral-core/test/jest.config.ts corral-dark-theme`; then
+    `npm run build -w corral-core && npm run build:browser && npx playwright test -c e2e/playwright.config.ts resource-monitor`;
+    then `npm run test:e2e` (nothing else regressed).
+
+- [ ] **T6.7 Docs, full suite, package**
+  - Spec: 10; the cross-references in specs 00 and 08 and DESIGN.md (D38).
+  - Do:
+    - Check that every rule R1–R12 has a test or is visibly implemented; fix any gap.
+    - Run the full suites (below).
+    - `npm run package:mac` (`.tool-versions` pins `python system` for node-gyp; if node-gyp still cannot find Python,
+      prefix `PYTHON=/usr/bin/python3`).
+    - Quit Corral with `osascript -e 'quit app "Corral"'`, wait until `pgrep -f "Corral.app/Contents/MacOS"` prints nothing, then
+      `rm -rf /Applications/Corral.app && ditto electron-app/dist/mac-arm64/Corral.app /Applications/Corral.app && open /Applications/Corral.app`.
+    - In the installed app, check R1: `ps -axo pid,ppid,comm | grep Corral` shows the helpers under one main `Corral` process,
+      and the entry's process count is at least that many. If the backend's parent is not that main process, fix `corralRoot`
+      and correct R1 in the spec, with a DECISIONS note.
+  - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and first-run are
+    known flaky late in a full run and must pass when run alone). The installed app shows the entry, and its memory is in
+    the same ballpark as the sum of the same processes in Activity Monitor.
+
+- [ ] **G6 Stage 6 gate**: all suites → `spec-reviewer` on stage 6 → fix must-fix findings → **human checkpoint, stop**.
+  - Ask the user to check in the installed app: the entry sits on the right of the status bar; hovering shows Corral,
+    herdr server and each workspace by name, heaviest first; setting `corral.resourceMonitor.warningPercent` to 5 turns it
+    amber within one interval; setting `dangerPercent` to 5 as well turns it red and shows one notification, only one;
+    `corral.resourceMonitor.enabled: false` removes it.
+
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->

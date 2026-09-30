@@ -9,7 +9,7 @@ The design tokens, type and rationale live in `/DESIGN.md`; this spec covers how
   Use `MonacoThemingService.register(...)` or the 1.76 equivalent; check `@theia/monaco/lib/browser/monaco-theming-service.d.ts`.
 - It must define workbench colours (`editor.*`, `sideBar.*`, `activityBar.*`, `tab.*`, `panel.*`,
   `terminal.*` including the 16 ANSI colours, `list.*`, `focusBorder`, `button.*`, `input.*`, `statusBar.*`,
-  `titleBar.*`) and tokenColors, all from DESIGN.md tokens. DESIGN.md is the source for colours; the theme JSON and `design-tokens.ts` are derived from it;
+  `statusBarItem.warning*`/`error*` (the resource entry, spec 10), `titleBar.*`) and tokenColors, all from DESIGN.md tokens. DESIGN.md is the source for colours; the theme JSON and `design-tokens.ts` are derived from it;
   Corral's CSS reads the `var(--theia-*)` variables the theme maps from it, never literals (D27).
 - Set `defaultTheme` in both app configs to `corral-dark` (spec 01).
 - `common/design-tokens.ts` mirrors the DESIGN.md frontmatter `colors` map. A unit test parses DESIGN.md's

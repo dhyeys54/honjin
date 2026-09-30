@@ -7,8 +7,8 @@ Every task in `PLAN.md` names its tests. Write them **first** and watch them fai
 | Layer | Runner | Location / pattern | Scope | Command |
 |---|---|---|---|---|
 | Unit | Jest + ts-jest (node env; jsdom for widget render tests) | `corral-core/src/**/*.test.ts` | `common/` logic, `HerdrCli` argv/parsing with a fake `execFileFn`, stores with a temp dir, React render of small widget parts | `npm test` |
-| Integration | Jest (node), serial | `corral-core/{src,test}/**/*.int.test.ts` | `HerdrCli` + `CorralHerdrService` against a **real headless herdr session**; `ProjectScanner` against real temp dirs | `npm run test:int` |
-| E2E | Playwright + `@theia/playwright` (same version as Theia) | `e2e/*.spec.ts` | Browser-app flows: layout, projects tree, changes view (`changes-view.spec.ts`), + → herdr tab, settings, AI disabled | `npm run test:e2e` |
+| Integration | Jest (node), serial | `corral-core/{src,test}/**/*.int.test.ts` | `HerdrCli` + `CorralHerdrService` + `CorralResourceServiceImpl` against a **real headless herdr session**; `ProjectScanner` against real temp dirs | `npm run test:int` |
+| E2E | Playwright + `@theia/playwright` (same version as Theia) | `e2e/*.spec.ts` | Browser-app flows: layout, projects tree, changes view (`changes-view.spec.ts`), resource monitor (`resource-monitor.spec.ts`), + → herdr tab, settings, AI disabled | `npm run test:e2e` |
 
 The layout on disk: the Jest config lives at `corral-core/test/jest.config.ts` (modelled on the generator's widget
 template: `ts-jest`, `setupFiles` defines `global.DragEvent`, plus `moduleNameMapper` for `vscode-languageserver-types`
