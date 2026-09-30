@@ -1,0 +1,48 @@
+id = "corral.agent-hibernate"
+name = "Corral Agent Hibernate"
+version = "0.4.0"
+min_herdr_version = "0.9.0"
+description = "Auto-sleep idle agent panes (OpenCode, Claude Code, Codex) and resume the same session on focus."
+platforms = ["macos", "linux"]
+
+# Spawn the idle watcher (no-op if one is already running this code).
+[[startup]]
+command = ["node", "bin/hibernate.js", "startup"]
+
+# Sleep on demand. Keybindable; the context pane must host an idle agent.
+[[actions]]
+id = "sleep-pane"
+title = "Hibernate this agent pane"
+contexts = ["pane"]
+command = ["node", "bin/hibernate.js", "sleep-pane"]
+
+[[actions]]
+id = "resume"
+title = "Resume the hibernated session in this pane"
+contexts = ["pane"]
+command = ["node", "bin/hibernate.js", "resume"]
+
+[[actions]]
+id = "resume-all"
+title = "Resume all hibernated sessions"
+contexts = []
+command = ["node", "bin/hibernate.js", "resume-all"]
+
+[[actions]]
+id = "list"
+title = "List hibernated sessions"
+contexts = []
+command = ["node", "bin/hibernate.js", "list"]
+
+# Fallback: if the server started before this plugin was enabled, `startup`
+# never ran for it. Same idempotent guard as the startup hook.
+[[actions]]
+id = "ensure-watcher"
+title = "Ensure the idle watcher is running"
+contexts = []
+command = ["node", "bin/hibernate.js", "startup"]
+
+# Wake hibernated sessions attached to panes that get focused.
+[[events]]
+on = "pane.focused"
+command = ["node", "bin/hibernate.js", "on-focus"]
