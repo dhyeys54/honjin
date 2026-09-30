@@ -6,7 +6,8 @@
 // state = {
 //   agents: [{ pane_id, agent, agent_status, focused, terminal_id,
 //              agent_session: { value }, pid }],   // pid: agent gone once dead
-//   panes:  [{ pane_id, terminal_id }],
+//   panes:  [{ pane_id, terminal_id, workspace_id? }],  // default: one per agent;
+//                                                       // workspace_id defaults to the pane_id prefix ("w1")
 //   start:  "ok" | "not_ready" | "fail",           // agent start behaviour
 //   exitOnPrompt: true,                             // typed exit command works
 // }
@@ -77,7 +78,10 @@ const res = withState((s) => {
     const procs = a && a.pid ? [{ name: a.agent, pid: a.pid, argv: [`/usr/bin/${a.agent}`] }] : [];
     return ok({ process_info: { pane_id: pane, shell_pid: 1, foreground_process_group_id: a?.pid || 1, foreground_processes: procs } });
   }
-  if (group === "pane" && cmd === "list") return ok({ panes: s.panes || [] });
+  if (group === "pane" && cmd === "list") {
+    const panes = s.panes || s.agents.map((a) => ({ pane_id: a.pane_id, terminal_id: a.terminal_id }));
+    return ok({ panes: panes.map((p) => ({ workspace_id: p.pane_id.split(":")[0], ...p })) });
+  }
   return fail("unsupported_fake_call");
 });
 

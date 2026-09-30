@@ -7,7 +7,11 @@ const path = require("node:path");
 
 const BIN = path.join(__dirname, "..", "bin", "hibernate.js");
 const FAKE = path.join(__dirname, "fake-herdr.js");
+const FAKE_PS = path.join(__dirname, "fake-ps.js");
 fs.chmodSync(FAKE, 0o755);
+fs.chmodSync(FAKE_PS, 0o755);
+// What Corral writes: one workspace per project; "" = the default session.
+const CORRAL_MAP = { "/proj": { workspaceId: "w1", session: "" } };
 
 const children = [];
 const tmpDirs = [];
@@ -28,7 +32,26 @@ function setup(state, extraEnv = {}) {
     FAKE_HERDR_STATE: stateFile,
     HERDR_PLUGIN_STATE_DIR: path.join(dir, "state"),
     HIBERNATE_EXIT_TIMEOUT_SECONDS: "1",
+    HIBERNATE_PS_PATH: FAKE_PS,
+    CORRAL_CONFIG_DIR: path.join(dir, "corral"),
     ...extraEnv,
+  };
+  const writeMap = (map) => {
+    fs.mkdirSync(env.CORRAL_CONFIG_DIR, { recursive: true });
+    fs.writeFileSync(path.join(env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"), typeof map === "string" ? map : JSON.stringify(map));
+  };
+  writeMap(CORRAL_MAP);
+  // Same lock dir as fake-herdr.js, so a patch can't be clobbered by a running call.
+  const setState = (patch) => {
+    const lock = stateFile + ".lock";
+    for (;;) {
+      try { fs.mkdirSync(lock); break; } catch { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5); }
+    }
+    try {
+      fs.writeFileSync(stateFile, JSON.stringify({ ...JSON.parse(fs.readFileSync(stateFile, "utf8")), ...patch }));
+    } finally {
+      fs.rmdirSync(lock);
+    }
   };
   const run = (...args) => spawnSync(process.execPath, [BIN, ...args], { env, encoding: "utf8" });
   const runAsync = (args, moreEnv = {}) => new Promise((resolve) => {
@@ -45,7 +68,7 @@ function setup(state, extraEnv = {}) {
     fs.mkdirSync(env.HERDR_PLUGIN_STATE_DIR, { recursive: true });
     fs.writeFileSync(path.join(env.HERDR_PLUGIN_STATE_DIR, "registry.json"), JSON.stringify(reg));
   };
-  return { dir, env, run, runAsync, herdr, registry, writeRegistry };
+  return { dir, env, run, runAsync, herdr, registry, writeRegistry, writeMap, setState };
 }
 
 /** A process standing in for the agent binary. Double-forked so it is not
@@ -101,7 +124,7 @@ test("sleep refuses when the agent ignores the exit and records nothing", async 
 });
 
 test("codex exits via typed /quit", () => {
-  const t = setup({ agents: [agent({ agent: "codex" })] });
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex" })] }, { HIBERNATE_AGENTS: "opencode,claude,codex" });
   const r = t.run("sleep-pane", "w1:p2");
   assert.equal(r.status, 0, r.stderr);
   assert.ok(t.herdr().calls.some((c) => c[1] === "prompt" && c[3] === "/quit"));
@@ -125,12 +148,12 @@ test("sleep refuses non-idle agents and agents without a session", () => {
 });
 
 test("manual sleep may target the focused pane", () => {
-  const t = setup({ agents: [agent({ agent: "codex", focused: true })] });
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex", focused: true })] }, { HIBERNATE_AGENTS: "opencode,claude,codex" });
   assert.equal(t.run("sleep-pane", "w1:p2").status, 0);
 });
 
 test("HIBERNATE_AGENTS excludes kinds", () => {
-  const t = setup({ agents: [agent({ agent: "codex" })] }, { HIBERNATE_AGENTS: "claude,opencode" });
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex" })] }, { HIBERNATE_AGENTS: "claude,opencode" });
   const r = t.run("sleep-pane", "w1:p2");
   assert.equal(r.status, 1);
   assert.match(r.stderr, /not hibernatable/);
@@ -161,7 +184,7 @@ test("resume keeps the agent's own name, falling back when it is taken", () => {
 });
 
 test("sleep records the agent's own name only when it has one", () => {
-  const t = setup({ agents: [agent({ agent: "codex", name: "fixer" }), agent({ pane_id: "w1:p3", agent: "codex" })] });
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex", name: "fixer" }), agent({ pane_id: "w1:p3", pid: process.pid, agent: "codex" })] }, { HIBERNATE_AGENTS: "opencode,claude,codex" });
   t.run("sleep-pane", "w1:p2");
   t.run("sleep-pane", "w1:p3");
   assert.equal(t.registry()["w1:p2"].agent_name, "fixer");
@@ -220,7 +243,8 @@ test("resume action takes the pane from plugin context", () => {
 });
 
 test("named Herdr sessions get their own registry", () => {
-  const t = setup({ agents: [agent({ agent: "codex" })] }, { HERDR_SESSION: "work" });
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex" })] }, { HERDR_SESSION: "work", HIBERNATE_AGENTS: "codex" });
+  t.writeMap({ "/proj": { workspaceId: "w1", session: "work" } });
   assert.equal(t.run("sleep-pane", "w1:p2").status, 0);
   assert.deepEqual(t.registry(), {}); // default session's registry untouched
   const reg = JSON.parse(fs.readFileSync(path.join(t.env.HERDR_PLUGIN_STATE_DIR, "sessions", "work", "registry.json"), "utf8"));
@@ -319,6 +343,123 @@ test("invalid HIBERNATE_IDLE_MINUTES falls back to the default", async () => {
   try {
     assert.ok(await waitFor(() => fs.existsSync(logFile) && /window=1800000ms/.test(fs.readFileSync(logFile, "utf8"))));
     assert.match(fs.readFileSync(logFile, "utf8"), /ignoring invalid HIBERNATE_IDLE_MINUTES/);
+  } finally {
+    stopWatcher(t);
+  }
+});
+
+// --- Corral scope -------------------------------------------------------------
+test("a pane outside a Corral workspace is never slept, manually or by the watcher", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup(
+    { agents: [agent({ pane_id: "w2:p1", pid: proc.pid })] }, // the map only has w1
+    { HIBERNATE_IDLE_MINUTES: "0.005", HIBERNATE_POLL_SECONDS: "0.1" },
+  );
+  const r = t.run("sleep-pane", "w2:p1");
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /not in a Corral workspace/);
+  t.run("startup");
+  try {
+    await new Promise((res) => setTimeout(res, 1000));
+    assert.equal(proc.alive(), true);
+    assert.deepEqual(t.registry(), {});
+  } finally {
+    stopWatcher(t);
+  }
+});
+
+test("a missing, corrupt or wrong-session Corral map means nothing is slept", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup({ agents: [agent({ pid: proc.pid })] });
+  const cases = [
+    ["missing", () => fs.rmSync(path.join(t.env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"))],
+    ["corrupt", () => t.writeMap("{ not json")],
+    ["array", () => t.writeMap("[]")],
+    ["empty", () => t.writeMap({})],
+    ["other session", () => t.writeMap({ "/proj": { workspaceId: "w1", session: "work" } })],
+  ];
+  for (const [name, arrange] of cases) {
+    arrange();
+    const r = t.run("sleep-pane", "w1:p2");
+    assert.equal(r.status, 1, name);
+    assert.equal(proc.alive(), true, name);
+  }
+  assert.deepEqual(t.registry(), {});
+});
+
+test("codex is left alone unless HIBERNATE_AGENTS opts it in", () => {
+  const t = setup({ agents: [agent({ pid: process.pid, agent: "codex" })] });
+  const r = t.run("sleep-pane", "w1:p2");
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /not hibernatable/);
+});
+
+// --- shell guard --------------------------------------------------------------
+test("an agent with a running shell under it is not slept, however deep", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup({
+    agents: [agent({ pid: proc.pid })],
+    ps: [ // login shell path, then its child: a dev server
+      { pid: 9001, ppid: proc.pid, comm: "/bin/zsh" },
+      { pid: 9002, ppid: 9001, comm: "/usr/local/bin/node" },
+    ],
+  });
+  const r = t.run("sleep-pane", "w1:p2");
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /running shell \(zsh pid 9001\)/);
+  assert.equal(proc.alive(), true);
+  t.setState({ ps: [{ pid: 9003, ppid: 9004, comm: "-bash" }, { pid: 9004, ppid: proc.pid, comm: "npm" }] }); // grandchild
+  assert.match(t.run("sleep-pane", "w1:p2").stderr, /running shell \(bash pid 9003\)/);
+  assert.equal(proc.alive(), true);
+});
+
+test("an unrelated shell (not under the agent) or non-shell helpers don't block sleep", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup({
+    agents: [agent({ pid: proc.pid })],
+    ps: [
+      { pid: 9001, ppid: proc.pid, comm: "/Users/x/.caveman/bin/caveman-mcp" },
+      { pid: 9002, ppid: proc.pid, comm: "node" },
+      { pid: 9003, ppid: 1, comm: "/bin/zsh" }, // another pane's shell
+    ],
+  });
+  const r = t.run("sleep-pane", "w1:p2");
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(proc.alive(), false);
+});
+
+test("if ps fails nothing is slept", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup({ agents: [agent({ pid: proc.pid })], psFail: true });
+  const r = t.run("sleep-pane", "w1:p2");
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /ps failed/);
+  assert.equal(proc.alive(), true);
+});
+
+test("after a shell ends the watcher waits a full idle window before sleeping", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const window = 1200;
+  const t = setup(
+    { agents: [agent({ pid: proc.pid })], ps: [{ pid: 9001, ppid: proc.pid, comm: "/bin/zsh" }] },
+    { HIBERNATE_IDLE_MINUTES: String(window / 60_000), HIBERNATE_POLL_SECONDS: "0.1" },
+  );
+  t.run("startup");
+  try {
+    await new Promise((r) => setTimeout(r, window * 1.5)); // well past the window, shell still there
+    assert.equal(proc.alive(), true);
+    assert.deepEqual(t.registry(), {});
+    const endedAt = Date.now();
+    t.setState({ ps: [] });
+    assert.ok(await waitFor(() => t.registry()["w1:p2"]), "not slept after the shell ended");
+    // Without the clock reset it would sleep within a poll or two (~250 ms).
+    assert.ok(Date.now() - endedAt >= window / 2, `slept ${Date.now() - endedAt} ms after the shell ended`);
   } finally {
     stopWatcher(t);
   }

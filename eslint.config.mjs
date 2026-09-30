@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-    { ignores: ['**/lib/**', '**/node_modules/**', '**/.browser_modules/**', 'browser-app/**', 'electron-app/**', 'plugins/**', 'dist/**'] },
+    { ignores: ['**/lib/**', '**/node_modules/**', '**/.browser_modules/**', 'browser-app/**', 'electron-app/**', 'plugins/**', 'herdr-plugin/**', 'dist/**'] },
     js.configs.recommended,
     ...tseslint.configs.recommended
 );

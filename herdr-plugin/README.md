@@ -16,6 +16,22 @@ This exists because Herdr has no "free the process, keep the pane"
 primitive — `pane release-agent` only clears an agent's registration, it
 does not stop it. See herdrdev/herdr discussion #631.
 
+## Corral changes
+
+This fork is scoped to [Corral](../README.md), the IDE that creates herdr workspaces per project. Compared with
+upstream (`50c29cb`) it:
+
+- **Sleeps only Corral's panes.** A pane is eligible only if its workspace is in Corral's map,
+  `${CORRAL_CONFIG_DIR:-~/.corral}/herdr-workspaces.json`, for this herdr session (`""` in the map means `default`).
+  A missing, unreadable or empty map means nothing is slept. Applies to the watcher and to `sleep-pane`.
+- **Never sleeps an agent that has a shell running under it** (a background task or dev server the agent started).
+  Other children, such as MCP servers, don't count. When a shell ends, the pane waits a full idle window first.
+  Set `HIBERNATE_PS_PATH` to use a different `ps` (used by the tests).
+- **Leaves Codex alone by default** (`HIBERNATE_AGENTS=opencode,claude`).
+- Uses the plugin id `corral.agent-hibernate`, so it can be installed beside the upstream plugin.
+
+Spec: `docs/specs/11-agent-hibernate.md`. Decision: D39. Run the tests with `npm run test:plugin` from the repo root.
+
 ## Supported agents
 
 | Agent | How it is stopped | Resume flags | Requirements |
@@ -43,8 +59,8 @@ handle `SIGTERM` gracefully: the session is already persisted, terminal
 modes are restored, and the draft is discarded (never executed). Codex
 leaves the terminal's keyboard protocol enabled on any signal, so it keeps
 the typed `/quit`. **Caveat:** if you leave unsent text in a Codex composer,
-it will be submitted when the pane is slept. Exclude Codex with
-`HIBERNATE_AGENTS=opencode,claude` if that matters to you.
+it will be submitted when the pane is slept. Because of that, this fork leaves Codex
+alone by default; opt in with `HIBERNATE_AGENTS=opencode,claude,codex`.
 
 ## Safety model
 
@@ -125,7 +141,7 @@ environment (set before the server starts, then run `ensure-watcher`):
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `HIBERNATE_IDLE_MINUTES` | `30` | Idle time before an unfocused pane is slept |
-| `HIBERNATE_AGENTS` | `opencode,claude,codex` | Agent kinds the plugin may sleep |
+| `HIBERNATE_AGENTS` | `opencode,claude` | Agent kinds the plugin may sleep |
 | `HIBERNATE_POLL_SECONDS` | `60` | Watcher poll interval |
 | `HIBERNATE_EXIT_TIMEOUT_SECONDS` | `15` | How long to wait for an agent to exit |
 | `HIBERNATE_DEBUG` | unset | Log raw focus-event payloads |

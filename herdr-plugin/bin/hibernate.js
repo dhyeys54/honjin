@@ -77,6 +77,11 @@ function numberEnv(name, fallback) {
   }
   return n;
 }
+// Corral (the IDE) records which herdr workspace it made for each project in
+// this file; only those workspaces are ever slept.
+const CORRAL_MAP = path.join(process.env.CORRAL_CONFIG_DIR || path.join(process.env.HOME || ".", ".corral"), "herdr-workspaces.json");
+const PS = process.env.HIBERNATE_PS_PATH || "ps";
+const SHELLS = new Set(["sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "nu"]);
 const IDLE_WINDOW_MS = numberEnv("HIBERNATE_IDLE_MINUTES", 30) * 60_000;
 const POLL_MS = numberEnv("HIBERNATE_POLL_SECONDS", 60) * 1000;
 const EXIT_TIMEOUT_MS = numberEnv("HIBERNATE_EXIT_TIMEOUT_SECONDS", 15) * 1000;
@@ -92,8 +97,9 @@ const AGENT_PROFILES = {
   claude: { exitSignal: "SIGTERM", argvResume: (id) => ["--resume", id] },
   codex: { exitCommand: "/quit", argvResume: (id) => ["resume", id] },
 };
-// HIBERNATE_AGENTS=opencode,claude restricts which kinds the plugin touches.
-const HIBERNATABLE = (process.env.HIBERNATE_AGENTS || Object.keys(AGENT_PROFILES).join(","))
+// Codex is opt-in (HIBERNATE_AGENTS=opencode,claude,codex): its typed /quit
+// submits any unsent draft as a real turn, so it isn't slept by default.
+const HIBERNATABLE = (process.env.HIBERNATE_AGENTS || "opencode,claude")
   .split(",").map((s) => s.trim().toLowerCase()).filter((k) => AGENT_PROFILES[k]);
 
 // --- utils ----------------------------------------------------------------------
@@ -207,6 +213,63 @@ function normalizeAgent(a) {
   };
 }
 
+// --- corral scope + shell guard ----------------------------------------------
+/** Thrown when a pane is fine to sleep in principle but busy right now. The
+ *  watcher restarts its idle clock instead of retrying every poll. */
+class BusyError extends Error {}
+
+/** Workspace ids Corral created in this herdr session. Throws when the map is
+ *  missing or unreadable, so callers fail closed: no map, no sleeping. */
+function corralWorkspaces() {
+  const map = JSON.parse(fs.readFileSync(CORRAL_MAP, "utf8"));
+  if (!map || typeof map !== "object" || Array.isArray(map)) throw new Error("not an object");
+  const ids = new Set();
+  for (const e of Object.values(map)) {
+    // Corral writes "" for the default session.
+    if (e && typeof e.workspaceId === "string" && (e.session || "default") === SESSION) ids.add(e.workspaceId);
+  }
+  return ids;
+}
+
+/** pane_id -> workspace_id for every pane in the session. */
+function paneWorkspaces() {
+  const panes = herdrJson(["pane", "list"]).result?.panes;
+  if (!Array.isArray(panes)) throw new Error("unexpected `pane list` output");
+  return new Map(panes.map((p) => [p.pane_id, p.workspace_id]));
+}
+
+function assertCorralPane(paneId) {
+  let allowed;
+  try { allowed = corralWorkspaces(); } catch (e) {
+    throw new Error(`${paneId}: cannot read the Corral workspace map ${CORRAL_MAP} (${e.message}) — not sleeping`);
+  }
+  const ws = paneWorkspaces().get(paneId);
+  if (!ws || !allowed.has(ws)) throw new Error(`${paneId} is not in a Corral workspace — refusing to sleep it`);
+}
+
+/** Refuse while the agent has a shell running under it (a background task or
+ *  dev server it started): sleeping kills the agent and orphans that shell.
+ *  MCP servers and other helpers don't count. Fails closed if `ps` fails. */
+function assertNoShell(paneId, kind) {
+  const root = agentPid(paneId, kind);
+  const r = spawnSync(PS, ["-A", "-o", "pid=,ppid=,comm="], { encoding: "utf8" });
+  if (r.status !== 0) throw new Error(`${paneId}: ps failed (${r.error?.message || r.status}) — not sleeping`);
+  const procs = new Map(); // pid -> { name, kids }
+  const kids = new Map(); // ppid -> [pid]
+  for (const line of r.stdout.split("\n")) {
+    const m = /^\s*(\d+)\s+(\d+)\s+(.+?)\s*$/.exec(line);
+    if (!m) continue;
+    // comm is a full path on macOS and "-zsh" for login shells.
+    procs.set(Number(m[1]), path.basename(m[3]).replace(/^-/, ""));
+    (kids.get(Number(m[2])) || kids.set(Number(m[2]), []).get(Number(m[2]))).push(Number(m[1]));
+  }
+  const queue = [...(kids.get(root) || [])];
+  for (const pid of queue) {
+    if (SHELLS.has(procs.get(pid))) throw new BusyError(`${paneId} has a running shell (${procs.get(pid)} pid ${pid}) under ${kind} — not sleeping`);
+    queue.push(...(kids.get(pid) || []));
+  }
+}
+
 // --- sleep ----------------------------------------------------------------------
 /** Refuse unless, right now, the agent is idle/done (never working, blocked
  *  or unknown) and — for the watcher — not the pane you are looking at. */
@@ -225,6 +288,8 @@ function assertSleepable(paneId, { allowFocused = false } = {}) {
   if (!norm.session) {
     throw new Error(`${paneId} has no native session reference yet — send it a message first, and make sure the integration is installed (herdr integration install ${norm.kind})`);
   }
+  assertCorralPane(paneId);
+  assertNoShell(paneId, norm.kind);
   return norm;
 }
 
@@ -463,6 +528,22 @@ function watchLoop() {
   const lastState = new Map(); // pane_id -> "state(focused)" for change-only logging
   let failures = 0;
 
+  // Change-only log for the scope check, like lastState below.
+  let lastScopeError = "";
+  const inCorralScope = (agents) => {
+    try {
+      const allowed = corralWorkspaces();
+      const ws = paneWorkspaces();
+      lastScopeError = "";
+      return agents.filter((a) => allowed.has(ws.get(a.pane_id)));
+    } catch (e) {
+      if (e.code === "server_not_running") throw e;
+      if (lastScopeError !== e.message) log(`scope-error: ${e.message} — sleeping nothing`);
+      lastScopeError = e.message;
+      return [];
+    }
+  };
+
   const tick = () => {
     if (readWatcherPid()?.pid !== process.pid) {
       log("watcher superseded; exiting");
@@ -472,6 +553,7 @@ function watchLoop() {
     try {
       panes = listAgents();
       failures = 0;
+      panes = inCorralScope(panes);
     } catch (e) {
       // The session's server was stopped; the next server start runs the
       // startup hook and spawns a fresh watcher.
@@ -509,6 +591,8 @@ function watchLoop() {
         idleSince.delete(p.pane_id);
       } catch (e) {
         // e.g. pane got busy/focused since the list; keep its timer running.
+        // A running shell restarts the clock: sleep a full window after it ends.
+        if (e instanceof BusyError) idleSince.set(p.pane_id, Date.now());
         log(`sleep-refused ${p.pane_id}: ${e.message}`);
       }
     }

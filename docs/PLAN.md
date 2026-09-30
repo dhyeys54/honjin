@@ -649,3 +649,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 G4, G5 — approved by the user after checking the packaged app
 - 2026-09-30 T6.1 — resource-usage logic: ps parsing, subtree, totals, levels, runaways, notification steps, formatting (13 tests)
 - 2026-09-30 T6.2 — HerdrCli.listWorkspaces / listPanes / paneShellPid (4 tests)
+- 2026-09-30 Agent hibernate (outside the stage plan, D39, spec 11) — `herdr-plugin/` fork of herdr-agent-hibernate: Corral-workspace scope, shell guard, Codex opt-in (29 plugin tests, `npm run test:plugin`)

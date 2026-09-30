@@ -16,6 +16,7 @@
     "build": "npm run build -w corral-core",
     "test": "jest -c corral-core/test/jest.config.ts",
     "test:int": "jest -c corral-core/test/jest.int.config.ts --passWithNoTests",
+    "test:plugin": "npm --prefix herdr-plugin test",
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "typecheck": "tsc --noEmit -p corral-core",
     "lint": "eslint .",
