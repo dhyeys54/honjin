@@ -467,7 +467,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 `markdown-string.d.ts`, `electron-main-application.js`); open a `.d.ts` before using any other. Unit tests run with
 `npx jest -c corral-core/test/jest.config.ts <name>` from the repo root.
 
-- [ ] **T6.1 Resource logic**
+- [x] **T6.1 Resource logic**
   - Spec: 10 R3–R9, §Code layout `common/resource-usage.ts`.
   - Tests first: `common/resource-usage.test.ts`, one `it` per rule:
     - R3 `parsePs`: `'  12    1  2048  3.5 /bin/zsh\n  13   12  1024 97.0 Corral Helper (Renderer)\n'` gives two rows
@@ -647,3 +647,4 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
 - 2026-09-30 T5.10 — e2e/helpers.ts replaces 13 copies of the settings/row/git/herdr/temp-dir helpers; ai-disabled waits for .theia-preload instead of 2 s; first-run awaits the server going down. Kept: the two sleeps guarding negative checks (nested, startup-override) and the herdr TUI pacing sleeps (no observable condition). Two full runs: 39/40, the known roots flake, which passes alone (40 e2e)
 - 2026-09-30 T5.11 — specs 02, 03, 05, 06, 09 and the AGENTS.md CSS rule now describe what was built (D11, D17, D20, D21, D25, D27, D36); D36 records the Changes-code details (docs only; 148 unit)
 - 2026-09-30 G4, G5 — approved by the user after checking the packaged app
+- 2026-09-30 T6.1 — resource-usage logic: ps parsing, subtree, totals, levels, runaways, notification steps, formatting (13 tests)
