@@ -19,7 +19,11 @@ function withState(fn) {
   // Serialize concurrent invocations (focus-hook races) with a lock dir.
   const lock = file + ".lock";
   for (;;) {
-    try { fs.mkdirSync(lock); break; } catch { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5); }
+    try { fs.mkdirSync(lock); break; } catch (e) {
+      // Only a held lock is worth waiting for; a deleted state dir (test already over) must not spin forever.
+      if (e.code !== "EEXIST") throw e;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
+    }
   }
   try {
     const state = JSON.parse(fs.readFileSync(file, "utf8"));

@@ -541,6 +541,11 @@ function watchLoop() {
   const idleSince = new Map(); // pane_id -> ms the current idle stretch began
   const lastSeq = new Map(); // pane_id -> state_change_seq seen last tick
   const lastState = new Map(); // pane_id -> "state(focused)" for change-only logging
+  const lastRefusal = new Map(); // pane_id -> last refusal message, so a standing refusal logs once
+  const refuse = (paneId, label, msg) => {
+    if (lastRefusal.get(paneId) !== msg) log(`${label} ${paneId}: ${msg}`);
+    lastRefusal.set(paneId, msg);
+  };
   let failures = 0;
 
   // Change-only log for the scope check, like lastState below.
@@ -597,7 +602,7 @@ function watchLoop() {
       // `done` = idle-but-unviewed: still safe to sleep, and its clock must
       // accrue too or background-finished panes never reach the threshold.
       const sleepable = (p.state === "idle" || p.state === "done") && !p.focused;
-      if (!sleepable) { idleSince.delete(p.pane_id); continue; }
+      if (!sleepable) { idleSince.delete(p.pane_id); lastRefusal.delete(p.pane_id); continue; }
       if (seqChanged || !idleSince.has(p.pane_id)) idleSince.set(p.pane_id, now);
       // Look for a shell on every poll, not just when the window expires: a
       // shell that came and went inside the window must still restart the clock.
@@ -605,22 +610,23 @@ function watchLoop() {
         assertNoShell(p.pane_id, p.kind);
       } catch (e) {
         if (e instanceof BusyError) idleSince.set(p.pane_id, now);
-        log(`${e instanceof BusyError ? "sleep-refused" : "shell-check-error"} ${p.pane_id}: ${e.message}`);
+        refuse(p.pane_id, e instanceof BusyError ? "sleep-refused" : "shell-check-error", e.message);
         continue;
       }
       if (now - idleSince.get(p.pane_id) < IDLE_WINDOW_MS) continue;
       try {
         sleepPane(p.pane_id);
         idleSince.delete(p.pane_id);
+        lastRefusal.delete(p.pane_id);
       } catch (e) {
         // e.g. pane got busy/focused since the list; keep its timer running.
         // A running shell restarts the clock: sleep a full window after it ends.
         if (e instanceof BusyError) idleSince.set(p.pane_id, Date.now());
-        log(`sleep-refused ${p.pane_id}: ${e.message}`);
+        refuse(p.pane_id, "sleep-refused", e.message);
       }
     }
     for (const id of [...idleSince.keys()]) if (!seen.has(id)) idleSince.delete(id);
-    for (const id of [...lastSeq.keys()]) if (!seen.has(id)) { lastSeq.delete(id); lastState.delete(id); }
+    for (const id of [...lastSeq.keys()]) if (!seen.has(id)) { lastSeq.delete(id); lastState.delete(id); lastRefusal.delete(id); }
 
     try { pruneRegistry(); } catch (e) { log(`prune-error: ${e.message}`); }
   };

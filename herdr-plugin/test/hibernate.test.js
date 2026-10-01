@@ -17,6 +17,11 @@ const children = [];
 const tmpDirs = [];
 process.on("exit", () => {
   children.forEach((c) => { try { c.kill("SIGKILL"); } catch {} });
+  // Kill any watcher still running before its state dir disappears under it.
+  tmpDirs.forEach((d) => {
+    try { process.kill(JSON.parse(fs.readFileSync(path.join(d, "state", "watcher.pid"), "utf8")).pid, "SIGKILL"); } catch {}
+    try { for (const s of fs.readdirSync(path.join(d, "state", "sessions"))) process.kill(JSON.parse(fs.readFileSync(path.join(d, "state", "sessions", s, "watcher.pid"), "utf8")).pid, "SIGKILL"); } catch {}
+  });
   tmpDirs.forEach((d) => fs.rmSync(d, { recursive: true, force: true }));
 });
 
@@ -535,5 +540,22 @@ test("OpenCode and Claude are slept by default", async () => {
     const r = t.run("sleep-pane", "w1:p2");
     assert.equal(r.status, 0, `${kind}: ${r.stderr}`);
     assert.equal(t.registry()["w1:p2"].kind, kind);
+  }
+});
+
+test("a standing refusal is logged once, not on every poll", async () => {
+  const proc = fakeAgentProcess();
+  await new Promise((r) => setTimeout(r, 200));
+  const t = setup(
+    { agents: [agent({ pid: proc.pid, agent_session: null })] }, // never sleepable: no session id
+    { HIBERNATE_IDLE_MINUTES: "0.005", HIBERNATE_POLL_SECONDS: "0.1" },
+  );
+  t.run("startup");
+  try {
+    await new Promise((r) => setTimeout(r, 1500)); // ~10 polls past the window
+    const log = fs.readFileSync(path.join(t.env.HERDR_PLUGIN_STATE_DIR, "watch.log"), "utf8");
+    assert.equal(log.split("\n").filter((l) => l.includes("sleep-refused")).length, 1, log);
+  } finally {
+    stopWatcher(t);
   }
 });
