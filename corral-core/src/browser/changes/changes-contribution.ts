@@ -5,7 +5,7 @@ import URI from '@theia/core/lib/common/uri';
 import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
-import { ExpandableTreeNode, OpenerService, SelectableTreeNode, WidgetManager, open } from '@theia/core/lib/browser';
+import { OpenerService, WidgetManager, open } from '@theia/core/lib/browser';
 import { colors } from '../../common/design-tokens';
 import { ProjectsContribution } from '../projects/projects-contribution';
 import { ProjectsActions } from '../projects/projects-actions-contribution';
@@ -86,26 +86,10 @@ export class ChangesContribution implements CommandContribution, MenuContributio
         return file && FileUri.create(file.change.path);
     }
 
-    /** Expands each folder from the project down to the file in the Projects tree, then selects the file. */
     protected async reveal(): Promise<void> {
-        const uri = this.fileUri();
-        const projects = await this.projectsView.widget;
-        if (!uri) {
-            return;
-        }
-        await this.projectsView.openView({ activate: true, reveal: true });
-        const model = projects.model;
-        const chain: URI[] = [];
-        for (let u = uri; !u.path.isRoot; u = u.parent) {
-            chain.unshift(u);
-        }
-        for (const step of chain) {
-            const node = [...model.getNodesByUri(step)][0];
-            if (node && ExpandableTreeNode.is(node) && !node.expanded && step !== uri) {
-                await model.expandNode(node);
-            } else if (node && step === uri && SelectableTreeNode.is(node)) {
-                model.selectNode(node);
-            }
+        const file = this.selectedFile();
+        if (file) {
+            await this.projectsView.revealPath(file.change.path);
         }
     }
 

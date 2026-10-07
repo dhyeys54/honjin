@@ -911,7 +911,7 @@ inventing new ones:
   - Verify: build as in T7.4, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then
     `npm run test:e2e`.
 
-- [ ] **T7.6 Context menu**
+- [x] **T7.6 Context menu**
   - Spec: 12 A9.
   - Tests first:
     - Add a test to `e2e/agents-view.spec.ts` with the T7.5 helpers, and `context.grantPermissions(['clipboard-read', 'clipboard-write'])`
@@ -1051,3 +1051,4 @@ inventing new ones:
 - 2026-10-08 T7.3 — corral.agents.intervalSeconds (default 3, min 1) in the preference schema, typed config and spec 05 (4 tests added, 262 total)
 - 2026-10-08 T7.4 — Agents part (third in corral-projects-container) with AgentsService/poller, tree, widget, A11 empty states and the A12 restoreState wrapper; spec 09 C14 amended; E2E agents-view 4 tests, full E2E 49 pass. Note: Theia applies a part's `weight` only when restoring saved sizes, so a fresh layout splits Projects/Changes/Agents evenly (~186px each); roots.spec focus click moved from y=200 to y=150 for that reason. Consider initial 70/30/20 sizes at G7.
 - 2026-10-08 T7.5 — Agent rows (dot, kind, location, status + age, cwd tooltip), status colours registered by AgentsContribution, click/Enter focuses the pane and reveals the herdr tab; E2E with fake agents via report-agent (1 test added, 50 E2E total)
+- 2026-10-08 T7.6 — Agents context menu (Focus Agent, Reveal in Projects when owned, Copy Path); reveal code moved to ProjectsContribution.revealPath and shared with Changes (1 E2E test added, 51 E2E total)

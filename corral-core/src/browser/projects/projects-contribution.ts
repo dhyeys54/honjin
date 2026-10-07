@@ -1,6 +1,8 @@
 import { injectable } from '@theia/core/shared/inversify';
 import { Command, CommandRegistry } from '@theia/core/lib/common';
-import { AbstractViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { FileUri } from '@theia/core/lib/common/file-uri';
+import URI from '@theia/core/lib/common/uri';
+import { AbstractViewContribution, ExpandableTreeNode, FrontendApplicationContribution, SelectableTreeNode } from '@theia/core/lib/browser';
 import { PROJECTS_VIEW_ID, ProjectsWidget } from './projects-widget';
 import { PROJECTS_CONTAINER_ID } from './projects-view-container';
 
@@ -33,6 +35,26 @@ export class ProjectsContribution extends AbstractViewContribution<ProjectsWidge
         if (standalone && this.shell.getTabBarFor(standalone) && !container?.node.contains(standalone.node)) {
             await this.shell.closeWidget(standalone.id);
             await this.openView({ activate: false, reveal: true });
+        }
+    }
+
+    /** Expands each folder from the project down to the path in the Projects tree, then selects it. */
+    async revealPath(path: string): Promise<void> {
+        const uri = FileUri.create(path);
+        const projects = await this.widget;
+        await this.openView({ activate: true, reveal: true });
+        const model = projects.model;
+        const chain: URI[] = [];
+        for (let u = uri; !u.path.isRoot; u = u.parent) {
+            chain.unshift(u);
+        }
+        for (const step of chain) {
+            const node = [...model.getNodesByUri(step)][0];
+            if (node && ExpandableTreeNode.is(node) && !node.expanded && step !== uri) {
+                await model.expandNode(node);
+            } else if (node && step === uri && SelectableTreeNode.is(node)) {
+                model.selectNode(node);
+            }
         }
     }
 

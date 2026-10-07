@@ -103,6 +103,8 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     ).inSingletonScope();
     bind(AgentsService).toSelf().inSingletonScope();
     bind(AgentsContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(AgentsContribution);
+    bind(MenuContribution).toService(AgentsContribution);
     bind(ColorContribution).toService(AgentsContribution);
     bind(FrontendApplicationContribution).toService(AgentsService);
     bind(WidgetFactory).toDynamicValue(ctx => ({

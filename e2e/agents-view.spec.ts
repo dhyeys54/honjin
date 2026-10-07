@@ -1,6 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
+import { realpathSync } from 'fs';
 import { basename, dirname, join, resolve } from 'path';
-import { herdr, tempDir } from './helpers';
+import { closeMenu, herdr, tempDir } from './helpers';
 
 const FIXTURES = resolve(__dirname, 'fixtures/projects');
 
@@ -141,4 +142,42 @@ test('A3, A5, A8, A10: rows are ordered, coloured, aged, and a click focuses the
     }
     await page.goto('/');
     await expect(empty(page)).toHaveText('No agents running', { timeout: 15_000 });
+});
+
+test('A9: the context menu focuses, reveals in Projects (when owned) and copies the path', async ({ page, context }) => {
+    test.setTimeout(120_000);
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const created: string[] = [];
+    try {
+        const srcDir = realpathSync(join(FIXTURES, 'alpha', 'src'));
+        const src = workspace(srcDir, 'agents-src');
+        created.push(src.ws);
+        const out = workspace(tempDir('corral-agents-'), 'agents-out');
+        created.push(out.ws);
+        report(src.pane, 'blocked');
+        report(out.pane, 'blocked');
+
+        await page.goto('/');
+        await expect(agentsView(page).locator('[data-testid="corral-agent-row"]')).toHaveCount(2, { timeout: 15_000 });
+        const item = (label: string) => page.locator('.lm-Menu-itemLabel', { hasText: label });
+
+        await agentRow(page, 'alpha/src').click({ button: 'right' });
+        await expect(item('Focus Agent')).toBeVisible();
+        await expect(item('Reveal in Projects')).toBeVisible();
+        await item('Copy Path').click();
+        await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(srcDir);
+
+        await agentRow(page, 'alpha/src').click({ button: 'right' });
+        await item('Reveal in Projects').click();
+        await expect(page.locator('[data-testid="corral-projects"] .theia-TreeNode.theia-mod-selected', { hasText: 'src' })).toBeVisible({ timeout: 10_000 });
+
+        await agentRow(page, 'blocked').last().click({ button: 'right' });
+        await expect(item('Copy Path')).toBeVisible();
+        await expect(item('Reveal in Projects')).toHaveCount(0);
+        await closeMenu(page);
+    } finally {
+        for (const ws of created) {
+            try { herdr('workspace', 'close', ws); } catch { /* already gone */ }
+        }
+    }
 });
