@@ -1,7 +1,7 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { ApplicationShell, FrontendApplicationContribution, Widget } from '@theia/core/lib/browser';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { needsMove, placementFor } from '../common/placement';
+import { mostRecentLast, needsMove, placementFor } from '../common/placement';
 import { HERDR_TERMINAL_ID } from './herdr/herdr-terminal-contribution';
 
 /** Keeps editors out of the herdr tab bar. The decision lives in `common/placement.ts`. */
@@ -17,9 +17,13 @@ export class EditorPlacementGuard implements FrontendApplicationContribution {
 
     /** Widget options for a file Corral opens itself; `undefined` lets Theia decide. */
     optionsFor(exclude?: Widget): ApplicationShell.WidgetOptions | undefined {
-        const editorWidgets = this.editors.all.filter(w => w !== exclude);
+        const open = this.editors.all.filter(w => w !== exclude);
+        const byId = new Map(open.map(w => [w.id, w]));
+        // `all` is creation order; the placement wants the editor the user last worked in at the end.
+        const ids = mostRecentLast(open.map(w => w.id), this.editors.currentEditor?.id);
+        const editorWidgets = ids.map(id => byId.get(id)!);
         const herdr = this.herdr();
-        const placement = placementFor({ editorIds: editorWidgets.map(w => w.id), herdrId: herdr?.id });
+        const placement = placementFor({ editorIds: ids, herdrId: herdr?.id });
         if (!placement) {
             return undefined;
         }

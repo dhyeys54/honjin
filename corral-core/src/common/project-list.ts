@@ -1,4 +1,4 @@
-import { isInside, trimSlash } from './paths';
+import { basename as lastSegment, isInside, trimSlash } from './paths';
 
 export interface ProjectListInput {
     /** Absolute dirs found under scan roots (backend). */
@@ -22,9 +22,6 @@ export interface ProjectEntry {
 }
 
 
-function lastSegment(path: string): string {
-    return path.slice(path.lastIndexOf('/') + 1);
-}
 
 function parentName(path: string): string {
     return lastSegment(path.slice(0, Math.max(path.lastIndexOf('/'), 0)));
@@ -87,4 +84,22 @@ export function addProblem(folder: string, list: ProjectEntry[]): string | undef
     }
     const outer = list.find(e => isInside(path, e.path));
     return outer ? `${name} is inside the project ${lastSegment(outer.path)}.` : undefined;
+}
+
+/** `addProblem` for a multi-select: each accepted pick joins the list, so picks are checked against each other too. */
+export function addProblems(folders: string[], list: ProjectEntry[]): { ok: string[]; problems: string[] } {
+    const ok: string[] = [];
+    const problems: string[] = [];
+    let current = list;
+    for (const folder of folders) {
+        const problem = addProblem(folder, current);
+        if (problem) {
+            problems.push(problem);
+        } else {
+            const path = trimSlash(folder);
+            ok.push(folder);
+            current = [...current, { path, name: lastSegment(path), hidden: false, missing: false, manual: true }];
+        }
+    }
+    return { ok, problems };
 }

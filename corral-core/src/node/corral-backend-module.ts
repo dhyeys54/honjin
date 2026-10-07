@@ -1,7 +1,7 @@
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { ConnectionHandler, RpcConnectionHandler } from '@theia/core/lib/common/messaging';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
-import { existsSync, promises as fs } from 'fs';
+import { existsSync } from 'fs';
 import { cpus, homedir, totalmem } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +13,8 @@ import { CorralProjectServiceImpl } from './corral-project-service';
 import { CorralResourceServiceImpl } from './corral-resource-service';
 import { defaultExecFile, HerdrCli } from './herdr-cli';
 import { HerdrBinaryResolver } from './herdr-binary';
+import { readSettings } from './read-settings';
+import { CorralPreferenceKeys } from '../common/preferences-schema';
 import { WorkspaceMapStore } from './workspace-map-store';
 
 // The packaged app carries the built-in extensions in Resources/plugins (electron-app/electron-builder.yml).
@@ -21,14 +23,6 @@ const resourcesPath = (process as NodeJS.Process & { resourcesPath?: string }).r
 const packagedPlugins = join(resourcesPath ?? '', 'plugins');
 if (!process.env.THEIA_DEFAULT_PLUGINS && resourcesPath && existsSync(packagedPlugins)) {
     process.env.THEIA_DEFAULT_PLUGINS = `local-dir:${packagedPlugins}`;
-}
-
-async function readSettings(configDir: string): Promise<Record<string, unknown>> {
-    try {
-        return JSON.parse(await fs.readFile(join(configDir, 'settings.json'), 'utf8'));
-    } catch {
-        return {};
-    }
 }
 
 /** How to find herdr: the binary and session are re-read from settings per call, so a preference change applies without a restart. */
@@ -42,8 +36,8 @@ function createHerdrAccess(env: EnvVariablesServer) {
     const resolveBinary = async () => {
         const configDir = fileURLToPath(await env.getConfigDirUri());
         const settings = await readSettings(configDir);
-        const binary = await resolver.resolve(String(settings['corral.herdr.path'] || 'herdr'));
-        const session = process.env.CORRAL_HERDR_SESSION || String(settings['corral.herdr.session'] || '');
+        const binary = await resolver.resolve(String(settings[CorralPreferenceKeys.herdrPath] || 'herdr'));
+        const session = process.env.CORRAL_HERDR_SESSION || String(settings[CorralPreferenceKeys.herdrSession] || '');
         return { binary, session };
     };
     const getClient = async () => {

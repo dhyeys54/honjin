@@ -54,8 +54,12 @@ export class WorkspaceMapStore {
         let text: string;
         try {
             text = await fs.readFile(file, 'utf8');
-        } catch {
-            return {};
+        } catch (e) {
+            // Only "no file yet" is empty. Any other failure must surface, or the next write would replace the whole map.
+            if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+                return {};
+            }
+            throw e;
         }
         try {
             const parsed = JSON.parse(text);

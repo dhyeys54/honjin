@@ -2,7 +2,6 @@ import { inject, injectable } from '@theia/core/shared/inversify';
 import { Command, Emitter, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
 import URI from '@theia/core/lib/common/uri';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
-import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import { Widget } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { DirNode } from '@theia/filesystem/lib/browser';
@@ -14,21 +13,23 @@ import { WorkspaceCommands } from '@theia/workspace/lib/browser/workspace-comman
 import { FileStatNode } from '@theia/filesystem/lib/browser';
 import { CorralHerdrService, CorralProjectService } from '../../common/protocol';
 import { FolderPicker } from '../folder-picker';
-import { CorralPreferences } from '../corral-preferences';
+import { CorralPreferences, setCorralPreference } from '../corral-preferences';
 import { ProjectListService } from './project-list-service';
-import { NEW_TAB_COMMAND_ID, PROJECTS_CONTEXT_MENU, ProjectsWidget } from './projects-widget';
+import { ADD_PROJECT_COMMAND_ID, NEW_TAB_COMMAND_ID } from '../../common/command-ids';
+import { basename } from '../../common/paths';
+import { PROJECTS_CONTEXT_MENU, ProjectsWidget } from './projects-widget';
 import { ProjectsContribution } from './projects-contribution';
 import { MessageService } from '@theia/core/lib/common/message-service';
 import { ScmService } from '@theia/scm/lib/browser/scm-service';
 import { ScmResource } from '@theia/scm/lib/browser/scm-provider';
 import { ScmContribution } from '@theia/scm/lib/browser/scm-contribution';
 import { ChangesService } from '../changes/changes-service';
-import { addProblem } from '../../common/project-list';
+import { addProblems } from '../../common/project-list';
 
 export const ProjectsActions = {
     TOGGLE_SHOW_HIDDEN: { id: 'corral.projects.toggleShowHidden', label: 'Corral: Show Hidden Projects' } as Command,
     HIDE: { id: 'corral.projects.hide', label: 'Hide project' } as Command,
-    ADD: { id: 'corral.projects.add', label: 'Corral: Add Project…' } as Command,
+    ADD: { id: ADD_PROJECT_COMMAND_ID, label: 'Corral: Add Project…' } as Command,
     REMOVE: { id: 'corral.projects.remove', label: 'Remove from list' } as Command,
     SET_STARTUP: { id: 'corral.projects.setStartupCommand', label: 'Set startup command…' } as Command,
     USE_GLOBAL: { id: 'corral.projects.useGlobalCommand', label: 'Use global startup command' } as Command,
@@ -209,8 +210,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     protected async setHidden(hide: boolean): Promise<void> {
         const path = this.selectedProject();
         if (path) {
-            await this.preferenceService.set('corral.hiddenProjects',
-                withHidden(this.prefs['corral.hiddenProjects'], path, hide), PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.hiddenProjects', withHidden(this.prefs['corral.hiddenProjects'], path, hide));
         }
     }
 
@@ -220,20 +220,11 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
 
     protected async add(): Promise<void> {
         const chosen = (await this.picker.pick('Add projects')).map(u => u.path.fsPath());
-        const list = this.projectList.entries(true);
-        const ok: string[] = [];
-        for (const path of chosen) {
-            const problem = addProblem(path, list);
-            if (problem) {
-                this.messages.warn(problem);
-            } else {
-                ok.push(path);
-            }
-        }
+        const { ok, problems } = addProblems(chosen, this.projectList.entries(true));
+        problems.forEach(p => this.messages.warn(p));
         if (ok.length) {
             const current = this.prefs['corral.extraProjects'];
-            await this.preferenceService.set('corral.extraProjects',
-                [...current, ...ok.filter(p => !current.includes(p))], PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.extraProjects', [...current, ...ok.filter(p => !current.includes(p))]);
         }
     }
 
@@ -241,8 +232,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
     protected async remove(): Promise<void> {
         const path = this.selectedProject();
         if (path) {
-            await this.preferenceService.set('corral.extraProjects',
-                withoutPath(this.prefs['corral.extraProjects'], path), PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.extraProjects', withoutPath(this.prefs['corral.extraProjects'], path));
         }
     }
 
@@ -253,20 +243,19 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         }
         const overrides = this.prefs['corral.projectOverrides'];
         const value = await this.quickInput.input({
-            title: `Startup command for ${path.slice(path.lastIndexOf('/') + 1)}`,
+            title: `Startup command for ${basename(path)}`,
             value: resolveStartupCommand(path, [path], this.prefs['corral.startupCommand'], overrides),
             placeHolder: 'Leave empty for a plain shell · Esc to cancel'
         });
         if (value !== undefined) { // Esc gives undefined; Enter on empty stores '' (an explicit plain shell)
-            await this.preferenceService.set('corral.projectOverrides', withOverride(overrides, path, value), PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.projectOverrides', withOverride(overrides, path, value));
         }
     }
 
     protected async useGlobalCommand(): Promise<void> {
         const path = this.selectedProject();
         if (path) {
-            await this.preferenceService.set('corral.projectOverrides',
-                withOverride(this.prefs['corral.projectOverrides'], path, undefined), PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.projectOverrides', withOverride(this.prefs['corral.projectOverrides'], path, undefined));
         }
     }
 }

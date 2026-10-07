@@ -8,11 +8,12 @@ import { DirNode, FileStatNode, FileTreeWidget } from '@theia/filesystem/lib/bro
 import { ChangesService } from '../changes/changes-service';
 import { CorralPreferences } from '../corral-preferences';
 import { ProjectListService } from './project-list-service';
+import { ADD_PROJECT_COMMAND_ID, CHOOSE_SCAN_ROOTS_COMMAND_ID, NEW_TAB_COMMAND_ID } from '../../common/command-ids';
 import { ProjectsModel } from './projects-model';
+import { PROJECTS_ROOT_ID } from './projects-tree';
 
 export const PROJECTS_VIEW_ID = 'corral-projects';
 export const PROJECTS_CONTEXT_MENU = ['corral-projects-context-menu'];
-export const NEW_TAB_COMMAND_ID = 'corral.herdr.newTab';
 
 @injectable()
 export class ProjectsWidget extends FileTreeWidget {
@@ -75,8 +76,8 @@ export class ProjectsWidget extends FileTreeWidget {
             React.createElement('p', undefined, noRoots
                 ? 'Choose the folders that hold your projects'
                 : `No projects found in ${roots.join(', ')}`),
-            button(noRoots ? 'Choose folders…' : 'Change folders…', 'corral.projects.chooseScanRoots'),
-            noRoots ? undefined : button('Add project…', 'corral.projects.add'));
+            button(noRoots ? 'Choose folders…' : 'Change folders…', CHOOSE_SCAN_ROOTS_COMMAND_ID),
+            noRoots ? undefined : button('Add project…', ADD_PROJECT_COMMAND_ID));
     }
 
     protected override createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
@@ -111,7 +112,11 @@ export class ProjectsWidget extends FileTreeWidget {
             : this.model.hiddenPaths.has(path)
                 ? React.createElement('span', { className: 'corral-project-flag codicon codicon-eye-closed', title: 'Hidden', 'data-testid': 'corral-project-flag' })
                 : undefined;
-        return React.createElement(React.Fragment, undefined, decorations, flag, marks,
+        // The tail shows where the project lives. CSS draws it from data-path (so it is not row text) and hides it when the view is narrow (DESIGN.md Projects tree row).
+        const tail = node.parent?.id === PROJECTS_ROOT_ID
+            ? React.createElement('span', { className: 'corral-project-path', 'data-path': node.uri.parent.path.toString(), 'aria-hidden': true })
+            : undefined;
+        return React.createElement(React.Fragment, undefined, decorations, tail, flag, marks,
             React.createElement('button', {
                 className: 'corral-new-tab codicon codicon-add',
                 title: 'New herdr tab here (⌥⌘T)',

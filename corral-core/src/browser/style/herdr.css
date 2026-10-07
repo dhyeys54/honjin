@@ -13,6 +13,8 @@
 :root {
     --theia-ui-font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
     --theia-ui-font-size1: 12px;
+    /* DESIGN.md Tabs: 30px high; Theia's default is 35px. */
+    --theia-private-horizontal-tab-height: 30px;
 }
 
 .corral-herdr-overlay {
@@ -34,20 +36,63 @@
     display: flex;
 }
 
+/* DESIGN.md + button: an 18px glyph in a 22px hit area (the row height), so it never shifts the row. */
 .corral-projects .corral-new-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
     margin-left: auto;
-    padding: 0 4px;
+    padding: 0;
     border: none;
+    border-radius: 2px;
     background: transparent;
     color: inherit;
+    font-size: 18px;
     cursor: pointer;
     visibility: hidden;
 }
 
 .corral-projects .theia-TreeNode:hover .corral-new-tab,
-.corral-projects .theia-TreeNode.theia-mod-selected .corral-new-tab,
 .corral-projects .corral-new-tab:focus-visible {
     visibility: visible;
+}
+
+.corral-projects .corral-new-tab:hover:not(:disabled) {
+    background: var(--theia-editorWidget-background); /* surface-raised */
+    color: var(--theia-list-highlightForeground); /* accent */
+}
+
+.corral-projects .corral-new-tab:focus-visible {
+    outline: 1px solid var(--theia-focusBorder);
+}
+
+/* Project row tail: where the project lives, in fg-faint, only when the view is wider than 320px. */
+.corral-projects {
+    container-type: inline-size;
+}
+
+.corral-projects .corral-project-path {
+    flex: 1 1 auto; /* takes the free space, so the flag and + that follow sit at the right edge */
+    min-width: 0;
+    padding-left: 8px;
+    overflow: hidden;
+    color: var(--theia-disabledForeground); /* fg-faint */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.corral-projects .corral-project-path::before {
+    content: attr(data-path);
+}
+
+@container (max-width: 320px) {
+    .corral-projects .corral-project-path {
+        display: none;
+    }
 }
 
 .corral-projects .theia-TreeNode.corral-project-hidden {

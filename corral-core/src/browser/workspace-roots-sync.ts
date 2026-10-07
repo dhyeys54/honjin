@@ -1,12 +1,12 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import URI from '@theia/core/lib/common/uri';
+import { FileUri } from '@theia/core/lib/common/file-uri';
 import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { WorkspaceService } from '@theia/workspace/lib/browser/workspace-service';
 import { CorralProjectService } from '../common/protocol';
 import { diffRoots } from '../common/roots-diff';
 import { ProjectListService } from './projects/project-list-service';
 
-const toUri = (path: string) => new URI().withScheme('file').withPath(path);
+const toUri = (path: string) => FileUri.create(path);
 
 /**
  * Keeps the workspace roots equal to the visible projects, so search, git and debug cover exactly
@@ -27,7 +27,7 @@ export class WorkspaceRootsSync implements FrontendApplicationContribution {
             this.workspace.open(toUri(managed), { preserveWindow: true });
             return;
         }
-        this.projectList.onDidChange(() => this.sync());
+        this.projectList.onDidChange(() => this.sync().catch(e => console.error('Corral: syncing workspace roots failed', e)));
         await this.projectList.reload();
     }
 

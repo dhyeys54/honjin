@@ -4,7 +4,7 @@ import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { WindowTitleContribution, WindowTitleService } from '@theia/core/lib/browser/window/window-title-service';
 import { EditorManager } from '@theia/editor/lib/browser';
 import { FileUri } from '@theia/core/lib/common/file-uri';
-import { owningProject } from '../common/startup-command';
+import { owningProject } from '../common/paths';
 import { ProjectListService } from './projects/project-list-service';
 
 /**

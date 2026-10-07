@@ -1,4 +1,5 @@
 // Pure logic for the status-bar resource monitor (spec 10). No Node, DOM or Theia imports.
+import { basename } from './paths';
 
 export interface ProcRow { pid: number; ppid: number; rssKb: number; cpu: number; command: string }
 export type Level = 'normal' | 'warning' | 'danger';
@@ -80,7 +81,7 @@ export function trackRunaways(hotSince: ReadonlyMap<number, number>, rows: ProcR
         const since = hotSince.get(r.pid) ?? now;
         next.set(r.pid, since);
         if (now - since >= RUNAWAY_MS) {
-            runaways.push({ pid: r.pid, command: r.command.split('/').pop()!, cpu: r.cpu, sinceMs: now - since });
+            runaways.push({ pid: r.pid, command: basename(r.command), cpu: r.cpu, sinceMs: now - since });
         }
     }
     return { hotSince: next, runaways };
@@ -113,3 +114,16 @@ export function formatBytes(bytes: number): string {
 export function formatEntry(s: Summary): string {
     return `$(pulse) ${formatBytes(s.memBytes)} · ${Math.round(s.cpuPct)}% · ${s.count}`;
 }
+
+const MIN = 60_000;
+
+/** R8 text. The danger line needs memory and the machine total; a runaway line only the runaway. */
+export function formatNotice(notice: 'danger' | Runaway, mem: { memBytes: number; totalMemBytes: number }): string {
+    return notice === 'danger'
+        ? `Corral is using ${formatBytes(mem.memBytes)} (${Math.round(mem.memBytes * 100 / mem.totalMemBytes)}% of RAM).`
+        : `${notice.command} (pid ${notice.pid}) has used a full CPU core for ${Math.round(notice.sinceMs / MIN)} min.`;
+}
+
+/** R10 tooltip line; unlike the notification it floors the minutes. */
+export const formatRunawayLine = (r: Runaway): string =>
+    `⚠ ${r.command} — ${Math.round(r.cpu)}% of a core for ${Math.floor(r.sinceMs / MIN)} min`;

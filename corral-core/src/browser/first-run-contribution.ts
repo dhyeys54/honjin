@@ -1,13 +1,13 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common';
 import { ConfirmDialog, FrontendApplicationContribution } from '@theia/core/lib/browser';
-import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
+import { CHOOSE_SCAN_ROOTS_COMMAND_ID } from '../common/command-ids';
 import { abbreviateHome, shouldRunFirstRun } from '../common/first-run';
 import { FolderPicker } from './folder-picker';
-import { CorralPreferences } from './corral-preferences';
+import { CorralPreferences, setCorralPreference } from './corral-preferences';
 
-export const ChooseScanRootsCommand: Command = { id: 'corral.projects.chooseScanRoots', label: 'Corral: Choose Project Folders…' };
+export const ChooseScanRootsCommand: Command = { id: CHOOSE_SCAN_ROOTS_COMMAND_ID, label: 'Corral: Choose Project Folders…' };
 
 @injectable()
 export class FirstRunContribution implements FrontendApplicationContribution, CommandContribution {
@@ -27,10 +27,10 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
         }
         const chosen = await this.pickFolders();
         if (chosen.length) {
-            await this.preferenceService.set('corral.scanRoots', chosen, PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.scanRoots', chosen);
         }
         // Cancel also completes first run; the Projects view's empty state offers the picker again.
-        await this.preferenceService.set('corral.firstRunCompleted', true, PreferenceScope.User);
+        await setCorralPreference(this.preferenceService, 'corral.firstRunCompleted', true);
     }
 
     registerCommands(registry: CommandRegistry): void {
@@ -50,7 +50,7 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
             ok: 'Replace'
         }).open();
         if (ok) {
-            await this.preferenceService.set('corral.scanRoots', chosen, PreferenceScope.User);
+            await setCorralPreference(this.preferenceService, 'corral.scanRoots', chosen);
         }
     }
 

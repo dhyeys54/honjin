@@ -1,5 +1,4 @@
-import { owningProject } from './startup-command';
-import { trimSlash } from './paths';
+import { basename, owningProject, trimSlash } from './paths';
 import { pickChanges } from './scm-change';
 
 /** How long a written file counts as "being changed now" (spec 09 C7). */
@@ -51,7 +50,7 @@ export function groupChanges(roots: string[], changes: ChangeInput[], writes: Re
     }
     return roots.filter(r => perProject.has(r)).map(project => {
         const files = perProject.get(project)!.sort((a, b) => a.rel.localeCompare(b.rel));
-        return { project, name: trimSlash(project).split('/').pop() || project, files, live: files.some(f => f.live) };
+        return { project, name: basename(project) || project, files, live: files.some(f => f.live) };
     });
 }
 

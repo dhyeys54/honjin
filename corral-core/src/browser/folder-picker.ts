@@ -21,8 +21,8 @@ export class FolderPicker {
     /** Chosen folders; empty when the dialog was cancelled. */
     async pick(title: string): Promise<URI[]> {
         const home = await this.home();
-        const desktopProjects = new URI().withScheme('file').withPath(home + '/Desktop/projects');
-        const start = await this.files.exists(desktopProjects) ? desktopProjects : new URI().withScheme('file').withPath(home);
+        const desktopProjects = FileUri.create(home + '/Desktop/projects');
+        const start = await this.files.exists(desktopProjects) ? desktopProjects : FileUri.create(home);
         const picked: MaybeArray<URI> | undefined = await this.dialogs.showOpenDialog({
             title,
             openLabel: 'Choose',

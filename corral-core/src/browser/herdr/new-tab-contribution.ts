@@ -5,9 +5,11 @@ import { Command, CommandContribution, CommandRegistry, MessageService } from '@
 import { ApplicationShell, KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/browser';
 import { FileUri } from '@theia/core/lib/common/file-uri';
 import { CorralHerdrService, OpenTabRequest } from '../../common/protocol';
-import { owningProject, resolveStartupCommand } from '../../common/startup-command';
+import { owningProject } from '../../common/paths';
+import { resolveStartupCommand } from '../../common/startup-command';
 import { ProjectsContribution } from '../projects/projects-contribution';
-import { ProjectsWidget, NEW_TAB_COMMAND_ID } from '../projects/projects-widget';
+import { NEW_TAB_COMMAND_ID } from '../../common/command-ids';
+import { ProjectsWidget } from '../projects/projects-widget';
 import { CorralWindowTitle } from '../window-title-contribution';
 import { CorralPreferences } from '../corral-preferences';
 import { HerdrCommands } from './herdr-terminal-contribution';
@@ -26,6 +28,8 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(CommandRegistry) protected readonly commands: CommandRegistry;
     @inject(MessageService) protected readonly messages: MessageService;
+    @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(CorralWindowTitle) protected readonly windowTitle: CorralWindowTitle;
 
     registerCommands(registry: CommandRegistry): void {
         registry.registerCommand(NewTabCommand, {
@@ -52,18 +56,16 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         return node.fileStat.isDirectory ? node.uri : node.uri.parent;
     }
 
-    @inject(ProjectListService) protected readonly projectList: ProjectListService;
-    @inject(CorralWindowTitle) protected readonly windowTitle: CorralWindowTitle;
-
     protected async newTab(target?: URI): Promise<void> {
         const uri = target ?? this.folderFromFocus();
         if (!uri) {
             return;
         }
         const folderPath = FileUri.fsPath(uri);
-        const projects = this.projectList.entries(true).map(e => e.path);
+        const entries = this.projectList.entries(true);
+        const projects = entries.map(e => e.path);
         const projectPath = owningProject(folderPath, projects);
-        if (!projectPath || this.projectList.entries(true).some(e => e.path === projectPath && e.missing)) {
+        if (!projectPath || entries.some(e => e.path === projectPath && e.missing)) {
             return;
         }
         this.windowTitle.focus(projectPath);
@@ -80,17 +82,22 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
         }
     }
 
-    // Errors cross RPC as plain Errors, so the HerdrError code is recognised from the message (it defaults to the code).
+    // Errors cross RPC as plain Errors with no code, so "the server is down" is asked of the backend, not read from the error.
+    /** An unreachable status counts as up: the original error is more useful than a retry loop. */
+    protected serverIsUp(): Promise<boolean> {
+        return this.herdr.status().then(s => s.running, () => true);
+    }
+
     protected async openWithRetry(request: OpenTabRequest): Promise<void> {
         try {
             await this.herdr.openTab(request);
         } catch (e) {
-            if (!String((e as Error).message).includes('server_not_running')) {
+            if (await this.serverIsUp()) {
                 throw e;
             }
             await this.commands.executeCommand(HerdrCommands.FOCUS.id);
             const deadline = Date.now() + POLL_TIMEOUT_MS;
-            while (!(await this.herdr.status()).running) {
+            while (!(await this.serverIsUp())) {
                 if (Date.now() > deadline) {
                     throw e;
                 }

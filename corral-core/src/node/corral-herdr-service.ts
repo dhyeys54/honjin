@@ -34,6 +34,8 @@ export class CorralHerdrServiceImpl implements CorralHerdrService {
         const prev = this.chains.get(req.projectPath) ?? Promise.resolve();
         const run = prev.catch(() => undefined).then(() => this.doOpenTab(req));
         this.chains.set(req.projectPath, run);
+        const forget = () => { if (this.chains.get(req.projectPath) === run) { this.chains.delete(req.projectPath); } };
+        run.then(forget, forget);
         return run;
     }
 

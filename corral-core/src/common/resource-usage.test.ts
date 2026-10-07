@@ -1,5 +1,5 @@
 import {
-    ProcRow, Runaway, RUNAWAY_MS, entryLevel, formatBytes, formatEntry, memLevel, notifyStep, parsePs, subtree, summarize, trackRunaways
+    ProcRow, Runaway, RUNAWAY_MS, entryLevel, formatBytes, formatEntry, formatNotice, formatRunawayLine, memLevel, notifyStep, parsePs, subtree, summarize, trackRunaways
 } from './resource-usage';
 
 const row = (pid: number, ppid: number, extra: Partial<ProcRow> = {}): ProcRow => ({ pid, ppid, rssKb: 1024, cpu: 0, command: 'x', ...extra });
@@ -91,5 +91,18 @@ describe('resource usage', () => {
         expect(formatBytes(GiB * 1.44)).toBe('1.4 GB');
         expect(formatBytes(GiB)).toBe('1.0 GB');
         expect(formatEntry({ memBytes: GiB * 1.44, cpuPct: 11.6, count: 38 })).toBe('$(pulse) 1.4 GB · 12% · 38');
+    });
+});
+
+describe('R8/R10 texts', () => {
+    const r: Runaway = { pid: 42, command: 'node', cpu: 96.4, sinceMs: 5.6 * 60_000 };
+
+    it('R8: the notification rounds the minutes, the percentage of RAM too', () => {
+        expect(formatNotice(r, { memBytes: 0, totalMemBytes: 1 })).toBe('node (pid 42) has used a full CPU core for 6 min.');
+        expect(formatNotice('danger', { memBytes: GiB * 1.44, totalMemBytes: GiB * 2 })).toBe('Corral is using 1.4 GB (72% of RAM).');
+    });
+
+    it('R10: the tooltip line floors the minutes', () => {
+        expect(formatRunawayLine(r)).toBe('⚠ node — 96% of a core for 5 min');
     });
 });

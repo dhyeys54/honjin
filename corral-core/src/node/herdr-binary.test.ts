@@ -60,8 +60,14 @@ describe('HerdrBinaryResolver', () => {
         const r = new HerdrBinaryResolver({ pathEnv: dir, candidates: [], shell: '/bin/zsh', execFileFn: sh.exec });
         expect(await r.resolve('herdr')).toBe(bin);
         expect(await r.resolve('herdr')).toBe(bin);
-        expect(await r.resolve('other-name')).toBeUndefined();
-        expect(await r.resolve('other-name')).toBeUndefined();
-        expect(sh.calls).toHaveLength(1); // the second miss came from the cache
+        expect(sh.calls).toHaveLength(0); // the hit came from PATH, and the second call from the cache
+    });
+
+    it('does not cache a miss: herdr installed later is found without a restart', async () => {
+        const dir = tmp();
+        const r = new HerdrBinaryResolver({ pathEnv: dir, candidates: [], shell: '/bin/zsh', execFileFn: shellFake('').exec });
+        expect(await r.resolve('herdr')).toBeUndefined();
+        const bin = exe(dir);
+        expect(await r.resolve('herdr')).toBe(bin);
     });
 });

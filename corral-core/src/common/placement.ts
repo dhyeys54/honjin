@@ -22,3 +22,8 @@ export function placementFor(state: PlacementState): Placement | undefined {
 export function needsMove(args: { widgetId: string; herdrId?: string; inHerdrGroup: boolean }): boolean {
     return args.inHerdrGroup && args.widgetId !== args.herdrId;
 }
+
+/** Open editor ids in most-recent-last order, given creation order and the one the user is working in. */
+export function mostRecentLast(ids: string[], currentId: string | undefined): string[] {
+    return currentId !== undefined && ids.includes(currentId) ? [...ids.filter(id => id !== currentId), currentId] : ids;
+}

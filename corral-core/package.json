@@ -18,7 +18,8 @@
     "@theia/output": "1.76.0",
     "@theia/scm": "1.76.0",
     "@theia/terminal": "1.76.0",
-    "@theia/workspace": "1.76.0"
+    "@theia/workspace": "1.76.0",
+    "jsonc-parser": "^3.2.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

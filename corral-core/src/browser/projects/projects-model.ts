@@ -1,6 +1,7 @@
 import { Disposable, DisposableCollection } from '@theia/core/lib/common';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import URI from '@theia/core/lib/common/uri';
+import { FileUri } from '@theia/core/lib/common/file-uri';
 import { BreadthFirstTreeIterator, CompositeTreeNode, ExpandableTreeNode, OpenerService, TreeNode, open } from '@theia/core/lib/browser';
 import { DirNode, FileNode, FileTreeModel } from '@theia/filesystem/lib/browser';
 import { FileStat } from '@theia/filesystem/lib/common/files';
@@ -27,9 +28,8 @@ export class ProjectsModel extends FileTreeModel {
     showHidden = false;
     entries: ProjectEntry[] = [];
 
-    get hiddenPaths(): Set<string> {
-        return new Set(this.entries.filter(e => e.hidden).map(e => e.path));
-    }
+    /** Rebuilt with the tree, not per call: the widget asks per row, per render. */
+    hiddenPaths = new Set<string>();
 
     get missingPaths(): Set<string> {
         return this.projectsTree.missing;
@@ -74,15 +74,14 @@ export class ProjectsModel extends FileTreeModel {
     // A recursive watch per project starves the backend search of file handles, hence one shallow watch per open folder.
     protected readonly watches = new Map<string, Disposable>();
 
-    protected watchExpanded(node: Readonly<{ id: string, expanded?: boolean }>): void {
-        if (!DirNode.is(node as never)) {
+    protected watchExpanded(node: Readonly<ExpandableTreeNode>): void {
+        if (!DirNode.is(node)) {
             return;
         }
-        const dir = node as unknown as DirNode;
-        this.watches.get(dir.id)?.dispose();
-        this.watches.delete(dir.id);
-        if (dir.expanded) {
-            this.watches.set(dir.id, this.files.watch(dir.uri));
+        this.watches.get(node.id)?.dispose();
+        this.watches.delete(node.id);
+        if (node.expanded) {
+            this.watches.set(node.id, this.files.watch(node.uri));
         }
     }
 
@@ -91,13 +90,14 @@ export class ProjectsModel extends FileTreeModel {
     protected async rebuild(): Promise<void> {
         const generation = ++this.generation;
         this.entries = this.projectList.entries(this.showHidden);
+        this.hiddenPaths = new Set(this.entries.filter(e => e.hidden).map(e => e.path));
         const root: CompositeTreeNode = this.projectsTree.createRoot();
         this.toDisposeOnRebuild.dispose();
         this.watches.forEach(w => w.dispose());
         this.watches.clear();
         this.projectsTree.missing = new Set(this.entries.filter(e => e.missing).map(e => e.path));
         const nodes = await Promise.all(this.entries.map(async e => {
-            const uri = new URI().withScheme('file').withPath(e.path);
+            const uri = FileUri.create(e.path);
             try {
                 return this.projectsTree.createProjectNode(e.missing ? missingStat(uri) : await this.files.resolve(uri), root);
             } catch {

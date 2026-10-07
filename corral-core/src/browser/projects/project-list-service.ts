@@ -49,10 +49,22 @@ export class ProjectListService {
         const generation = ++this.generation;
         const extra = this.prefs['corral.extraProjects'];
         const hidden = this.prefs['corral.hiddenProjects'];
-        const { scanned, missing, warnings } = await this.backend.list({ scanRoots: this.prefs['corral.scanRoots'], extra, hidden });
+        let listed: Awaited<ReturnType<CorralProjectService['list']>>;
+        try {
+            listed = await this.backend.list({ scanRoots: this.prefs['corral.scanRoots'], extra, hidden });
+        } catch (e) {
+            // Keep the last list, but leave the empty state: the view must not wait forever on a backend that failed.
+            if (generation === this.generation) {
+                this.output.getChannel('Corral').appendLine(`Could not list projects: ${e instanceof Error ? e.message : String(e)}`, OutputChannelSeverity.Error);
+                this.loaded = true;
+                this.changed.fire();
+            }
+            return;
+        }
         if (generation !== this.generation) {
             return; // a newer reload is in flight and will publish
         }
+        const { scanned, missing, warnings } = listed;
         this.report(warnings);
         this.input = { scanned, extra, hidden, showHidden: true, missing };
         this.all = buildProjectList(this.input);

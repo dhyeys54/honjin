@@ -503,6 +503,7 @@ function readWatcherPid() {
 function isWatcherProcess(pid) {
   if (!pid) return false;
   try { process.kill(pid, 0); } catch { return false; }
+  // Real ps on purpose: PS (HIBERNATE_PS_PATH) stands in for the process-table snapshot only, not for this identity check.
   const r = spawnSync("ps", ["-p", String(pid), "-o", "command="], { encoding: "utf8" });
   return r.status === 0 && r.stdout.includes("watch-loop");
 }

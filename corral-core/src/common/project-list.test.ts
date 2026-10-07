@@ -1,4 +1,4 @@
-import { addProblem, buildProjectList, ProjectListInput, visibleRoots } from './project-list';
+import { addProblem, addProblems, buildProjectList, ProjectListInput, visibleRoots } from './project-list';
 
 const input = (over: Partial<ProjectListInput> = {}): ProjectListInput => ({
     scanned: [], extra: [], hidden: [], showHidden: false, missing: [], ...over
@@ -78,5 +78,21 @@ describe('addProblem', () => {
 
     it('refuses a folder that is already listed', () => {
         expect(addProblem('/w/b', list)).toBe('b is already in the list.');
+    });
+});
+
+describe('addProblems', () => {
+    const list = [{ path: '/w/a', name: 'a', hidden: false, missing: false, manual: false }];
+
+    it('accepts independent picks and reports each problem pick', () => {
+        expect(addProblems(['/x/new', '/w/a', '/w/a/src'], list)).toEqual({
+            ok: ['/x/new'],
+            problems: ['a is already in the list.', 'src is inside the project a.']
+        });
+    });
+
+    it('checks picks against each other: a folder and one inside it are not both added', () => {
+        expect(addProblems(['/x', '/x/y'], list)).toEqual({ ok: ['/x'], problems: ['y is inside the project x.'] });
+        expect(addProblems(['/x/y', '/x'], list)).toEqual({ ok: ['/x/y'], problems: ['x holds 1 listed projects (y). Add a single project folder instead.'] });
     });
 });

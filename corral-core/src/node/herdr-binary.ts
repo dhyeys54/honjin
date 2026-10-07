@@ -19,17 +19,22 @@ function isExecutable(path: string): boolean {
     }
 }
 
-/** Resolves the herdr binary (spec 04 §Resolving the binary), caching per configured value. */
+/** Resolves the herdr binary (spec 04 §Resolving the binary), caching each hit per configured value; a miss is retried. */
 export class HerdrBinaryResolver {
-    protected readonly cache = new Map<string, string | undefined>();
+    protected readonly cache = new Map<string, string>();
 
     constructor(protected readonly opts: HerdrBinaryResolverOptions) { }
 
     async resolve(configured: string): Promise<string | undefined> {
-        if (!this.cache.has(configured)) {
-            this.cache.set(configured, await this.lookup(configured));
+        const hit = this.cache.get(configured);
+        if (hit !== undefined) {
+            return hit;
         }
-        return this.cache.get(configured);
+        const found = await this.lookup(configured);
+        if (found !== undefined) {
+            this.cache.set(configured, found);
+        }
+        return found;
     }
 
     protected async lookup(configured: string): Promise<string | undefined> {

@@ -30,6 +30,13 @@ describe('WorkspaceMapStore', () => {
         expect(await store.get('/p/a', '')).toBe('w2');
     });
 
+    it('rejects on a read error other than a missing file, so a later write cannot wipe the other entries', async () => {
+        const dir = tmp(); // a directory where the file should be: readFile fails with EISDIR, not ENOENT
+        const store = new WorkspaceMapStore(dir, () => undefined);
+        await expect(store.get('/p/a', '')).rejects.toThrow();
+        await expect(store.set('/p/a', '', 'w1')).rejects.toThrow();
+    });
+
     it('writes atomically: no temp files are left behind', async () => {
         const dir = tmp();
         await new WorkspaceMapStore(join(dir, 'm.json'), () => undefined).set('/p/a', '', 'w1');

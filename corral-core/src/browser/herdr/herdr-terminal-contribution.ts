@@ -42,6 +42,11 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
     registerCommands(registry: CommandRegistry): void {
         registry.registerCommand(HerdrCommands.FOCUS, {
             execute: async () => {
+                if (!this.widget && this.placeholder && !this.placeholder.isDisposed) {
+                    // The notice stands in for the herdr tab; a second tab with the same id would sit beside it.
+                    await this.shell.activateWidget(this.placeholder.id);
+                    return;
+                }
                 if (!this.widget) {
                     await this.create();
                 }
