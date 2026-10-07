@@ -151,3 +151,58 @@ describe('HerdrCli listing calls (spec 10)', () => {
         expect(calls.map(c => c.args.slice(0, 2))).toEqual([['--session', 's'], ['--session', 's'], ['--session', 's']]);
     });
 });
+
+describe('HerdrCli agents', () => {
+    const entry = {
+        agent: 'claude', agent_status: 'idle', cwd: '/Users/u/designer', pane_id: 'w5:p1', tab_id: 'w5:t1',
+        terminal_title_stripped: 'Commit and push changes', workspace_id: 'w5', focused: false, revision: 3
+    };
+    const list = (agents: object[]) => ok({ agents, type: 'agent_list' });
+    const cli = (...replies: Reply[]) => { const f = fake(...replies); return { ...f, cli: new HerdrCli({ binary: 'h' }, f.exec) }; };
+
+    it('listAgents runs agent list and maps the captured entry', async () => {
+        const { cli: c, calls } = cli(list([entry]));
+        expect(await c.listAgents()).toEqual([{ paneId: 'w5:p1', workspaceId: 'w5', kind: 'claude', status: 'idle', cwd: '/Users/u/designer', title: 'Commit and push changes' }]);
+        expect(calls[0].args).toEqual(['agent', 'list']);
+    });
+
+    it('a missing title becomes an empty string', async () => {
+        expect((await cli(list([{ ...entry, terminal_title_stripped: undefined }])).cli.listAgents())[0].title).toBe('');
+    });
+
+    it('cwd falls back to foreground_cwd, then to an empty string', async () => {
+        const out = await cli(list([{ ...entry, cwd: '', foreground_cwd: '/f' }, { ...entry, pane_id: 'w5:p2', cwd: undefined }])).cli.listAgents();
+        expect(out.map(a => a.cwd)).toEqual(['/f', '']);
+    });
+
+    it('an empty agent becomes kind agent, an unknown status becomes unknown, a missing workspace_id becomes empty', async () => {
+        const [a] = await cli(list([{ ...entry, agent: '', agent_status: 'weird', workspace_id: undefined }])).cli.listAgents();
+        expect(a).toMatchObject({ kind: 'agent', status: 'unknown', workspaceId: '' });
+    });
+
+    it('skips an entry without a pane_id, and a missing agents array is an empty list', async () => {
+        expect(await cli(list([{ ...entry, pane_id: undefined }, entry])).cli.listAgents()).toHaveLength(1);
+        expect(await cli(ok({ type: 'agent_list' })).cli.listAgents()).toEqual([]);
+    });
+
+    it('focusAgent runs agent focus <pane> and resolves undefined', async () => {
+        const { cli: c, calls } = cli(ok({ agent: { pane_id: 'w5:p1' } }));
+        expect(await c.focusAgent('w5:p1')).toBeUndefined();
+        expect(calls[0].args).toEqual(['agent', 'focus', 'w5:p1']);
+    });
+
+    it('both commands are prefixed with --session', async () => {
+        const { exec, calls } = fake(list([]), ok({}));
+        const c = new HerdrCli({ binary: 'h', session: 's' }, exec);
+        await c.listAgents();
+        await c.focusAgent('w1:p1');
+        expect(calls.map(x => x.args)).toEqual([['--session', 's', 'agent', 'list'], ['--session', 's', 'agent', 'focus', 'w1:p1']]);
+    });
+
+    it('error codes pass through', async () => {
+        const err = (code: string) => ({ exitCode: 1, stderr: JSON.stringify({ error: { code, message: 'm' } }) });
+        await expect(cli(err('agent_not_found')).cli.focusAgent('w9:p9')).rejects.toMatchObject({ code: 'agent_not_found' });
+        await expect(cli(err('server_not_running')).cli.listAgents()).rejects.toMatchObject({ code: 'server_not_running' });
+        await expect(cli({ exitCode: 2, stderr: 'error: unrecognized subcommand' }).cli.listAgents()).rejects.toMatchObject({ code: 'cli_error' });
+    });
+});

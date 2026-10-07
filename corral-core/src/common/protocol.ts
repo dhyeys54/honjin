@@ -1,9 +1,11 @@
 // RPC contract between the frontend widgets and the Node backend (spec 00 §Components).
+import type { AgentList } from './agents';
 import type { Runaway, Summary } from './resource-usage';
 
 export const CORRAL_PROJECTS_PATH = '/services/corral-projects';
 export const CORRAL_HERDR_PATH = '/services/corral-herdr';
 export const CORRAL_RESOURCES_PATH = '/services/corral-resources';
+export const CORRAL_AGENTS_PATH = '/services/corral-agents';
 
 export const CorralProjectService = Symbol('CorralProjectService');
 export interface ProjectScanRequest {
@@ -70,4 +72,12 @@ export interface CorralResourceService {
     sample(): Promise<ResourceSample>;
     /** The same totals split into Corral, the herdr server and each workspace; heaviest first. */
     breakdown(): Promise<ResourceBreakdownRow[]>;
+}
+
+export const CorralAgentService = Symbol('CorralAgentService');
+export interface CorralAgentService {
+    /** Every agent in Corral's herdr session; `running: false` when herdr isn't installed or its server is down. */
+    list(): Promise<AgentList>;
+    /** Focuses the agent's pane in herdr (marks it seen). Rejects with `agent_not_found` when the pane is gone. */
+    focus(paneId: string): Promise<void>;
 }

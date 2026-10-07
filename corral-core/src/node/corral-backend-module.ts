@@ -6,10 +6,11 @@ import { cpus, homedir, totalmem } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import {
-    CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralHerdrService, CorralProjectService, CorralResourceService, HerdrError
+    CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService, HerdrError
 } from '../common/protocol';
 import { CorralHerdrServiceImpl } from './corral-herdr-service';
 import { CorralProjectServiceImpl } from './corral-project-service';
+import { CorralAgentServiceImpl } from './corral-agent-service';
 import { CorralResourceServiceImpl } from './corral-resource-service';
 import { defaultExecFile, HerdrCli } from './herdr-cli';
 import { HerdrBinaryResolver } from './herdr-binary';
@@ -87,5 +88,14 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler(CORRAL_RESOURCES_PATH, () => ctx.container.get<CorralResourceService>(CorralResourceService))
+    ).inSingletonScope();
+
+    bind(CorralAgentService).toDynamicValue(ctx => {
+        const { getClient } = access(ctx.container.get<EnvVariablesServer>(EnvVariablesServer));
+        return new CorralAgentServiceImpl(async () => (await getClient()).cli);
+    }).inSingletonScope();
+
+    bind(ConnectionHandler).toDynamicValue(ctx =>
+        new RpcConnectionHandler(CORRAL_AGENTS_PATH, () => ctx.container.get<CorralAgentService>(CorralAgentService))
     ).inSingletonScope();
 });

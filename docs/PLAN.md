@@ -711,7 +711,7 @@ inventing new ones:
       then arms `setTimeout(() => this.tick(generation), this.intervalMs())`.
   - Verify: `npx jest -c corral-core/test/jest.config.ts agents`, then `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T7.2 herdr agent calls and CorralAgentService (backend)**
+- [x] **T7.2 herdr agent calls and CorralAgentService (backend)**
   - Spec: 12 A1, A8, §herdr facts, §Code layout (`protocol.ts`, `herdr-cli.ts`, `corral-agent-service.ts`).
   - Tests first:
     - `corral-core/src/node/herdr-cli.test.ts`, new `describe('HerdrCli agents')`, using the file's `fake` and `ok`:
@@ -1047,3 +1047,4 @@ inventing new ones:
 - 2026-10-08 T6.7 — R1–R12 each covered (R11 by the generation-guarded tick); all suites green (193 unit, 15 int, 45 E2E; roots passes alone); Corral.app packaged and installed, backend is a child of the main Corral process so corralRoot is right (status-bar text not read: no screen capture here)
 - 2026-10-08 G6 — stage 6 reviewed (one must-fix: R12 clamps, fixed in d794ccd); human check passed in the installed app (amber, red + one notification, off). Open: the Settings UI did not save warningPercent/dangerPercent edits (file kept 50/75); editing settings.json worked
 - 2026-10-08 T7.1 — common/agents.ts: toAgentStatus, trackSince, agentLocation, agentRows, needsYou, badgeTooltip, formatAge, agentsIntervalMs and the AgentsPoller (generation-guarded setTimeout chain), all unit-tested with fake timers (52 tests added, 245 total)
+- 2026-10-08 T7.2 — HerdrCli.listAgents/focusAgent, CorralAgentServiceImpl bound on /services/corral-agents; verified against a real herdr session with a report-agent faked pane (14 unit + 1 int test added, 259 unit / 16 int total)

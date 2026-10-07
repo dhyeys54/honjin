@@ -1,4 +1,5 @@
 import { execFile } from 'child_process';
+import { AgentInfo, toAgentStatus } from '../common/agents';
 import { HerdrError } from '../common/protocol';
 
 /** Resolves on any exit code; rejects only on spawn failure (`code: 'ENOENT'`) or timeout (`code: 'ETIMEDOUT'`). */
@@ -72,6 +73,27 @@ export class HerdrCli {
     async paneShellPid(paneId: string): Promise<number | undefined> {
         const { result } = await this.run(['pane', 'process-info', '--pane', paneId]);
         return result.process_info?.shell_pid;
+    }
+
+    /** Spec 12 A1. `terminal_title_stripped` is absent for a pane with no title; `cwd` can be empty while `foreground_cwd` is set. */
+    async listAgents(): Promise<AgentInfo[]> {
+        const { result } = await this.run(['agent', 'list']);
+        const entries: Record<string, unknown>[] = Array.isArray(result?.agents) ? result.agents : [];
+        return entries
+            .filter(e => typeof e.pane_id === 'string')
+            .map(e => ({
+                paneId: e.pane_id as string,
+                workspaceId: (e.workspace_id as string) || '',
+                kind: (e.agent as string) || 'agent',
+                status: toAgentStatus(e.agent_status),
+                cwd: (e.cwd as string) || (e.foreground_cwd as string) || '',
+                title: (e.terminal_title_stripped as string) ?? ''
+            }));
+    }
+
+    /** Focuses the pane and marks it seen, so a `done` agent becomes `idle` (spec 12). */
+    async focusAgent(paneId: string): Promise<void> {
+        await this.run(['agent', 'focus', paneId]);
     }
 
     async focusWorkspace(id: string): Promise<void> {
