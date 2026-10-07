@@ -89,6 +89,12 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
         });
         this.widget = widget;
         widget.title.closable = false;
+        // herdr takes the right click for its own menu, so Theia's terminal menu (bubble listener on this node) must not
+        // open over it. Capture phase runs first; xterm still sees the mousedown it reports to herdr.
+        widget.node.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, true);
         widget.onDidDispose(() => {
             if (this.widget === widget) {
                 this.widget = undefined;

@@ -52,6 +52,14 @@ test('detaching shows the exited overlay and Reattach attaches again', async ({ 
     await expect(herdrTab(page)).toHaveCount(1);
 });
 
+test('right-click in herdr leaves the menu to herdr: no Theia terminal menu on top', async ({ page }) => {
+    await open(page);
+    await herdrTab(page).click();
+    await page.locator('.terminal-container .xterm-screen').first().click({ button: 'right' });
+    await page.waitForTimeout(600); // Theia's menu renders at once; the wait proves it stays away
+    await expect(page.locator('.lm-Menu:visible')).toHaveCount(0);
+});
+
 test('herdr survives the IDE (R15)', async ({ page }) => {
     await open(page);
     herdr('workspace', 'create', '--cwd', '/tmp', '--label', 'persist-check', '--no-focus');

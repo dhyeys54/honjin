@@ -34,6 +34,8 @@ import { CorralScmContribution } from './scm/corral-scm-contribution';
 import { ApplicationShellOptions } from '@theia/core/lib/browser/shell/application-shell';
 import { SidePanelHandler } from '@theia/core/lib/browser/shell/side-panel-handler';
 import { CorralSidePanelHandler, corralShellOptions } from './shell/corral-side-panel-handler';
+import { QuickCommandService } from '@theia/core/lib/browser/quick-input';
+import { PaletteOriginQuickCommandService } from './palette-origin-quick-command-service';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(CorralThemeContribution).toSelf().inSingletonScope();
@@ -81,6 +83,7 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(TabBarToolbarContribution).toService(ProjectsActionsContribution);
     rebind(ApplicationShellOptions).toConstantValue(corralShellOptions);
     rebind(SidePanelHandler).to(CorralSidePanelHandler);
+    rebind(QuickCommandService).to(PaletteOriginQuickCommandService).inSingletonScope();
     bind(CorralScmContribution).toSelf().inSingletonScope();
     rebind(ScmContribution).toService(CorralScmContribution);
     bind(ChangesContribution).toSelf().inSingletonScope();

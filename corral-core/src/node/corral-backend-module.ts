@@ -16,6 +16,8 @@ import { HerdrBinaryResolver } from './herdr-binary';
 import { readSettings } from './read-settings';
 import { CorralPreferenceKeys } from '../common/preferences-schema';
 import { WorkspaceMapStore } from './workspace-map-store';
+import { FileSearchService } from '@theia/file-search/lib/common/file-search-service';
+import { RootNameFileSearchService } from './root-name-file-search-service';
 
 // The packaged app carries the built-in extensions in Resources/plugins (electron-app/electron-builder.yml).
 // Theia only looks there when told, and the .app has no start script to pass --plugins.
@@ -50,7 +52,9 @@ function createHerdrAccess(env: EnvVariablesServer) {
     return { resolveBinary, getClient };
 }
 
-export default new ContainerModule(bind => {
+export default new ContainerModule((bind, unbind, isBound, rebind) => {
+    rebind(FileSearchService).to(RootNameFileSearchService).inSingletonScope();
+
     let herdrAccess: ReturnType<typeof createHerdrAccess> | undefined;
     const access = (env: EnvVariablesServer) => herdrAccess ??= createHerdrAccess(env);
 
