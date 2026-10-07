@@ -220,3 +220,49 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 **Why.** (1) With one workspace root per project, Theia matches only the path inside the project, so typing the project name, as VS Code allows in multi-root workspaces, returned nothing. (2) Theia 1.76 rebuilds the palette list on every keystroke against `document.activeElement`, which is the palette input by then, so every command gated on editor keys (`editorLangId`: all of Markdown: Open Preview and friends) vanished as soon as the user typed. ⇧⌘V worked, because keybindings are matched with the editor focused. (3) herdr runs with mouse reporting and draws its own right-click menu; Theia's menu stacked on top and offered "Kill Terminal" on herdr.
 **Consequences.** Every file in a project now also matches the project's name, so a query that is only a project name lists that project's files (capped at Theia's 200). The palette fix relies on the protected `contexts`/`getValidCommands` of `QuickCommandService` and the `.quick-input-widget` class; recheck both on a Theia upgrade. Commands with an `enablement` clause are still checked against the palette input (only Markdown's two "Insert … from Workspace" commands use one). Copy/paste in the herdr tab goes through herdr's menu or the keyboard.
 (4) Packaging: `electron-builder.yml` unpacks `lib/backend/native/rg`. Theia's bundle spawns ripgrep from `app.asar.unpacked/lib/backend/native/rg`, which was never unpacked (the old `node_modules/@vscode/ripgrep` entry matched nothing the bundle uses), so every Quick Open and workspace search in Corral.app failed while the browser build, which has no asar, passed E2E.
+
+## D42 — An Agents view reads herdr's agent list (spec 12) · 2026-10-08
+**Decision.** A third part, **Agents**, in the right container lists every agent in Corral's herdr session.
+- Order: blocked, then done, then the rest.
+- A badge counts the agents that need the user.
+- A click runs `herdr agent focus`.
+- The data comes from polling `herdr agent list` every 3 s (`corral.agents.intervalSeconds`).
+
+**Why.**
+- `PRODUCT.md` promises that herdr "shows which ones are working, blocked or done". Corral never surfaced that, and
+  every comparable tool does (`docs/research/feature-gaps.md` §2).
+- **Polling, not the socket.** The CLI is the seam Corral already uses and tests. herdr's `events.subscribe` socket
+  API would push changes, but its stability is still an open question for herdr's maintainers (GTM).
+- **All agents in the session.** Agents in workspaces Corral didn't create are listed as well. Reading and focusing
+  them changes nothing, and nothing is adopted, so this is consistent with D3. The resource monitor already covers
+  the whole session (D38).
+
+**Not done.**
+- No rename, stop or prompt from the view: Corral never acts on an agent beyond focusing it.
+- No macOS Dock badge, because it needs an electron-main contribution, which Corral doesn't have yet.
+- No Corral-side system notifications, because herdr's own `[ui.toast]` / `[ui.sound]` settings already notify. Both
+  are candidates for a later stage.
+
+**Consequences.**
+- One more `herdr` process runs every 3 s.
+- A `done` agent becomes `idle` once focused from Corral (herdr marks it seen; checked on 0.9.1).
+- Spec 09 C14 changes from two parts to three, in T7.4.
+
+**Details settled while planning stage 7** (all checked on herdr 0.9.1 / Theia 1.76):
+- **Time in state** resets when the status **or the kind** of a pane changes, because herdr allows a new agent kind in
+  the same pane.
+- **Missing fields.** `terminal_title_stripped` is often missing, so the title is optional. An empty `cwd` falls back to
+  `foreground_cwd`. An unrecognised status becomes `unknown`.
+- **No realpath.** herdr reports real paths (`/private/tmp/…`), and Corral compares them to project paths as given. A
+  project reached through a symlink therefore labels its agents by path instead of by project name. Accepted rather
+  than adding a filesystem call to every poll.
+- **Old layouts.** Theia's `ViewContainer` hides a hideable part that has no saved entry, and sizes parts only from
+  saved entries. So `ProjectsViewContainerFactory` appends an Agents entry to a saved state that lacks one, before the
+  state is restored. A saved entry, including one the user hid, is left alone.
+- **The poll loop is pure** (`AgentsPoller` in `common/agents.ts`), so its overlap, refresh and stop cases are tested
+  with fake timers. Browser classes in this repo aren't unit-testable under node jest.
+- **E2E fakes agents** with `herdr pane report-agent` on the E2E session, so rows, order, colours, both badges and
+  click-to-focus are tested automatically. No real agent runs, so spec 08 still holds.
+- **Both badges.** One on the part header (`BadgeWidget`), which needs the part to have no toolbar items, and one on the
+  right-panel tab (`TabBarDecorator`).
+- **Reveal in Projects** reuses Changes' reveal, moved to `ProjectsContribution.revealPath`.

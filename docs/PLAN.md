@@ -593,6 +593,396 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
     amber within one interval; setting `dangerPercent` to 5 as well turns it red and shows one notification, only one;
     `corral.resourceMonitor.enabled: false` removes it.
 
+## Stage 7 — Agents view (spec 12)
+
+Spec 12 is the contract; its rule ids (A1–A13) are cited below. **Read all of spec 12 before T7.1.**
+- Its herdr facts were captured from herdr 0.9.1 on a test session.
+- The Theia APIs it names were checked in `node_modules`, with the file given.
+- Open a `.d.ts` before using any other Theia API.
+
+Unit tests run with `npx jest -c corral-core/test/jest.config.ts <name>`. Copy these existing patterns rather than
+inventing new ones:
+
+| You need | Copy from |
+|---|---|
+| Fake `ExecFileFn` for `HerdrCli` tests | `corral-core/src/node/herdr-cli.test.ts` (`fake`, `ok`) |
+| Hand-built backend service + its test | `node/corral-resource-service.ts` / `.test.ts` |
+| Integration test against real herdr | `corral-core/test/corral-resource-service.int.test.ts` + `test/herdr-harness.ts` |
+| Generation-guarded poll loop | `browser/resource-monitor/resource-status-contribution.ts` `tick` |
+| Flat `TreeWidget` with click/Enter open and empty state | `browser/changes/changes-widget.ts`, `changes-tree.ts` |
+| Commands, menus, `ColorContribution` | `browser/changes/changes-contribution.ts` |
+| E2E layout editing in `localStorage` | the C14 test at the end of `e2e/changes-view.spec.ts` |
+| E2E context menu and clipboard | the C9/C10 test in `e2e/changes-view.spec.ts` |
+
+**Stop conditions for every task:**
+- If real herdr or Theia behaves differently from spec 12, correct the spec in the same commit, add a line to D42, and
+  carry on.
+- If the difference changes a rule's meaning (not just a detail), mark the task `[!]` and stop.
+- Never point a herdr command at the `default` session. Only the test harness session, the E2E session
+  (`helpers.ts` `herdr(...)`) and `corral-test-*` sessions are allowed.
+
+- [ ] **T7.1 Agents logic (pure)**
+  - Spec: 12 A1 (status), A2–A7, A13, §Code layout `common/agents.ts`.
+  - Tests first: `corral-core/src/common/agents.test.ts`. Build `AgentInfo`s with a helper
+    `a(paneId, status, extra?)` (kind `claude`, cwd `/x`, title `''`, workspaceId `w1`).
+    - `toAgentStatus`:
+      - each of the five statuses returns itself;
+      - `'weird'`, `'Blocked'`, `undefined`, `3` and `null` return `unknown`.
+    - A4 `trackSince`, `now` = 10 000. `prev`: `p1 {claude, working, 100}`, `p2 {claude, idle, 200}`,
+      `p3 {claude, idle, 300}`, `p6 {claude, idle, 600}`. `agents`: `p1 working claude`, `p2 blocked claude`,
+      `p3 idle codex`, `p4 idle claude`. Expect:
+      - `p1.since` 100 (unchanged);
+      - `p2` 10 000 (status changed);
+      - `p3` 10 000 (kind changed);
+      - `p4` 10 000 (new);
+      - no `p6` (dropped);
+      - the returned map is a new object, and `prev` is unchanged (compare with a copy).
+      - A pane dropped and then back: `trackSince(trackSince(prev, [], 1), [p1], 2).get('p1').since` is 2.
+    - A2 `agentLocation`. Projects: `{'/p/app-a','app-a'}`, `{'/p/app-a/nested','nested'}`, `{'/w/x/app','app — x'}`.
+      | cwd | project | location |
+      |---|---|---|
+      | `/p/app-a` | `/p/app-a` | `app-a` |
+      | `/p/app-a/` | `/p/app-a` | `app-a` |
+      | `/p/app-a/src/x` | `/p/app-a` | `app-a/src/x` |
+      | `/p/app-a/nested/lib` | `/p/app-a/nested` | `nested/lib` |
+      | `/p/app-ab` | none | `p/app-ab` |
+      | `/w/x/app` | `/w/x/app` | `app — x` |
+      | `/q/other/deep` | none | `other/deep` |
+      | `/top` | none | `top` |
+      | `/` | none | `/` |
+      | `''` | none | `?` |
+    - A3 `agentRows`:
+      - Statuses `idle, working, done, blocked, unknown` (paneIds `a`…`e`, all `since` 0) come out as
+        `blocked, done, working, unknown, idle`.
+      - Two `blocked`, `since` 5 (`p1`) and 2 (`p2`): `p2` first.
+      - Equal `since`: `w1:p10` before `w1:p2` (`localeCompare`), and `w1:p1` before `w2:p1`.
+      - A row copies `since` from the map, and an unseen pane gets `since` 0.
+      - A row carries `project` and `location` from `agentLocation`.
+    - A7:
+      - `needsYou`: `[blocked, blocked, done, working, idle, unknown]` → 3; `[]` → 0.
+      - `badgeTooltip(1)` → `1 agent needs you`; `badgeTooltip(2)` → `2 agents need you`.
+    - A5 `formatAge`:
+      | ms | result |
+      |---|---|
+      | -5 000 | `0s` |
+      | 0 | `0s` |
+      | 999 | `0s` |
+      | 59 999 | `59s` |
+      | 60 000 | `1m` |
+      | 3 599 999 | `59m` |
+      | 3 600 000 | `1h` |
+      | 26 × 3 600 000 | `26h` |
+    - A13 `agentsIntervalMs`:
+      | value | ms |
+      |---|---|
+      | 3 | 3000 |
+      | 2.5 | 2500 |
+      | 1 | 1000 |
+      | 0 | 1000 |
+      | -4 | 1000 |
+      | `undefined` | 3000 |
+      | `'5'` | 3000 |
+      | `NaN` | 3000 |
+      | `Infinity` | 3000 |
+    - A6 `AgentsPoller`. Use `jest.useFakeTimers()` in `beforeEach`, `jest.useRealTimers()` in `afterEach`. Give
+      `list` a queue of deferred promises (`let resolve!, reject!; new Promise((res, rej) => …)`), so each test settles
+      calls by hand. Flush with `await jest.advanceTimersByTimeAsync(ms)`; use `advanceTimersByTimeAsync(0)` to flush
+      microtasks only. Interval 1000 unless stated.
+      1. `start()` calls `list` once at once. After resolving it with `L1`, `onResult` gets `L1`. There is no second
+         call at 999 ms and exactly one at 1000 ms.
+      2. No overlap: the first call never settles. After advancing 10 000 ms, `list` was called once.
+      3. A rejection calls `onError` with the error and not `onResult`; the next call still comes 1000 ms later.
+      4. `onResult` throwing: `onError` gets the thrown error, and the next call still comes 1000 ms later.
+      5. `intervalMs` is read per scheduling: it returns 1000, then 5000. The second call comes at 1000 ms and the
+         third 5000 ms after the second settles.
+      6. `refresh()` while waiting: settle call 1, advance 500, `refresh()`. Call 2 happens at once. Settle it and
+         advance 1000: exactly 3 calls in total, not 4 (the old timer was cancelled).
+      7. `refresh()` while in flight: call 1 pending, `refresh()` → call 2. Resolve call 2 with `B`, then call 1 with
+         `A`. `onResult` was called once, with `B`. Advance 1000: exactly one more call.
+      8. `stop()` while in flight: resolving afterwards calls neither callback, and advancing 10 000 makes no call.
+         `stop()` while waiting: no further calls.
+      9. `start()` twice → one call. `refresh()` before `start()` → no call. `stop()` before `start()` does not throw.
+  - Do:
+    - Implement exactly the spec 12 signatures in `corral-core/src/common/agents.ts`. Import `trimSlash` and
+      `owningProject` from `./paths`.
+    - Use no Theia, DOM or Node imports; the global `setTimeout`/`clearTimeout` are allowed.
+    - The `AgentsPoller` body follows spec 12 §Code layout: `start` and `refresh` do `this.tick(++this.generation)`.
+      `tick` awaits `list()` inside `try`, calls `onResult` or `onError` only if the generation still matches, and only
+      then arms `setTimeout(() => this.tick(generation), this.intervalMs())`.
+  - Verify: `npx jest -c corral-core/test/jest.config.ts agents`, then `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T7.2 herdr agent calls and CorralAgentService (backend)**
+  - Spec: 12 A1, A8, §herdr facts, §Code layout (`protocol.ts`, `herdr-cli.ts`, `corral-agent-service.ts`).
+  - Tests first:
+    - `corral-core/src/node/herdr-cli.test.ts`, new `describe('HerdrCli agents')`, using the file's `fake` and `ok`:
+      1. `listAgents()` sends exactly `['agent','list']`. Given
+         `ok({ agents: [{ agent: 'claude', agent_status: 'idle', cwd: '/Users/u/designer', pane_id: 'w5:p1', tab_id: 'w5:t1', terminal_title_stripped: 'Commit and push changes', workspace_id: 'w5', focused: false, revision: 3 }], type: 'agent_list' })`,
+         it returns
+         `[{ paneId: 'w5:p1', workspaceId: 'w5', kind: 'claude', status: 'idle', cwd: '/Users/u/designer', title: 'Commit and push changes' }]`.
+      2. An entry with no `terminal_title_stripped` → `title: ''`.
+      3. `cwd: ''` with `foreground_cwd: '/f'` → `cwd: '/f'`. Neither present → `cwd: ''`.
+      4. `agent: ''` → `kind: 'agent'`. `agent_status: 'weird'` → `status: 'unknown'`. No `workspace_id` →
+         `workspaceId: ''`.
+      5. An entry without a string `pane_id` is skipped. `ok({ type: 'agent_list' })` (no `agents`) → `[]`.
+      6. `focusAgent('w5:p1')` sends `['agent','focus','w5:p1']` and resolves `undefined`, given
+         `ok({ agent: { pane_id: 'w5:p1' } })`.
+      7. With `session: 's'`, both commands are prefixed `['--session','s', …]`.
+      8. `{ exitCode: 1, stderr: '{"error":{"code":"agent_not_found","message":"agent target w9:p9 not found"}}' }`
+         makes `focusAgent` reject with `{ code: 'agent_not_found' }`. The same shape with `server_not_running` makes
+         `listAgents` reject with that code. `{ exitCode: 2, stderr: 'error: unrecognized subcommand' }` makes
+         `listAgents` reject with `cli_error`.
+    - `corral-core/src/node/corral-agent-service.test.ts`, with a fake `AgentClient` (`listAgents`, `focusAgent` as
+      `jest.fn`):
+      1. `list()` resolves `{ running: true, agents }` with exactly what `listAgents` returned.
+      2. `listAgents` rejecting with `new HerdrError('server_not_running')` → `{ running: false, agents: [] }`.
+      3. `getCli` rejecting with `new HerdrError('not_found')` → `{ running: false, agents: [] }`.
+      4. `HerdrError('timeout')`, `HerdrError('cli_error')` and a plain `Error('boom')` each make `list()` reject with
+         that same error.
+      5. `focus('w1:p1')` calls `focusAgent('w1:p1')` once. A `HerdrError('agent_not_found')` from it propagates.
+         `getCli` rejecting with `not_found` makes `focus` reject (it is not swallowed).
+    - `corral-core/test/corral-agent-service.int.test.ts`, structured like `corral-resource-service.int.test.ts`
+      (same `installed` guard, `afterAll(() => h?.stop())`). In one `it`, in order:
+      1. `h = await startHerdr()`; `service = new CorralAgentServiceImpl(async () => h.cli)`.
+         `await service.list()` equals `{ running: true, agents: [] }`.
+      2. `dir = realpathSync(mkdtempSync(join(tmpdir(), 'corral-agents-int-')))`;
+         `{ workspaceId, paneId } = await h.cli.createWorkspace(dir, 'agents-int')`.
+      3. Run `execFileSync(process.env.HERDR_BIN || 'herdr', ['--session', h.session, 'pane', 'report-agent', '--source', 'corral-int', '--agent', 'claude', '--state', 'blocked', paneId])`.
+      4. Poll `service.list()` (up to 20 × 250 ms) until it has one agent. That agent equals
+         `{ paneId, workspaceId, kind: 'claude', status: 'blocked', cwd: dir, title: expect.any(String) }`.
+      5. `await service.focus(paneId)` resolves. `service.focus('w99:p99')` rejects with
+         `{ code: 'agent_not_found' }`.
+      6. `await h.stop()`. Then `await service.list()` equals `{ running: false, agents: [] }`.
+      7. Remove `dir` with `rmSync(dir, { recursive: true, force: true })`.
+  - Do:
+    - `protocol.ts`: add `CORRAL_AGENTS_PATH`, the `CorralAgentService` symbol and the interface (spec 12 §Code layout).
+    - `herdr-cli.ts`: add `listAgents()` and `focusAgent()`, mapping per A1 with `toAgentStatus` from
+      `../common/agents`.
+    - `corral-agent-service.ts`: `AgentClient` and `CorralAgentServiceImpl`. `list()` catches only `HerdrError` with
+      code `server_not_running` or `not_found`, and rethrows everything else.
+    - `corral-backend-module.ts`: bind `CorralAgentService` with `toDynamicValue`, reusing
+      `access(env).getClient` (don't copy it) as `new CorralAgentServiceImpl(async () => (await getClient()).cli)`.
+      Then add a `ConnectionHandler` → `new RpcConnectionHandler(CORRAL_AGENTS_PATH, …)`, exactly like the
+      `CorralResourceService` lines.
+  - Verify: `npx jest -c corral-core/test/jest.config.ts herdr-cli corral-agent-service`, then
+    `npm test && npm run typecheck && npm run lint && npm run test:int`. Afterwards `herdr session list` must show no
+    `corral-test-*` session.
+
+- [ ] **T7.3 Setting**
+  - Spec: 12 A13; spec 05.
+  - Tests first: in `corral-core/src/common/preferences-schema.test.ts`, add
+    `'corral.agents.intervalSeconds': { type: 'number', default: 3 }` to `expected`. Add one `it` asserting its
+    `minimum` is 1. The existing loops already check User scope and the key constant.
+  - Do:
+    - Add `agentsIntervalSeconds: 'corral.agents.intervalSeconds'` to `CorralPreferenceKeys`, the typed field to
+      `CorralConfiguration`, and the property to `corralPreferenceSchema`:
+      `{ type: 'number', default: 3, minimum: 1, scope, description: 'Seconds between refreshes of the Agents view.' }`.
+    - Add the row `` | `corral.agents.intervalSeconds` | `number` (min 1) | `3` | Seconds between Agents-view polls (spec 12 A13). | ``
+      to spec 05's key table, after the resource-monitor rows.
+  - Verify: `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T7.4 Agents part, service and empty states (frontend)**
+  - Spec: 12 A6, A11, A12, §Code layout (`agents-service.ts`, `agents-tree.ts`, `agents-widget.ts`,
+    `projects-view-container.ts`); spec 09 C14, which this task amends **in the same commit**.
+  - Tests first: create `e2e/agents-view.spec.ts` with these helpers at the top:
+    ```ts
+    const FIXTURES = resolve(__dirname, 'fixtures/projects');
+    const agentsView = (page: Page) => page.locator('[data-testid="corral-agents"]');
+    const agentRow = (page: Page, text: string) => agentsView(page).locator('[data-testid="corral-agent-row"]', { hasText: text });
+    const part = (page: Page, id: string) => page.locator(`#corral-projects-container--${id}`);
+    const empty = (page: Page) => page.locator('[data-testid="corral-agents-empty"]');
+    ```
+    1. **A12 order:**
+       - After `page.goto('/')`, the parts `corral-projects`, `corral-changes` and `corral-agents` are visible within
+         30 s, and their `boundingBox().y` values strictly increase.
+       - `part(page, 'corral-agents').locator('.theia-view-container-part-header .label')` has text `Agents`.
+    2. **A11:** `empty(page)` has text `No agents running` within 15 s. The E2E startup command is `echo corral-e2e`,
+       so no spec starts an agent; the T7.5–T7.7 tests close the workspaces they fake agents in.
+    3. **A12 old layout.** Use the C14 retry/edit pattern exactly (`toPass`, `page.goto('/favicon.ico')`, edit
+       `localStorage`). Find the `rightPanel.items` entry whose `widget.constructionOptions.factoryId` is
+       `corral-projects-container`, then:
+       `const inner = JSON.parse(item.widget.innerWidgetState); inner.parts = inner.parts.filter(p => p.partId !== 'corral-agents'); item.widget.innerWidgetState = JSON.stringify(inner);`
+       (if `innerWidgetState` is already an object, edit it in place without parse/stringify).
+       - Return `true` only if a part was removed.
+       - Reload. `empty(page)` is visible within 30 s, and `part(page, 'corral-agents')` has a `boundingBox().height`
+         greater than 40 (visible and not squashed).
+    4. **A12 user-hidden part stays hidden.** The same edit, but set `hidden = true` on the `corral-agents` part instead
+       of removing it. After reload, the Projects part is visible within 30 s and `agentsView(page)` is not visible.
+       No clean-up is needed: each Playwright test gets a fresh browser context, so its `localStorage` layout is gone.
+  - Do:
+    - `corral-core/src/browser/agents/agents-service.ts`: `AgentsService` per spec 12 §Code layout.
+      - In `onStart`: `await this.prefs.ready`, subscribe to `projectList.onDidChange` → fire, then `poller.start()`.
+      - `onStop` → `poller.stop()`.
+      - `onResult(list)`: `seen = trackSince(seen, list.agents, Date.now())`, store the list, `loaded = true`,
+        `error = undefined`, then fire.
+      - `onError(e)`: `loaded = true`; set `error` to the message (`e instanceof Error ? e.message : String(e)`); fire
+        only if the text changed.
+      - `rows()`: `agentRows(list.agents, seen, projects)` with
+        `projects = projectList.entries(false).filter(e => projectList.roots.includes(e.path))`.
+      - `focus(paneId)`: A8.
+    - `agents-tree.ts`, `agents-widget.ts`: rows and A11 empty states.
+      - This task needs only enough row rendering to compile: kind and location. T7.5 finishes A5.
+      - The widget calls `model.refresh()` and `update()` on `onDidChange`, as `ChangesWidget` does.
+    - `corral-frontend-module.ts`:
+      - `import '../../src/browser/style/agents.css';` (create the file with `.corral-agents { height: 100%; }` and the
+        `.corral-agents-empty` rule copied from `changes.css`);
+      - bind the `CorralAgentService` RPC proxy (`ServiceConnectionProvider.createProxy`, like `CorralResourceService`);
+      - `bind(AgentsService).toSelf().inSingletonScope()` and `bind(FrontendApplicationContribution).toService(AgentsService)`;
+      - a `WidgetFactory` for `AGENTS_VIEW_ID` → `createAgentsWidget(ctx.container)`.
+    - `projects-view-container.ts`: after the Changes `addWidget`, `getOrCreateWidget(AGENTS_VIEW_ID)` and `addWidget`
+      it with the A12 options. Then wrap `restoreState`:
+      ```ts
+      const restore = container.restoreState.bind(container);
+      // Theia hides a hideable part with no saved entry and sizes parts only from saved entries (spec 12 A12).
+      container.restoreState = state => restore(state.parts.some(p => p.partId === AGENTS_VIEW_ID) ? state : {
+          ...state,
+          parts: [...state.parts, { partId: AGENTS_VIEW_ID, hidden: false, collapsed: false, relativeSize: 0.2, originalContainerId: PROJECTS_CONTAINER_ID }]
+      });
+      ```
+    - Spec 09 C14: name the third part and point to spec 12 A12.
+  - Verify: `npm run build -w corral-core && npm run build:browser && npx playwright test -c e2e/playwright.config.ts agents-view changes-view`,
+    then `npm run test:e2e` (nothing else regressed). Also look at the part once through the Playwright MCP
+    (screenshot of the right panel) and confirm three stacked sections.
+
+- [ ] **T7.5 Rows, colours and open**
+  - Spec: 12 A3, A5, A8, A10.
+  - Tests first: add to `e2e/agents-view.spec.ts`. Add these helpers, using `herdr` from `helpers.ts` (it always targets
+    the E2E session):
+    ```ts
+    function workspace(cwd: string, label: string): { ws: string; pane: string } {
+        const r = JSON.parse(herdr('workspace', 'create', '--cwd', cwd, '--label', label, '--no-focus')).result;
+        return { ws: r.workspace.workspace_id, pane: r.root_pane.pane_id };
+    }
+    const report = (pane: string, state: string, kind = 'claude') =>
+        herdr('pane', 'report-agent', '--source', 'corral-e2e', '--agent', kind, '--state', state, pane);
+    const herdrStatus = (pane: string) =>
+        JSON.parse(herdr('agent', 'list')).result.agents.find((a: { pane_id: string }) => a.pane_id === pane)?.agent_status;
+    ```
+    One test, `test.setTimeout(120_000)`. Close every created workspace in `finally` with
+    `herdr('workspace', 'close', ws)` (ignore errors), then assert `empty(page)` reads `No agents running` within 15 s.
+    1. Create the workspaces in this order:
+       - `beta = workspace(join(FIXTURES, 'beta'), 'agents-beta')`;
+       - `src = workspace(join(FIXTURES, 'alpha', 'src'), 'agents-src')`;
+       - `out = workspace(dir, 'agents-out')`, where `dir = tempDir('corral-agents-')`.
+    2. Run `herdr('workspace', 'focus', beta.ws)`, so `src` and `out` aren't focused.
+    3. Report: `report(beta.pane, 'blocked')`; `report(out.pane, 'working', 'codex')`;
+       `report(src.pane, 'working')`, then `report(src.pane, 'idle')`.
+       - `await expect.poll(() => herdrStatus(src.pane)).toBe('done')`. If this fails, herdr focused `src`; stop and
+         report, don't weaken it.
+    4. `page.goto('/')`. Within 15 s, `agentsView(page).locator('[data-testid="corral-agent-row"]')` has count 3, and
+       their texts in order contain:
+       - `beta` + `blocked`;
+       - `alpha/src` + `done`;
+       - `codex` + `${basename(dirname(dir))}/${basename(dir)}` + `working`.
+    5. Colour:
+       - `agentRow(page, 'beta').locator('.corral-agent-dot.corral-agent-blocked')` has count 1, and its computed
+         `background-color` is `rgb(229, 115, 107)` (`danger` `#e5736b`).
+       - The `working` dot has computed `animation-name` `corral-live-pulse`.
+       - Each row's text matches `/(blocked|done|working|idle|unknown) \d+[smh]$/`.
+    6. Open: click `agentRow(page, 'alpha/src')`. Within 10 s:
+       - its text contains `idle`;
+       - `herdrStatus(src.pane)` is `idle`;
+       - the herdr tab is current: `page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^herdr$/ })` is
+         visible (the tab locator of `herdr-terminal.spec.ts`).
+    7. Kind change: `report(out.pane, 'working', 'claude')`. Within 10 s the `out` row contains `claude`, not `codex`.
+  - Do:
+    - Finish the A5 caption spans, the `title` and `data-testid` node attributes (check `createNodeAttributes` in
+      `node_modules/@theia/core/lib/browser/tree/tree-widget.d.ts`), and the `corral-agent-row-<status>` class.
+    - A8: click and Enter, like `ChangesWidget.handleClickEvent` + `model.onOpenNode`.
+    - `AgentsService.focus(paneId)`:
+      ```ts
+      try {
+          await this.backend.focus(paneId);
+          await this.commands.executeCommand(HerdrCommands.FOCUS.id);
+      } catch (e) {
+          this.messages.error(`Could not focus agent: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+          this.refresh();
+      }
+      ```
+    - `AgentsContribution` with `registerColors` only, for now (A10). Bind it to `ColorContribution`.
+    - `agents.css`, using only `var(--theia-…)`. Use `display: flex` on the caption if Theia's `.theia-TreeNodeContent`
+      isn't already flex (check in the browser).
+      - `.corral-agent-dot`: 6 × 6 px, `border-radius: 50%`, `flex: none`, `margin-right: 6px`.
+      - One rule per status for `background`. `.corral-agent-idle { visibility: hidden }`.
+      - `.corral-agent-location { margin-left: 6px }`.
+      - `.corral-agent-state { margin-left: auto; padding-left: 8px; color: var(--theia-descriptionForeground) }`.
+      - `.corral-agent-working { animation: corral-live-pulse 1.2s ease-in-out infinite }`, plus the
+        `prefers-reduced-motion` override.
+  - Verify: build as in T7.4, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then
+    `npm run test:e2e`.
+
+- [ ] **T7.6 Context menu**
+  - Spec: 12 A9.
+  - Tests first:
+    - Add a test to `e2e/agents-view.spec.ts` with the T7.5 helpers, and `context.grantPermissions(['clipboard-read', 'clipboard-write'])`
+      as in the C10 test.
+    - Set up the `src` (`alpha/src`, `blocked`) and `out` (temp dir, `blocked`) workspaces, and close them in `finally`.
+    - With `item = (label) => page.locator('.lm-Menu-itemLabel', { hasText: label })`:
+      1. Right-click the `alpha/src` row. `Focus Agent`, `Reveal in Projects` and `Copy Path` are visible. Click
+         `Copy Path`; `expect.poll(() => page.evaluate(() => navigator.clipboard.readText()))` is
+         `realpathSync(join(FIXTURES, 'alpha', 'src'))`.
+      2. Right-click it again and click `Reveal in Projects`. `[data-testid="corral-projects"] .theia-TreeNode.theia-mod-selected`
+         with text `src` is visible within 10 s.
+      3. Right-click the `out` row. `Copy Path` is visible and `Reveal in Projects` has count 0. Then `closeMenu(page)`.
+  - Do:
+    - Move the body of `ChangesContribution.reveal` into a new `ProjectsContribution.revealPath(path: string)` (same
+      code, taking a path), and make `ChangesContribution.reveal` call it. The changes-view E2E must stay green.
+    - `AgentsContribution`: the three commands from A9, with ids
+      `corral.agents.focus`/`.reveal`/`.copyPath` and labels `Focus Agent`/`Reveal in Projects`/`Copy Path`.
+      - Each acts on `widget.model.selectedNodes[0]` when `isAgentNode`.
+      - `reveal`'s `isVisible` also needs `row.project`.
+      - Menus go in `[...AGENTS_CONTEXT_MENU, '1_agent']` with orders `a`, `b`, `c`.
+      - Bind to `CommandContribution` and `MenuContribution`.
+  - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view changes-view`, then
+    `npm run test:e2e`.
+
+- [ ] **T7.7 Badges**
+  - Spec: 12 A7.
+  - Tests first: add a test to `e2e/agents-view.spec.ts` with the T7.5 helpers. Set up `beta` and `src`, close them
+    in `finally`, and focus `beta` as in T7.5.
+    1. `report(beta.pane, 'working')`. Once its row shows `working`:
+       - `part(page, 'corral-agents').locator('.notification-count')` is not visible;
+       - `#shell-tab-corral-projects-container .theia-badge-decorator-sidebar` has count 0.
+    2. `report(beta.pane, 'blocked')`. Within 10 s the part badge reads `1`, with `title` `1 agent needs you`, and the
+       sidebar badge reads `1`.
+    3. `report(src.pane, 'working')`, then `report(src.pane, 'idle')`, giving `done`. Within 10 s both badges read `2`,
+       and the part badge's `title` is `2 agents need you`.
+    4. Click the `alpha/src` row. Within 10 s both read `1`.
+    5. `herdr('pane', 'release-agent', beta.pane, '--source', 'corral-e2e', '--agent', 'claude')` (pane id first,
+       as in spec 12). The beta row disappears. Within 10 s the part badge is hidden and the sidebar badge has count 0.
+       Don't report `idle` here: step 4 moved herdr focus to `src`, so beta would turn `done`, not `idle`.
+  - Do:
+    - `AgentsWidget` implements `BadgeWidget`, with `onDidChangeBadge`/`onDidChangeBadgeTooltip` emitters fired only
+      when `needsYou()` changes. Add no toolbar items to this part.
+    - `AgentsContribution` implements `TabBarDecorator`: `id = 'corral-agents-badge'`, an `onDidChangeDecorations`
+      emitter fired only when the count changes (subscribe to `AgentsService.onDidChange`), and
+      `decorate(title) = title.owner.id === PROJECTS_CONTAINER_ID && n > 0 ? [{ badge: n }] : []`.
+      - Import `TabBarDecorator` from `@theia/core/lib/browser/shell/tab-bar-decorator`.
+      - `bind(TabBarDecorator).toService(AgentsContribution)`, as `navigator-frontend-module.js` does.
+    - If the sidebar badge doesn't render, check that `CorralSidePanelHandler` doesn't replace the tab renderer's
+      decoration path. If it does, mark `[!]` with what you found.
+  - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then
+    `npm test && npm run typecheck && npm run lint && npm run test:e2e`.
+
+- [ ] **T7.8 Docs, full suite, package**
+  - Spec: 12; README; spec 00.
+  - Do:
+    - Walk A1–A13 and write down, for each, the test that covers it. A rule with no test must be in spec 12
+      §Tests "Not covered automatically"; otherwise add the test.
+    - Mention the Agents view and `corral.agents.intervalSeconds` in the README, next to the Changes view.
+    - Package and install exactly as T6.7 does: quit, wait, `ditto`, open.
+  - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and
+    first-run must pass when run alone, as in T6.7). The installed app shows the Agents part under Changes.
+
+- [ ] **G7 Stage 7 gate**: all suites → `spec-reviewer` on spec 12 and stage 7 → fix must-fix findings → **human
+  checkpoint, stop**.
+  - Ask the user to check these in the installed app, with real agents in their own session:
+    - every running agent appears, blocked and done first, with sensible ages;
+    - clicking a `done` agent jumps to its pane in the herdr tab, and the row turns `idle` at once;
+    - the part header and the right-panel tab badges count blocked + done;
+    - Reveal in Projects and Copy Path work;
+    - after the user quits herdr's server themselves, the view says `herdr is not running` within one interval.
+
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
