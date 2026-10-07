@@ -16,6 +16,8 @@ and runs your coding agents (Claude Code) in herdr, not in a chat panel built in
 │        │                          │                          │ beta       ▸ │
 │        │                          │                          │ CHANGES      │
 │        │                          │                          │ alpha (2)  ● │
+│        │                          │                          │ AGENTS     1 │
+│        │                          │                          │ ● claude alp…│
 └────────┴──────────────────────────┴──────────────────────────┴──────────────┘
 ```
 
@@ -24,6 +26,10 @@ and runs your coding agents (Claude Code) in herdr, not in a chat panel built in
 - **Changes panel (right, under Projects):** every uncommitted git change in your visible projects, grouped by
   project. A pulsing dot marks files written in the last 30 s, so you can see where agents are working. Click a file
   for its diff against HEAD. Changed files also carry a letter in the Projects tree.
+- **Agents panel (right, under Changes):** every agent running in your herdr session, with the ones that need you
+  first: blocked, then done. Each row shows the agent, where it runs, its state and how long it has been in it.
+  Click a row to jump to its pane in the herdr tab. A badge on the panel and on the right-panel tab counts the
+  agents that are blocked or done. How often it checks is `corral.agents.intervalSeconds` (default 3).
 - **+ on any folder:** opens a new herdr tab in that folder, inside that project's own herdr workspace, and runs
   your startup command (`claude` by default; can be set per project).
 - **herdr in the middle:** agents keep running when Corral closes, and herdr shows which ones are working, blocked

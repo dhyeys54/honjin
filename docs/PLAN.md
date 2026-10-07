@@ -964,7 +964,7 @@ inventing new ones:
   - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then
     `npm test && npm run typecheck && npm run lint && npm run test:e2e`.
 
-- [ ] **T7.8 Docs, full suite, package**
+- [x] **T7.8 Docs, full suite, package**
   - Spec: 12; README; spec 00.
   - Do:
     - Walk A1–A13 and write down, for each, the test that covers it. A rule with no test must be in spec 12
@@ -1053,3 +1053,4 @@ inventing new ones:
 - 2026-10-08 T7.5 — Agent rows (dot, kind, location, status + age, cwd tooltip), status colours registered by AgentsContribution, click/Enter focuses the pane and reveals the herdr tab; E2E with fake agents via report-agent (1 test added, 50 E2E total)
 - 2026-10-08 T7.6 — Agents context menu (Focus Agent, Reveal in Projects when owned, Copy Path); reveal code moved to ProjectsContribution.revealPath and shared with Changes (1 E2E test added, 51 E2E total)
 - 2026-10-08 T7.7 — needs-you badge on the Agents part header (BadgeWidget) and the right-panel tab (TabBarDecorator), updated only when the count changes (1 E2E test added, 52 E2E total)
+- 2026-10-08 T7.8 — A1–A13 mapped to tests (gaps listed in spec 12 "Not covered"), README documents the Agents panel and corral.agents.intervalSeconds, tooltip asserted; all suites green (262 unit, 16 int, 52 E2E; roots and first-run pass alone); Corral.app packaged, installed and relaunched (Agents part not viewed: no screen capture here)

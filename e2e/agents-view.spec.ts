@@ -118,6 +118,8 @@ test('A3, A5, A8, A10: rows are ordered, coloured, aged, and a click focuses the
         expect(texts[2]).toContain(`${basename(dirname(dir))}/${basename(dir)}`);
         expect(texts[2]).toContain('working');
 
+        // A5: the tooltip is the cwd (this fake agent has no pane title)
+        await expect(agentRow(page, 'beta')).toHaveAttribute('title', realpathSync(join(FIXTURES, 'beta')));
         const blockedDot = agentRow(page, 'beta').locator('.corral-agent-dot.corral-agent-blocked');
         await expect(blockedDot).toHaveCount(1);
         expect(await blockedDot.evaluate(e => getComputedStyle(e).backgroundColor)).toBe('rgb(229, 115, 107)');

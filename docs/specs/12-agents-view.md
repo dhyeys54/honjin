@@ -171,6 +171,12 @@ against one (AGENTS.md).
   - The A9 menu.
   - The two A12 restore cases.
 - **Not covered automatically:**
+  - The `Could not list agents: <error>` text (A11) and the `Could not focus agent` message (A8). Both are
+    one-line branches in `AgentsWidget` and `AgentsService.focus`; the error codes feeding them are unit-tested.
+  - Enter on a row and the Shift, Meta and Ctrl click exceptions (A8): Theia's tree routes Enter to the same
+    `onOpenNode` that click uses.
+  - `corral.agents.intervalSeconds` changing the live poll period (A13): `agentsIntervalMs` and the poller reading
+    the interval at each schedule are unit-tested.
   - The `herdr is not running` state in the browser. The E2E server is shared by every spec, so it isn't stopped
     mid-run; the unit and integration tests cover the mapping.
   - Real Claude Code status detection (herdr's job).
