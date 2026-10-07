@@ -55,6 +55,11 @@
     visibility: hidden;
 }
 
+/* The codicon "add" glyph is drawn ~0.6px up and left of its em box's centre; a transform, unlike padding, is not pixel-snapped. */
+.corral-projects .corral-new-tab::before {
+    transform: translate(0.6px, 0.6px);
+}
+
 .corral-projects .theia-TreeNode:hover .corral-new-tab,
 .corral-projects .corral-new-tab:focus-visible {
     visibility: visible;
