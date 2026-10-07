@@ -1,5 +1,6 @@
 import '../../src/browser/style/herdr.css';
 import '../../src/browser/style/changes.css';
+import '../../src/browser/style/agents.css';
 
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
@@ -12,10 +13,12 @@ import { ChangesService } from './changes/changes-service';
 import { CHANGES_VIEW_ID, createChangesWidget } from './changes/changes-widget';
 import { ChangesContribution } from './changes/changes-contribution';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
+import { AgentsService } from './agents/agents-service';
+import { AGENTS_VIEW_ID, createAgentsWidget } from './agents/agents-widget';
 import { ProjectsViewContainerFactory } from './projects/projects-view-container';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
-import { CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralHerdrService, CorralProjectService, CorralResourceService } from '../common/protocol';
+import { CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService } from '../common/protocol';
 import { ResourceStatusContribution } from './resource-monitor/resource-status-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
 import { FirstRunContribution } from './first-run-contribution';
@@ -93,6 +96,15 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: CHANGES_VIEW_ID,
         createWidget: () => createChangesWidget(ctx.container)
+    })).inSingletonScope();
+    bind(CorralAgentService).toDynamicValue(ctx =>
+        ServiceConnectionProvider.createProxy<CorralAgentService>(ctx.container, CORRAL_AGENTS_PATH)
+    ).inSingletonScope();
+    bind(AgentsService).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(AgentsService);
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: AGENTS_VIEW_ID,
+        createWidget: () => createAgentsWidget(ctx.container)
     })).inSingletonScope();
     bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ProjectsViewContainerFactory);

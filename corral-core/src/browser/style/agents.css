@@ -1,0 +1,9 @@
+/* A tree in a view container part gets no height from the dock panel. */
+.corral-agents {
+    height: 100%;
+}
+
+.corral-agents-empty {
+    padding: 12px;
+    color: var(--theia-descriptionForeground);
+}

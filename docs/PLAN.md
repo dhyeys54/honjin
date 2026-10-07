@@ -780,7 +780,7 @@ inventing new ones:
       to spec 05's key table, after the resource-monitor rows.
   - Verify: `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T7.4 Agents part, service and empty states (frontend)**
+- [x] **T7.4 Agents part, service and empty states (frontend)**
   - Spec: 12 A6, A11, A12, §Code layout (`agents-service.ts`, `agents-tree.ts`, `agents-widget.ts`,
     `projects-view-container.ts`); spec 09 C14, which this task amends **in the same commit**.
   - Tests first: create `e2e/agents-view.spec.ts` with these helpers at the top:
@@ -1049,3 +1049,4 @@ inventing new ones:
 - 2026-10-08 T7.1 — common/agents.ts: toAgentStatus, trackSince, agentLocation, agentRows, needsYou, badgeTooltip, formatAge, agentsIntervalMs and the AgentsPoller (generation-guarded setTimeout chain), all unit-tested with fake timers (52 tests added, 245 total)
 - 2026-10-08 T7.2 — HerdrCli.listAgents/focusAgent, CorralAgentServiceImpl bound on /services/corral-agents; verified against a real herdr session with a report-agent faked pane (14 unit + 1 int test added, 259 unit / 16 int total)
 - 2026-10-08 T7.3 — corral.agents.intervalSeconds (default 3, min 1) in the preference schema, typed config and spec 05 (4 tests added, 262 total)
+- 2026-10-08 T7.4 — Agents part (third in corral-projects-container) with AgentsService/poller, tree, widget, A11 empty states and the A12 restoreState wrapper; spec 09 C14 amended; E2E agents-view 4 tests, full E2E 49 pass. Note: Theia applies a part's `weight` only when restoring saved sizes, so a fresh layout splits Projects/Changes/Agents evenly (~186px each); roots.spec focus click moved from y=200 to y=150 for that reason. Consider initial 70/30/20 sizes at G7.

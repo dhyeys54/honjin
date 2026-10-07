@@ -17,7 +17,7 @@ test('search covers visible projects only, in the managed workspace, without rel
 
         const hit = page.locator('span.match', { hasText: 'zebrafinch-marker-7431' });
         const search = async () => {
-            await page.locator('[data-testid="corral-projects"]').click({ position: { x: 5, y: 200 } }); // keys go to herdr while its terminal has focus
+            await page.locator('[data-testid="corral-projects"]').click({ position: { x: 5, y: 150 } }); // empty tree space (the Projects part is a third of the panel); keys go to herdr while its terminal has focus
             await page.keyboard.press('ControlOrMeta+Shift+F');
             const input = page.locator('#search-input-field');
             await input.fill('zebrafinch-marker-7431');
