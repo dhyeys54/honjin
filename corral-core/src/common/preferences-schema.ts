@@ -13,7 +13,8 @@ export const CorralPreferenceKeys = {
     resourceMonitorEnabled: 'corral.resourceMonitor.enabled',
     resourceMonitorWarningPercent: 'corral.resourceMonitor.warningPercent',
     resourceMonitorDangerPercent: 'corral.resourceMonitor.dangerPercent',
-    resourceMonitorIntervalSeconds: 'corral.resourceMonitor.intervalSeconds'
+    resourceMonitorIntervalSeconds: 'corral.resourceMonitor.intervalSeconds',
+    agentsIntervalSeconds: 'corral.agents.intervalSeconds'
 } as const;
 
 export interface ProjectOverride {
@@ -34,6 +35,7 @@ export interface CorralConfiguration {
     'corral.resourceMonitor.warningPercent': number;
     'corral.resourceMonitor.dangerPercent': number;
     'corral.resourceMonitor.intervalSeconds': number;
+    'corral.agents.intervalSeconds': number;
 }
 
 // User scope only: project repos must never be touched by Corral settings (spec 05).
@@ -68,6 +70,7 @@ export const corralPreferenceSchema: PreferenceSchema = {
             type: 'number', default: 75, minimum: 1, maximum: 100, scope,
             description: 'Share of the machine\'s RAM at which the resource entry turns danger-coloured and one notification is shown.'
         },
-        'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5, minimum: 1, scope, description: 'Seconds between resource samples.' }
+        'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5, minimum: 1, scope, description: 'Seconds between resource samples.' },
+        'corral.agents.intervalSeconds': { type: 'number', default: 3, minimum: 1, scope, description: 'Seconds between refreshes of the Agents view.' }
     }
 };

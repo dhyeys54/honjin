@@ -13,7 +13,8 @@ const expected: Record<string, { type: string; default: unknown }> = {
     'corral.resourceMonitor.enabled': { type: 'boolean', default: true },
     'corral.resourceMonitor.warningPercent': { type: 'number', default: 50 },
     'corral.resourceMonitor.dangerPercent': { type: 'number', default: 75 },
-    'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5 }
+    'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5 },
+    'corral.agents.intervalSeconds': { type: 'number', default: 3 }
 };
 
 describe('corral preference schema', () => {
@@ -45,6 +46,10 @@ describe('corral preference schema', () => {
             expect([p[key].minimum, p[key].maximum]).toEqual([1, 100]);
         }
         expect(p['corral.resourceMonitor.intervalSeconds'].minimum).toBe(1);
+    });
+
+    it('the agents interval is at least one second (spec 12 A13)', () => {
+        expect(corralPreferenceSchema.properties['corral.agents.intervalSeconds'].minimum).toBe(1);
     });
 
     it('exposes a typed key constant for every property', () => {

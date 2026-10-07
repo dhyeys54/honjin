@@ -767,7 +767,7 @@ inventing new ones:
     `npm test && npm run typecheck && npm run lint && npm run test:int`. Afterwards `herdr session list` must show no
     `corral-test-*` session.
 
-- [ ] **T7.3 Setting**
+- [x] **T7.3 Setting**
   - Spec: 12 A13; spec 05.
   - Tests first: in `corral-core/src/common/preferences-schema.test.ts`, add
     `'corral.agents.intervalSeconds': { type: 'number', default: 3 }` to `expected`. Add one `it` asserting its
@@ -1048,3 +1048,4 @@ inventing new ones:
 - 2026-10-08 G6 — stage 6 reviewed (one must-fix: R12 clamps, fixed in d794ccd); human check passed in the installed app (amber, red + one notification, off). Open: the Settings UI did not save warningPercent/dangerPercent edits (file kept 50/75); editing settings.json worked
 - 2026-10-08 T7.1 — common/agents.ts: toAgentStatus, trackSince, agentLocation, agentRows, needsYou, badgeTooltip, formatAge, agentsIntervalMs and the AgentsPoller (generation-guarded setTimeout chain), all unit-tested with fake timers (52 tests added, 245 total)
 - 2026-10-08 T7.2 — HerdrCli.listAgents/focusAgent, CorralAgentServiceImpl bound on /services/corral-agents; verified against a real herdr session with a report-agent faked pane (14 unit + 1 int test added, 259 unit / 16 int total)
+- 2026-10-08 T7.3 — corral.agents.intervalSeconds (default 3, min 1) in the preference schema, typed config and spec 05 (4 tests added, 262 total)

@@ -19,6 +19,7 @@ or folder-scoped values are ignored, so project repos are never touched.
 | `corral.resourceMonitor.warningPercent` | `number` (1–100) | `50` | Share of RAM at which the entry turns warning-coloured. |
 | `corral.resourceMonitor.dangerPercent` | `number` (1–100) | `75` | Share of RAM at which it turns danger-coloured and notifies once. |
 | `corral.resourceMonitor.intervalSeconds` | `number` (min 1) | `5` | Seconds between samples. |
+| `corral.agents.intervalSeconds` | `number` (min 1) | `3` | Seconds between Agents-view polls (spec 12 A13). |
 
 Check how 1.76 declares and binds a preference schema (`PreferenceContribution`, `PreferenceSchema`,
 `createPreferenceProxy`) in `node_modules/@theia/core/lib/common/preferences/` or `lib/browser/preferences/`
