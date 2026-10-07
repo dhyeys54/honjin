@@ -16,7 +16,7 @@ asarUnpack:
   - "**/node_modules/node-pty/**"
   - "lib/prebuilds/**"
   - "**/node_modules/@theia/**/*.node"
-  - "**/node_modules/@vscode/ripgrep/**"
+  - "lib/backend/native/rg"   # the bundle spawns rg from app.asar.unpacked (spawn cannot run it from inside the asar)
   - "**/node_modules/drivelist/**"
 mac:
   target: dir
