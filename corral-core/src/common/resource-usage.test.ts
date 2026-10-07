@@ -1,5 +1,5 @@
 import {
-    ProcRow, Runaway, RUNAWAY_MS, entryLevel, formatBytes, formatEntry, formatNotice, formatRunawayLine, memLevel, notifyStep, parsePs, subtree, summarize, trackRunaways
+    ProcRow, Runaway, RUNAWAY_MS, entryLevel, formatBytes, formatEntry, formatNotice, formatRunawayLine, memLevel, notifyStep, percentSetting, resourceIntervalMs, parsePs, subtree, summarize, trackRunaways
 } from './resource-usage';
 
 const row = (pid: number, ppid: number, extra: Partial<ProcRow> = {}): ProcRow => ({ pid, ppid, rssKb: 1024, cpu: 0, command: 'x', ...extra });
@@ -91,6 +91,24 @@ describe('resource usage', () => {
         expect(formatBytes(GiB * 1.44)).toBe('1.4 GB');
         expect(formatBytes(GiB)).toBe('1.0 GB');
         expect(formatEntry({ memBytes: GiB * 1.44, cpuPct: 11.6, count: 38 })).toBe('$(pulse) 1.4 GB · 12% · 38');
+    });
+});
+
+describe('R12 setting clamps', () => {
+    it('resourceIntervalMs: at least 1 s, 5 s when not a number', () => {
+        const cases: [unknown, number][] = [[5, 5000], [2.5, 2500], [1, 1000], [0, 1000], [-3, 1000],
+            [undefined, 5000], ['abc', 5000], ['7', 5000], [NaN, 5000], [Infinity, 5000], [null, 5000]];
+        for (const [value, ms] of cases) {
+            expect(resourceIntervalMs(value)).toBe(ms);
+        }
+    });
+
+    it('percentSetting: clamped to 1-100, the default when not a number', () => {
+        const cases: [unknown, number][] = [[50, 50], [1, 1], [100, 100], [0, 1], [-5, 1], [250, 100], [33.5, 33.5],
+            [undefined, 75], ['abc', 75], [NaN, 75], [Infinity, 75]];
+        for (const [value, pct] of cases) {
+            expect(percentSetting(value, 75)).toBe(pct);
+        }
     });
 });
 

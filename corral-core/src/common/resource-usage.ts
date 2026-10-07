@@ -61,6 +61,16 @@ export function summarize(rows: ProcRow[], pids: Set<number>, cores: number): Su
     return { memBytes: rssKb * 1024, cpuPct: cpu / cores, count };
 }
 
+/** R12: settings.json can hold anything, so a bad interval must not turn the poll loop into a busy loop. */
+export function resourceIntervalMs(value: unknown): number {
+    return (typeof value === 'number' && Number.isFinite(value) ? Math.max(1, value) : 5) * 1000;
+}
+
+/** R12: a warning or danger percentage clamped to 1-100; `fallback` (the schema default) when it is not a number. */
+export function percentSetting(value: unknown, fallback: number): number {
+    return typeof value === 'number' && Number.isFinite(value) ? Math.min(100, Math.max(1, value)) : fallback;
+}
+
 export function memLevel(memBytes: number, totalBytes: number, warnPct: number, dangerPct: number): Level {
     const danger = Math.max(dangerPct, warnPct);
     // Integer-safe form of memBytes >= pct% of total.

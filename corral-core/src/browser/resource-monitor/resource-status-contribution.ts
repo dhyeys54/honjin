@@ -6,7 +6,7 @@ import { MarkdownString, MarkdownStringImpl } from '@theia/core/lib/common/markd
 import { CorralPreferences } from '../corral-preferences';
 import { CorralPreferenceKeys } from '../../common/preferences-schema';
 import { CorralResourceService, ResourceSample } from '../../common/protocol';
-import { Level, Runaway, entryLevel, formatBytes, formatEntry, formatNotice, formatRunawayLine, memLevel, notifyStep } from '../../common/resource-usage';
+import { Level, Runaway, entryLevel, formatBytes, formatEntry, formatNotice, formatRunawayLine, memLevel, notifyStep, percentSetting, resourceIntervalMs } from '../../common/resource-usage';
 
 const ENTRY_ID = 'corral-resources';
 const K = CorralPreferenceKeys;
@@ -66,13 +66,13 @@ export class ResourceStatusContribution implements FrontendApplicationContributi
             // keep the last text; the next tick retries
         }
         if (generation === this.generation) {
-            this.timer = setTimeout(() => this.tick(generation), Math.max(1, this.prefs[K.resourceMonitorIntervalSeconds]) * 1000);
+            this.timer = setTimeout(() => this.tick(generation), resourceIntervalMs(this.prefs[K.resourceMonitorIntervalSeconds]));
         }
     }
 
     protected show(sample: ResourceSample): void {
         const level = entryLevel(
-            memLevel(sample.memBytes, sample.totalMemBytes, this.prefs[K.resourceMonitorWarningPercent], this.prefs[K.resourceMonitorDangerPercent]),
+            memLevel(sample.memBytes, sample.totalMemBytes, percentSetting(this.prefs[K.resourceMonitorWarningPercent], 50), percentSetting(this.prefs[K.resourceMonitorDangerPercent], 75)),
             sample.runaways);
         const entry: StatusBarEntry = {
             name: 'Corral resources',

@@ -68,6 +68,22 @@ describe('CorralResourceServiceImpl', () => {
         expect((await service.sample()).count).toBe(3);
     });
 
+    it('R2: a failed herdr lookup is retried at the next sample', async () => {
+        let fail = true;
+        const { service } = setup({ herdr: { listPanes: async () => { if (fail) { throw new Error('server_not_running'); } return [{ paneId: 'w1:p1', workspaceId: 'w1' }]; } } });
+        expect((await service.sample()).count).toBe(3);
+        fail = false;
+        expect((await service.sample()).count).toBe(8);
+    });
+
+    it('R2: breakdown() fills the server-pid cache, so the next sample does not look it up again', async () => {
+        const { service, herdr } = setup();
+        await service.breakdown();
+        const after = herdr.calls;
+        expect((await service.sample()).count).toBe(8);
+        expect(herdr.calls).toBe(after);
+    });
+
     it('R3: a ps exit code other than 0 rejects', async () => {
         await expect(setup({ exitCode: 1 }).service.sample()).rejects.toThrow();
     });
