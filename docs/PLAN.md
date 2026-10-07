@@ -587,7 +587,7 @@ Spec 10 is the contract; its rule ids (R1–R12) are cited below. Every Theia AP
     known flaky late in a full run and must pass when run alone). The installed app shows the entry, and its memory is in
     the same ballpark as the sum of the same processes in Activity Monitor.
 
-- [ ] **G6 Stage 6 gate**: all suites → `spec-reviewer` on stage 6 → fix must-fix findings → **human checkpoint, stop**.
+- [x] **G6 Stage 6 gate**: all suites → `spec-reviewer` on stage 6 → fix must-fix findings → **human checkpoint, stop**.
   - Ask the user to check in the installed app: the entry sits on the right of the status bar; hovering shows Corral,
     herdr server and each workspace by name, heaviest first; setting `corral.resourceMonitor.warningPercent` to 5 turns it
     amber within one interval; setting `dangerPercent` to 5 as well turns it red and shows one notification, only one;
@@ -1045,3 +1045,4 @@ inventing new ones:
 - 2026-09-30 T6.5 — four corral.resourceMonitor.* settings (enabled, warningPercent, dangerPercent, intervalSeconds) with R12 ranges in the preference schema (2 tests added, 181 total)
 - 2026-09-30 T6.6 — ResourceStatusContribution: right-side status-bar entry polling the resource service, warning/danger colours from the theme, hover breakdown, one notification per episode, enabled setting removes/restores it (2 E2E tests, 42 total)
 - 2026-10-08 T6.7 — R1–R12 each covered (R11 by the generation-guarded tick); all suites green (193 unit, 15 int, 45 E2E; roots passes alone); Corral.app packaged and installed, backend is a child of the main Corral process so corralRoot is right (status-bar text not read: no screen capture here)
+- 2026-10-08 G6 — stage 6 reviewed (one must-fix: R12 clamps, fixed in d794ccd); human check passed in the installed app (amber, red + one notification, off). Open: the Settings UI did not save warningPercent/dangerPercent edits (file kept 50/75); editing settings.json worked
