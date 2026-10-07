@@ -5,6 +5,7 @@ import '../../src/browser/style/agents.css';
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { FrontendApplicationContribution, KeybindingContribution, WidgetFactory, bindViewContribution } from '@theia/core/lib/browser';
+import { TabBarDecorator } from '@theia/core/lib/browser/shell/tab-bar-decorator';
 import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { ServiceConnectionProvider } from '@theia/core/lib/browser/messaging/service-connection-provider';
 import { FolderPicker } from './folder-picker';
@@ -106,6 +107,8 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(CommandContribution).toService(AgentsContribution);
     bind(MenuContribution).toService(AgentsContribution);
     bind(ColorContribution).toService(AgentsContribution);
+    bind(TabBarDecorator).toService(AgentsContribution);
+    bind(FrontendApplicationContribution).toService(AgentsContribution);
     bind(FrontendApplicationContribution).toService(AgentsService);
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: AGENTS_VIEW_ID,

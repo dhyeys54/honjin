@@ -181,3 +181,46 @@ test('A9: the context menu focuses, reveals in Projects (when owned) and copies 
         }
     }
 });
+
+test('A7: the part header and the right-panel tab count agents that need you', async ({ page }) => {
+    test.setTimeout(120_000);
+    const created: string[] = [];
+    try {
+        const beta = workspace(join(FIXTURES, 'beta'), 'agents-beta');
+        created.push(beta.ws);
+        const src = workspace(join(FIXTURES, 'alpha', 'src'), 'agents-src');
+        created.push(src.ws);
+        herdr('workspace', 'focus', beta.ws);
+        report(beta.pane, 'working');
+
+        await page.goto('/');
+        await expect(agentRow(page, 'beta')).toContainText('working', { timeout: 15_000 });
+        const partBadge = part(page, 'corral-agents').locator('.notification-count');
+        const tabBadge = page.locator('#shell-tab-corral-projects-container .theia-badge-decorator-sidebar');
+        await expect(partBadge).not.toBeVisible();
+        await expect(tabBadge).toHaveCount(0);
+
+        report(beta.pane, 'blocked');
+        await expect(partBadge).toHaveText('1', { timeout: 10_000 });
+        await expect(partBadge).toHaveAttribute('title', '1 agent needs you');
+        await expect(tabBadge).toHaveText('1');
+
+        report(src.pane, 'working');
+        report(src.pane, 'idle');
+        await expect(partBadge).toHaveText('2', { timeout: 10_000 });
+        await expect(partBadge).toHaveAttribute('title', '2 agents need you');
+        await expect(tabBadge).toHaveText('2');
+
+        await agentRow(page, 'alpha/src').click();
+        await expect(partBadge).toHaveText('1', { timeout: 10_000 });
+        await expect(tabBadge).toHaveText('1');
+
+        herdr('pane', 'release-agent', beta.pane, '--source', 'corral-e2e', '--agent', 'claude');
+        await expect(partBadge).not.toBeVisible({ timeout: 10_000 });
+        await expect(tabBadge).toHaveCount(0);
+    } finally {
+        for (const ws of created) {
+            try { herdr('workspace', 'close', ws); } catch { /* already gone */ }
+        }
+    }
+});

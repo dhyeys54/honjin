@@ -1,11 +1,16 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import { Command, CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
+import { Command, CommandContribution, Emitter, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
 import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { WidgetManager } from '@theia/core/lib/browser';
+import { TabBarDecorator } from '@theia/core/lib/browser/shell/tab-bar-decorator';
+import { WidgetDecoration } from '@theia/core/lib/browser/widget-decoration';
+import { Title, Widget } from '@theia/core/lib/browser/widgets';
+import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
 import { colors } from '../../common/design-tokens';
 import { ProjectsContribution } from '../projects/projects-contribution';
+import { PROJECTS_CONTAINER_ID } from '../projects/projects-view-container';
 import { AGENTS_CONTEXT_MENU, AGENTS_VIEW_ID, AgentsWidget } from './agents-widget';
 import { AgentNode, isAgentNode } from './agents-tree';
 import { AgentsService } from './agents-service';
@@ -25,12 +30,32 @@ const definitions: [string, string, string][] = [
 
 /** Spec 12 A9 and A10: the context menu and the status colours (the badges join this class in T7.7). */
 @injectable()
-export class AgentsContribution implements CommandContribution, MenuContribution, ColorContribution {
+export class AgentsContribution implements CommandContribution, MenuContribution, ColorContribution, TabBarDecorator, FrontendApplicationContribution {
+
+    readonly id = 'corral-agents-badge';
+    protected readonly onDidChangeDecorationsEmitter = new Emitter<void>();
+    readonly onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
+    protected count = 0;
 
     @inject(WidgetManager) protected readonly widgets: WidgetManager;
     @inject(ClipboardService) protected readonly clipboard: ClipboardService;
     @inject(ProjectsContribution) protected readonly projectsView: ProjectsContribution;
     @inject(AgentsService) protected readonly agents: AgentsService;
+
+    /** A7: the right-panel tab shows the same count as the part header. */
+    onStart(): void {
+        this.agents.onDidChange(() => {
+            const n = this.agents.needsYou();
+            if (n !== this.count) {
+                this.count = n;
+                this.onDidChangeDecorationsEmitter.fire();
+            }
+        });
+    }
+
+    decorate(title: Title<Widget>): WidgetDecoration.Data[] {
+        return title.owner.id === PROJECTS_CONTAINER_ID && this.count > 0 ? [{ badge: this.count }] : [];
+    }
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(AgentsCommands.FOCUS, {
