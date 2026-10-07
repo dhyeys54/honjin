@@ -227,6 +227,7 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 - A badge counts the agents that need the user.
 - A click runs `herdr agent focus`.
 - The data comes from polling `herdr agent list` every 3 s (`corral.agents.intervalSeconds`).
+- Layout: Theia ignores a part's `weight` unless it restores saved sizes, so a fresh layout splits Projects, Changes and Agents evenly. Accepted for now; the E2E focus click in `roots.spec.ts` moved from y=200 to y=150 to stay inside the shorter Projects part.
 
 **Why.**
 - `PRODUCT.md` promises that herdr "shows which ones are working, blocked or done". Corral never surfaced that, and

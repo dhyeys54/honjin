@@ -1,11 +1,10 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { Command, CommandContribution, Emitter, CommandRegistry, MenuContribution, MenuModelRegistry } from '@theia/core/lib/common';
 import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
-import { WidgetManager } from '@theia/core/lib/browser';
+import { FrontendApplicationContribution, WidgetManager } from '@theia/core/lib/browser';
 import { TabBarDecorator } from '@theia/core/lib/browser/shell/tab-bar-decorator';
 import { WidgetDecoration } from '@theia/core/lib/browser/widget-decoration';
 import { Title, Widget } from '@theia/core/lib/browser/widgets';
-import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
 import { colors } from '../../common/design-tokens';
@@ -28,7 +27,7 @@ const definitions: [string, string, string][] = [
     ['unknown', colors['fg-faint'], 'The dot of an agent whose state herdr does not report.']
 ];
 
-/** Spec 12 A9 and A10: the context menu and the status colours (the badges join this class in T7.7). */
+/** Spec 12 A9 and A10: the context menu and the status colours. */
 @injectable()
 export class AgentsContribution implements CommandContribution, MenuContribution, ColorContribution, TabBarDecorator, FrontendApplicationContribution {
 
