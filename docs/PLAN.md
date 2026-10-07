@@ -843,7 +843,7 @@ inventing new ones:
     then `npm run test:e2e` (nothing else regressed). Also look at the part once through the Playwright MCP
     (screenshot of the right panel) and confirm three stacked sections.
 
-- [ ] **T7.5 Rows, colours and open**
+- [x] **T7.5 Rows, colours and open**
   - Spec: 12 A3, A5, A8, A10.
   - Tests first: add to `e2e/agents-view.spec.ts`. Add these helpers, using `herdr` from `helpers.ts` (it always targets
     the E2E session):
@@ -1050,3 +1050,4 @@ inventing new ones:
 - 2026-10-08 T7.2 — HerdrCli.listAgents/focusAgent, CorralAgentServiceImpl bound on /services/corral-agents; verified against a real herdr session with a report-agent faked pane (14 unit + 1 int test added, 259 unit / 16 int total)
 - 2026-10-08 T7.3 — corral.agents.intervalSeconds (default 3, min 1) in the preference schema, typed config and spec 05 (4 tests added, 262 total)
 - 2026-10-08 T7.4 — Agents part (third in corral-projects-container) with AgentsService/poller, tree, widget, A11 empty states and the A12 restoreState wrapper; spec 09 C14 amended; E2E agents-view 4 tests, full E2E 49 pass. Note: Theia applies a part's `weight` only when restoring saved sizes, so a fresh layout splits Projects/Changes/Agents evenly (~186px each); roots.spec focus click moved from y=200 to y=150 for that reason. Consider initial 70/30/20 sizes at G7.
+- 2026-10-08 T7.5 — Agent rows (dot, kind, location, status + age, cwd tooltip), status colours registered by AgentsContribution, click/Enter focuses the pane and reveals the herdr tab; E2E with fake agents via report-agent (1 test added, 50 E2E total)

@@ -1,6 +1,11 @@
 import { expect, test, Page } from '@playwright/test';
+import { basename, dirname, join, resolve } from 'path';
+import { herdr, tempDir } from './helpers';
+
+const FIXTURES = resolve(__dirname, 'fixtures/projects');
 
 const agentsView = (page: Page) => page.locator('[data-testid="corral-agents"]');
+const agentRow = (page: Page, text: string) => agentsView(page).locator('[data-testid="corral-agent-row"]', { hasText: text });
 const part = (page: Page, id: string) => page.locator(`#corral-projects-container--${id}`);
 const empty = (page: Page) => page.locator('[data-testid="corral-agents-empty"]');
 
@@ -70,4 +75,70 @@ test('A12: a part the user hid stays hidden', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
     await expect(agentsView(page)).not.toBeVisible();
+});
+
+function workspace(cwd: string, label: string): { ws: string; pane: string } {
+    const r = JSON.parse(herdr('workspace', 'create', '--cwd', cwd, '--label', label, '--no-focus')).result;
+    return { ws: r.workspace.workspace_id, pane: r.root_pane.pane_id };
+}
+const report = (pane: string, state: string, kind = 'claude') =>
+    herdr('pane', 'report-agent', '--source', 'corral-e2e', '--agent', kind, '--state', state, pane);
+const herdrStatus = (pane: string) =>
+    JSON.parse(herdr('agent', 'list')).result.agents.find((a: { pane_id: string }) => a.pane_id === pane)?.agent_status;
+
+test('A3, A5, A8, A10: rows are ordered, coloured, aged, and a click focuses the agent', async ({ page }) => {
+    test.setTimeout(120_000);
+    const created: string[] = [];
+    try {
+        const beta = workspace(join(FIXTURES, 'beta'), 'agents-beta');
+        created.push(beta.ws);
+        const src = workspace(join(FIXTURES, 'alpha', 'src'), 'agents-src');
+        created.push(src.ws);
+        const dir = tempDir('corral-agents-');
+        const out = workspace(dir, 'agents-out');
+        created.push(out.ws);
+        herdr('workspace', 'focus', beta.ws); // so src and out aren't the focused pane
+
+        report(beta.pane, 'blocked');
+        report(out.pane, 'working', 'codex');
+        report(src.pane, 'working');
+        report(src.pane, 'idle');
+        await expect.poll(() => herdrStatus(src.pane)).toBe('done');
+
+        await page.goto('/');
+        const rows = agentsView(page).locator('[data-testid="corral-agent-row"]');
+        await expect(rows).toHaveCount(3, { timeout: 15_000 });
+        const texts = await rows.allInnerTexts();
+        expect(texts[0]).toContain('beta');
+        expect(texts[0]).toContain('blocked');
+        expect(texts[1]).toContain('alpha/src');
+        expect(texts[1]).toContain('done');
+        expect(texts[2]).toContain('codex');
+        expect(texts[2]).toContain(`${basename(dirname(dir))}/${basename(dir)}`);
+        expect(texts[2]).toContain('working');
+
+        const blockedDot = agentRow(page, 'beta').locator('.corral-agent-dot.corral-agent-blocked');
+        await expect(blockedDot).toHaveCount(1);
+        expect(await blockedDot.evaluate(e => getComputedStyle(e).backgroundColor)).toBe('rgb(229, 115, 107)');
+        const workingDot = agentRow(page, 'codex').locator('.corral-agent-dot.corral-agent-working');
+        expect(await workingDot.evaluate(e => getComputedStyle(e).animationName)).toBe('corral-live-pulse');
+        for (const text of await rows.allInnerTexts()) {
+            expect(text.replace(/\s+/g, ' ').trim()).toMatch(/(blocked|done|working|idle|unknown) \d+[smh]$/);
+        }
+
+        await agentRow(page, 'alpha/src').click();
+        await expect(agentRow(page, 'alpha/src')).toContainText('idle', { timeout: 10_000 });
+        await expect.poll(() => herdrStatus(src.pane), { timeout: 10_000 }).toBe('idle');
+        await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^herdr$/ })).toBeVisible();
+
+        report(out.pane, 'working', 'claude');
+        await expect(agentRow(page, 'working')).toContainText('claude', { timeout: 10_000 });
+        await expect(agentRow(page, 'working')).not.toContainText('codex');
+    } finally {
+        for (const ws of created) {
+            try { herdr('workspace', 'close', ws); } catch { /* already gone */ }
+        }
+    }
+    await page.goto('/');
+    await expect(empty(page)).toHaveText('No agents running', { timeout: 15_000 });
 });

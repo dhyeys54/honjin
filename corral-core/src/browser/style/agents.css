@@ -7,3 +7,38 @@
     padding: 12px;
     color: var(--theia-descriptionForeground);
 }
+
+.corral-agents .theia-TreeNodeSegmentGrow {
+    display: flex;
+    align-items: center;
+}
+
+.corral-agent-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex: none;
+    margin-right: 6px;
+}
+
+.corral-agent-blocked { background: var(--theia-corral-agents-blocked); }
+.corral-agent-done { background: var(--theia-corral-agents-done); }
+.corral-agent-working { background: var(--theia-corral-agents-working); animation: corral-live-pulse 1.2s ease-in-out infinite; }
+.corral-agent-unknown { background: var(--theia-corral-agents-unknown); }
+.corral-agent-idle { visibility: hidden; }
+
+.corral-agent-location {
+    margin-left: 6px;
+}
+
+.corral-agent-state {
+    margin-left: auto;
+    padding-left: 8px;
+    color: var(--theia-descriptionForeground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .corral-agent-working {
+        animation: none;
+    }
+}

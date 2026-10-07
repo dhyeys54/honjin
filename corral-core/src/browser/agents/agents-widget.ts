@@ -5,6 +5,7 @@ import React = require('@theia/core/shared/react');
 import {
     CompositeTreeNode, ContextMenuRenderer, NodeProps, TreeModel, TreeNode, TreeProps, TreeWidget, createTreeContainer
 } from '@theia/core/lib/browser';
+import { formatAge } from '../../common/agents';
 import { AgentsService } from './agents-service';
 import { AGENTS_ROOT_ID, AgentsTree, isAgentNode } from './agents-tree';
 
@@ -64,12 +65,33 @@ export class AgentsWidget extends TreeWidget {
 
     protected override getCaptionChildren(node: TreeNode, props: NodeProps): React.ReactNode[] {
         if (isAgentNode(node)) {
+            const { row } = node;
             return [
-                React.createElement('span', { key: 'k', className: 'corral-agent-kind' }, node.row.kind),
-                React.createElement('span', { key: 'l', className: 'corral-agent-location' }, node.row.location)
+                React.createElement('span', { key: 'd', className: `corral-agent-dot corral-agent-${row.status}` }),
+                React.createElement('span', { key: 'k', className: 'corral-agent-kind' }, row.kind),
+                React.createElement('span', { key: 'l', className: 'corral-agent-location' }, row.location),
+                React.createElement('span', { key: 's', className: 'corral-agent-state' }, `${row.status} ${formatAge(Date.now() - row.since)}`)
             ];
         }
         return super.getCaptionChildren(node, props);
+    }
+
+    /** A5: the tooltip is the cwd, preceded by the pane title when there is one. */
+    protected override createNodeAttributes(node: TreeNode, props: NodeProps): React.Attributes & React.HTMLAttributes<HTMLElement> {
+        const attributes = super.createNodeAttributes(node, props);
+        if (isAgentNode(node)) {
+            const { cwd, title } = node.row;
+            return { ...attributes, title: title ? `${title}\n${cwd}` : cwd, 'data-testid': 'corral-agent-row' } as typeof attributes;
+        }
+        return attributes;
+    }
+
+    protected override createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
+        const classes = super.createNodeClassNames(node, props);
+        if (isAgentNode(node)) {
+            classes.push(`corral-agent-row-${node.row.status}`);
+        }
+        return classes;
     }
 
     protected override handleClickEvent(node: TreeNode | undefined, event: React.MouseEvent<HTMLElement>): void {

@@ -13,6 +13,7 @@ import { ChangesService } from './changes/changes-service';
 import { CHANGES_VIEW_ID, createChangesWidget } from './changes/changes-widget';
 import { ChangesContribution } from './changes/changes-contribution';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
+import { AgentsContribution } from './agents/agents-contribution';
 import { AgentsService } from './agents/agents-service';
 import { AGENTS_VIEW_ID, createAgentsWidget } from './agents/agents-widget';
 import { ProjectsViewContainerFactory } from './projects/projects-view-container';
@@ -101,6 +102,8 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
         ServiceConnectionProvider.createProxy<CorralAgentService>(ctx.container, CORRAL_AGENTS_PATH)
     ).inSingletonScope();
     bind(AgentsService).toSelf().inSingletonScope();
+    bind(AgentsContribution).toSelf().inSingletonScope();
+    bind(ColorContribution).toService(AgentsContribution);
     bind(FrontendApplicationContribution).toService(AgentsService);
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: AGENTS_VIEW_ID,
