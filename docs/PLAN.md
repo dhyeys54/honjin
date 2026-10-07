@@ -621,7 +621,7 @@ inventing new ones:
 - Never point a herdr command at the `default` session. Only the test harness session, the E2E session
   (`helpers.ts` `herdr(...)`) and `corral-test-*` sessions are allowed.
 
-- [ ] **T7.1 Agents logic (pure)**
+- [x] **T7.1 Agents logic (pure)**
   - Spec: 12 A1 (status), A2–A7, A13, §Code layout `common/agents.ts`.
   - Tests first: `corral-core/src/common/agents.test.ts`. Build `AgentInfo`s with a helper
     `a(paneId, status, extra?)` (kind `claude`, cwd `/x`, title `''`, workspaceId `w1`).
@@ -1046,3 +1046,4 @@ inventing new ones:
 - 2026-09-30 T6.6 — ResourceStatusContribution: right-side status-bar entry polling the resource service, warning/danger colours from the theme, hover breakdown, one notification per episode, enabled setting removes/restores it (2 E2E tests, 42 total)
 - 2026-10-08 T6.7 — R1–R12 each covered (R11 by the generation-guarded tick); all suites green (193 unit, 15 int, 45 E2E; roots passes alone); Corral.app packaged and installed, backend is a child of the main Corral process so corralRoot is right (status-bar text not read: no screen capture here)
 - 2026-10-08 G6 — stage 6 reviewed (one must-fix: R12 clamps, fixed in d794ccd); human check passed in the installed app (amber, red + one notification, off). Open: the Settings UI did not save warningPercent/dangerPercent edits (file kept 50/75); editing settings.json worked
+- 2026-10-08 T7.1 — common/agents.ts: toAgentStatus, trackSince, agentLocation, agentRows, needsYou, badgeTooltip, formatAge, agentsIntervalMs and the AgentsPoller (generation-guarded setTimeout chain), all unit-tested with fake timers (52 tests added, 245 total)
