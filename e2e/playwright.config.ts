@@ -16,17 +16,20 @@ if (!process.env.CORRAL_E2E_CONFIG_DIR) {
     process.env.CORRAL_E2E_CONFIG_DIR = dir;
 }
 
+// A second checkout (git worktree) running E2E at the same time sets CORRAL_E2E_PORT.
+const port = process.env.CORRAL_E2E_PORT ?? '3100';
+
 export default defineConfig({
     testDir: '.',
     testMatch: '*.spec.ts',
     globalSetup: './global-setup.ts',
     globalTeardown: './global-teardown.ts',
     workers: 1,
-    use: { baseURL: 'http://127.0.0.1:3100', browserName: 'chromium' },
+    use: { baseURL: `http://127.0.0.1:${port}`, browserName: 'chromium' },
     webServer: {
-        command: 'npm --prefix browser-app start -- --hostname 127.0.0.1 --port 3100',
+        command: `npm --prefix browser-app start -- --hostname 127.0.0.1 --port ${port}`,
         cwd: '..',
-        url: 'http://127.0.0.1:3100',
+        url: `http://127.0.0.1:${port}`,
         reuseExistingServer: false,
         timeout: 120_000,
         env: {
