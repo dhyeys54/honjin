@@ -13,7 +13,7 @@ Honjin is in public beta. Bug reports and ideas help the most right now.
 Open an issue first for anything bigger than a small fix, so we agree before you spend time.
 
 1. `npm install`, then `npm test`, `npm run typecheck` and `npm run lint` must pass. `npm run test:int` needs
-   [herdr](https://github.com/ogulcancelik/herdr); `npm run test:e2e` builds and drives the browser app.
+   [herdr](https://github.com/herdrdev/herdr); `npm run test:e2e` builds and drives the browser app.
 2. Behaviour is defined by `docs/specs/*.md`. A change to behaviour updates the spec in the same commit and adds an
    entry to `docs/DECISIONS.md`.
 3. Write the test first. Keep logic in `honjin-core/src/common/` so it can be unit-tested; widgets only wire.
@@ -21,4 +21,10 @@ Open an issue first for anything bigger than a small fix, so we agree before you
 
 `AGENTS.md` has the full working rules, which apply to people as well as coding agents.
 
-By contributing you agree your work is released under the MIT licence in `LICENSE`.
+## Licence and sign-off
+
+Contributions are accepted under the MIT licence in `LICENSE`. Sign off each commit (`git commit -s`) to certify the
+[Developer Certificate of Origin](https://developercertificate.org): that you wrote the change, or otherwise have the
+right to submit it under that licence.
+
+The MIT licence doesn't cover the Honjin name and icon; see [TRADEMARK.md](TRADEMARK.md).

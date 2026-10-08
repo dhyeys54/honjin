@@ -158,4 +158,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 ## License
 
 MIT for Honjin's own code ([LICENSE](LICENSE)). Theia, Electron, Monaco and the bundled fonts keep their own licences;
-see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The Honjin name and icon are not covered by the MIT licence:
+forks are welcome under their own name, see [TRADEMARK.md](TRADEMARK.md).
