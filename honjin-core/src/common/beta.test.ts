@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { compareVersions, isNewRelease, issueBody, issueUrl } from './beta';
 
 describe('compareVersions (spec 13 S12)', () => {
@@ -39,7 +41,14 @@ describe('issueBody / issueUrl (S11)', () => {
         const url = new URL(issueUrl('a b&c'));
         expect(url.origin + url.pathname).toBe('https://github.com/dhyeys54/honjin/issues/new');
         expect(url.searchParams.get('template')).toBe('bug.yml');
-        expect(url.searchParams.get('body')).toBe('a b&c');
+        expect(url.searchParams.get('what-happened')).toBe('a b&c');
+    });
+
+    it("prefills bug.yml's field by its id: the form ignores GitHub's own body= (D61)", () => {
+        const form = readFileSync(join(__dirname, '../../../.github/ISSUE_TEMPLATE/bug.yml'), 'utf8');
+        const ids = [...form.matchAll(/^\s+id: (\S+)$/gm)].map(m => m[1]);
+        expect(ids).toEqual(['what-happened']);
+        expect(new URL(issueUrl('x')).searchParams.get(ids[0])).toBe('x');
     });
 });
 

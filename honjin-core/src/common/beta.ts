@@ -63,5 +63,5 @@ export function issueBody(env: IssueEnv): string {
 }
 
 export function issueUrl(body: string): string {
-    return `${ISSUES_NEW_URL}?${new URLSearchParams({ template: 'bug.yml', body })}`;
+    return `${ISSUES_NEW_URL}?${new URLSearchParams({ template: 'bug.yml', 'what-happened': body })}`;
 }

@@ -357,3 +357,8 @@ Skipped while two sessions wrote entries at the same time; nothing was decided u
 **Decision.** The catalog's Google agent is Antigravity CLI: id `antigravity`, binary `agy`, install `curl -fsSL https://antigravity.google/cli/install.sh | bash` (antigravity.google/docs/cli/install), version from `agy --version`. Every install command is now a fixed string, so `install` is a string and Setup no longer looks for `brew` and `npm`.
 **Why.** Google retired Gemini CLI for individual users on 2026-06-18 and moved them to Antigravity CLI (developers.googleblog.com, "Transitioning Gemini CLI to Antigravity CLI"). The fresh-account test hit the old entry. herdr 0.9.3 already has an `antigravity-cli` integration.
 **Consequences.** The default `honjin.agentCommands` maps `antigravity` to `agy`. A `gemini` key in someone's settings is ignored; no migration, since no release has shipped. The installer puts `agy` in `~/.local/bin`, which Setup and herdr's `PATH` (D59) already cover.
+
+## D61 — Report an Issue prefills the bug form's `what-happened` field (spec 13 S11, G8) · 2026-10-08
+**Decision.** `bug.yml`'s textarea id is `what-happened`, and `issueUrl` passes the environment as `what-happened=` instead of `body=`.
+**Why.** Checked on the live repo: an issue form ignores GitHub's own `body=` parameter, even when a field's id is `body`, and the field stayed empty. A form fills a field from the parameter named after its id (GitHub's form-schema docs); a custom id does prefill, with line breaks kept (checked on a public repo's form).
+**Consequences.** A unit test reads the id from `bug.yml`, so renaming the field without the URL fails.

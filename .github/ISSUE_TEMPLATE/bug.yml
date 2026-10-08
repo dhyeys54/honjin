@@ -3,7 +3,7 @@ description: Something in Honjin does not work as expected.
 labels: [bug]
 body:
   - type: textarea
-    id: body
+    id: what-happened
     attributes:
       label: What happened
       description: Help → Report an Issue pre-fills your versions here. Add what you did, what you expected and what you saw.
