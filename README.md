@@ -29,7 +29,9 @@ and runs your coding agents (Claude Code) in herdr, not in a chat panel built in
 - **Agents panel (right, under Changes):** every agent running in your herdr session, with the ones that need you
   first: blocked, then done. Each row shows the agent, where it runs, its state and how long it has been in it.
   Click a row to jump to its pane in the herdr tab. A badge on the panel and on the right-panel tab counts the
-  agents that are blocked or done. How often it checks is `corral.agents.intervalSeconds` (default 3).
+  agents that are blocked or done. Each row also shows what the agent is working on (its terminal title).
+  `View: Toggle Agent Timeline` opens a bottom tab that draws a lane per agent over the last 15 minutes, coloured by
+  status, so you can see which agents were working, blocked or done at the same time. How often it checks is `corral.agents.intervalSeconds` (default 3).
 - **+ on any folder:** opens a new herdr tab in that folder, inside that project's own herdr workspace, and runs
   your startup command (`claude` by default; can be set per project).
 - **herdr in the middle:** agents keep running when Corral closes, and herdr shows which ones are working, blocked

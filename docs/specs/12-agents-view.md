@@ -190,6 +190,8 @@ against one (AGENTS.md).
     `ProjectListService.onDidChange` refiring `AgentsService.onDidChange` (A6), each A9 command's `isVisible`
     being false without a selection, and A7's "fires only when `n` changes" (the E2E checks the counts, not the
     number of events).
+  - The timeline's "now" edge between polls (it repaints per poll, A15) and its real-time look at a 15-minute scale: only
+    the logic and DOM are tested, not the picture.
   - Enter on a row and the Shift, Meta and Ctrl click exceptions (A8): Theia's tree routes Enter to the same
     `onOpenNode` that click uses.
   - `corral.agents.intervalSeconds` changing the live poll period (A13): `agentsIntervalMs` and the poller reading

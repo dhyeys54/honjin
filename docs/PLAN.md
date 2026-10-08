@@ -1016,7 +1016,7 @@ inventing new ones:
     The default layout keeps the bottom panel collapsed (spec 02); opening the tab does not change that for new windows.
   - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then `npm run test:e2e`.
 
-- [ ] **T7.12 Docs, full suite, package (7b)**
+- [x] **T7.12 Docs, full suite, package (7b)**
   - Do: add the title line and the timeline to the README's Agents bullet; list any new uncovered behaviour in spec 12 §Tests;
     run `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and first-run alone);
     package and install as in T7.8.
@@ -1107,3 +1107,4 @@ inventing new ones:
 - 2026-10-08 T7.9 — trackHistory, segmentGeometry, orderLanes (A14/A15) (8 unit tests, 270 total)
 - 2026-10-08 T7.10 — agent rows show the pane title on a second line (title set via OSC in the E2E pane); row grows to two lines; tooltip is title then cwd (E2E extended, 52 total)
 - 2026-10-08 T7.11 — Agent Timeline tab in the bottom panel (lanes per agent, status-coloured segments over 15 min, axis, click label focuses, lanes of gone panes stay); opened by View: Toggle Agent Timeline (1 E2E test added, 53 E2E total)
+- 2026-10-08 T7.12 — README covers title line and timeline; all suites green (274 unit, 16 int, 53 E2E; roots and first-run alone); Corral.app repackaged and relaunched, timeline code confirmed in the installed app.asar (UI not viewed there; the E2E screenshot showed the timeline in the browser build)
