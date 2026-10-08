@@ -3,7 +3,7 @@ import { Command, CommandContribution, CommandRegistry, MessageService } from '@
 import { ConfirmDialog, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { CHOOSE_SCAN_ROOTS_COMMAND_ID } from '../common/command-ids';
-import { abbreviateHome, shouldRunFirstRun } from '../common/first-run';
+import { abbreviateHome, shouldRunFirstRun, showPlusHint } from '../common/first-run';
 import { FolderPicker } from './folder-picker';
 import { SetupService } from './setup/setup-service';
 import { HonjinPreferences, setHonjinPreference } from './honjin-preferences';
@@ -41,7 +41,7 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
             // Cancel also completes first run; the Projects view's empty state offers the picker again.
             await setHonjinPreference(this.preferenceService, 'honjin.firstRunCompleted', true);
         }
-        if (waited || firstRun) {
+        if (showPlusHint({ waited, firstRun, ready: this.setup.state === 'ready' })) {
             void this.messages.info('Click + on any folder to start an agent there.');
         }
     }

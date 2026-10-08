@@ -85,6 +85,8 @@ No telemetry: S12's request is the only one Honjin itself makes (D47).
     terminal replaces it without a reload (spec 02 step 5).
   - + with two fake agents shows the picker, and Enter opens a tab running the chosen command. With one agent there
     is no picker.
+  - + with no agent opens Setup and opens no tab (S9). On first run with no agent, Setup holds the folder picker until
+    **Continue anyway**, and no + hint follows (S7).
   - Help → Report an Issue exists.
 
 **Not covered automatically:** that the vendor installers really install (G8 checks this by hand on a fresh macOS

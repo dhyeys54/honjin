@@ -15,3 +15,8 @@ export function abbreviateHome(path: string, home: string): string {
     }
     return path.startsWith(home + '/') ? '~' + path.slice(home.length) : path;
 }
+
+/** Spec 13 S7: the + hint follows a wait for setup or a first run, and only once an agent can actually start. */
+export function showPlusHint(s: { waited: boolean; firstRun: boolean; ready: boolean }): boolean {
+    return s.ready && (s.waited || s.firstRun);
+}

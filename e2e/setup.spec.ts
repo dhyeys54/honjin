@@ -2,6 +2,7 @@ import { expect, test, Page } from '@playwright/test';
 import { existsSync, readlinkSync, rmSync, symlinkSync } from 'fs';
 import { join } from 'path';
 import { FAKE_CLAUDE, fakeAgent } from './fake-agents';
+import { herdr, row } from './helpers';
 
 const view = (page: Page) => page.locator('[data-testid="honjin-setup"]');
 const setupRow = (page: Page, id: string) => view(page).locator(`[data-testid="honjin-setup-row"][data-id="${id}"]`);
@@ -66,5 +67,24 @@ test('herdr installed through Setup replaces the "herdr not found" notice withou
         if (!existsSync(link)) {
             symlinkSync(target, link);
         }
+    }
+});
+
+test('+ with no agent installed opens Setup and starts nothing (spec 13 S9)', async ({ page }) => {
+    rmSync(join(process.env.HONJIN_TEST_PATH!, 'claude'));
+    try {
+        await page.goto('/');
+        await expect(state(page)).toHaveText('Install at least one agent.', { timeout: 60_000 });
+        await page.locator('.lm-TabBar-tab', { hasText: 'Set Up Honjin' }).locator('.lm-TabBar-tabCloseIcon').click();
+        await expect(view(page)).toHaveCount(0);
+        const panes = () => JSON.parse(herdr('pane', 'list')).result.panes.map((p: { pane_id: string }) => p.pane_id);
+        const before = panes();
+        await row(page, 'beta').hover();
+        await row(page, 'beta').getByTestId('honjin-new-tab').click();
+        await expect(state(page)).toHaveText('Install at least one agent.');
+        await expect(page.locator('.quick-input-widget')).toBeHidden();
+        expect(panes()).toEqual(before);
+    } finally {
+        fakeAgent('claude', FAKE_CLAUDE);
     }
 });
