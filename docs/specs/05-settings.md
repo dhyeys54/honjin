@@ -10,7 +10,7 @@ or folder-scoped values are ignored, so project repos are never touched.
 | `corral.scanRoots` | `string[]` | `[]` | Folders whose immediate subfolders are projects. `~` allowed. |
 | `corral.extraProjects` | `string[]` | `[]` | Projects added by hand. |
 | `corral.hiddenProjects` | `string[]` | `[]` | Projects left out of the tree and the workspace. |
-| `corral.startupCommand` | `string` | `"claude"` | Typed into every new herdr tab. `""` means a plain shell. |
+| `corral.agentCommands` | `object` map agent id → command | `{ claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' }` | The command + types for each agent in the picker (spec 13 S8–S10). Replaces the global `corral.startupCommand` (D44). |
 | `corral.projectOverrides` | `object` map `path → { startupCommand?: string }` | `{}` | Per-project overrides. |
 | `corral.herdr.path` | `string` | `"herdr"` | herdr binary name or absolute path. |
 | `corral.herdr.session` | `string` | `""` | herdr session name; `""` means herdr's default session. |
@@ -30,27 +30,27 @@ before implementing. The location moved between versions.
 ```ts
 function resolveStartupCommand(
     folderPath: string, projects: string[],
-    global: string, overrides: Record<string, { startupCommand?: string }>): string
+    overrides: Record<string, { startupCommand?: string }>): string | undefined
 ```
 
 - The owning project (exported as `owningProject(folderPath, projects)`, also used by the + handler in spec 04) is
   the longest entry of `projects` that equals `folderPath` or is a prefix of it at a path boundary (`/a/b` owns
   `/a/b/c`, not `/a/bc`).
 - If that project has an override whose `startupCommand` is a string (including `""`), return it. Otherwise
-  return `global`.
-- If no project owns the folder, return `global`.
+  return `undefined`, which means + uses the agent picker (spec 13 S9).
+- If no project owns the folder, return `undefined`.
 
 Unit tests cover: an exact match, a nested folder, the prefix-boundary case, an empty-string override, a missing
 override and nested projects (the longest wins).
 
 ## "Set startup command…" (project root context menu)
 
-- A QuickInput titled `Startup command for <name>`, with the value pre-filled with the effective command and the
+- A QuickInput titled `Startup command for <name>`, with the value pre-filled with the override (empty when there is none) and the
   placeholder `Leave empty for a plain shell · Esc to cancel`.
 - Enter with a value: write `projectOverrides[path].startupCommand`. Enter with an empty value: store `""`, an
   explicit plain shell.
-- A separate context-menu command, "Use global startup command", deletes the override entry. It is shown only
-  when the project has an override (D20).
+- A separate context-menu command, "Use agent picker" (formerly "Use global startup command", D44), deletes the
+  override entry. It is shown only when the project has an override (D20).
 
 ## First run: `browser/first-run-contribution.ts`
 

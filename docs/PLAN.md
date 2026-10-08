@@ -1032,6 +1032,145 @@ inventing new ones:
     - Reveal in Projects and Copy Path work;
     - after the user quits herdr's server themselves, the view says `herdr is not running` within one interval.
 
+## Stage 8 — Public beta (spec 13, spec 07 §Beta release)
+
+Spec 13 (rules S1–S12) and spec 07 §Beta release are the contract. Decisions: D44–D47. Goal: a stranger runs one
+command, Corral helps them install herdr and an agent, the first + starts an agent, and feedback reaches GitHub.
+- Read all of spec 13 before T8.1.
+- Stage only your own paths (`git add <paths>`, not `git add -A`): another session may be working in this repo.
+- Install commands in the S1 catalog were checked against vendor docs on 2026-10-08. If a vendor's docs now differ,
+  update S1 and D44 in the same commit.
+
+- [ ] **T8.1 Prerequisite catalog and beta logic (pure)**
+  - Spec: 13 S1, S3, S8, S11 (`issueBody`), S12 (`compareVersions`).
+  - Tests first: `common/prerequisites.test.ts`, `common/agent-choice.test.ts`, `common/beta.test.ts`.
+    - Catalog order and ids. The herdr, claude, codex and opencode install strings match S1 exactly. gemini gives
+      brew when `brew`, npm when only `npm`, `undefined` when neither.
+    - `setupState`: needs-herdr, needs-agent, ready; git missing still ready.
+    - `agentChoices`: catalog order, `last` first, Shell last, an unknown `last` is ignored, custom commands from the
+      map.
+    - `compareVersions`: `0.1.0-beta.2 > 0.1.0-beta.1`, `0.1.0 > 0.1.0-beta.9`, `0.2.0 > 0.1.10`, equal is 0, a
+      leading `v` is ignored.
+    - `issueBody`: contains each version given, and contains no `/` path segments from the input env.
+
+- [ ] **T8.2 Detection backend**
+  - Spec: 13 S2, S4; spec 04 §Resolving the binary.
+  - Tests first:
+    - `node/binary-resolver.test.ts`, with a temp dir of fake executables:
+      - PATH hit;
+      - candidate hit;
+      - `extraCandidates` hit;
+      - login-shell hit via a fake `ExecFileFn`;
+      - a miss that is retried (not cached) and found after the file appears.
+    - The existing `herdr-binary` tests still pass unchanged.
+    - `node/corral-setup-service.test.ts`: versions from a fake `ExecFileFn`; a version timeout gives `''`.
+    - `test/corral-setup-service.int.test.ts`: real herdr is found with a non-empty version, and a binary absent from a
+      fake PATH is missing.
+  - Do: bind the service and its RPC path in both modules, following `CorralAgentService`.
+
+- [ ] **T8.3 Setup view and first run**
+  - Spec: 13 S5–S7; spec 05 §First run.
+  - Tests first: `e2e/setup.spec.ts`.
+    - Start with `CORRAL_TEST_PATH` set to a dir holding only herdr. The Setup view opens at start, the herdr row
+      shows a version, and the claude row shows Install.
+    - Add a fake `claude` script to that dir and click Re-check: the claude row shows found and the state line says
+      Ready.
+    - `Corral: Set Up Prerequisites` opens it again.
+    - The existing first-run E2E still passes, with all agents present.
+  - Do: Install opens a terminal titled `Install <name>`. Check by hand once that its exit triggers a re-check. Keep
+    the existing E2E fixtures, where a fake agent exists, so other suites don't open Setup.
+
+- [ ] **T8.4 Agent picker on +**
+  - Spec: 13 S8–S10; spec 05 §Startup-command resolution (amended).
+  - Tests first:
+    - Update `common/startup-command.test.ts`: no override now returns `undefined`.
+    - `e2e/agent-picker.spec.ts`:
+      - with fake `claude` and `codex` on the test PATH, + shows a quick pick of Claude Code, Codex and Shell;
+      - choosing Codex opens a herdr tab whose pane runs `codex` (check with `herdr pane read`);
+      - the next + preselects Codex;
+      - with only `claude`, + opens a tab with no picker;
+      - a project override skips the picker.
+  - Do:
+    - Remove `corral.startupCommand` from the schema.
+    - Add `corral.agentCommands`.
+    - Rename the "Use global startup command" menu item.
+    - Update the README settings table.
+    - If the owner's own settings set `corral.startupCommand`, tell them the value to move into `corral.agentCommands`.
+
+- [ ] **T8.5 Beta plumbing**
+  - Spec: 13 S11, S12.
+  - Tests first:
+    - `node/corral-setup-service.test.ts`: `latestRelease()` with a fake fetch returns the tag and URL, and returns
+      `undefined` on 404, a network error or bad JSON.
+    - `e2e/beta.spec.ts`: the Help menu has `Report an Issue`, and the window title contains `Corral Beta`.
+  - Do:
+    - Set version `0.1.0-beta.1` in the three `package.json` files.
+    - Add the S12 notification with Copy update command and Release notes, and the `corral.updates.check` setting.
+
+- [ ] **T8.6 Tester-facing bugs**
+  - Spec: whichever spec owns each bug.
+  - Do:
+    - Reproduce, then fix, the Settings UI not persisting `corral.resourceMonitor.*Percent`, with a failing E2E first.
+    - Sweep the old review-notes list (moving to `corral-notes` in T8.8) and every spec's "Not covered automatically"
+      list. Fix anything a new user would hit in their first 10 minutes. Write the rest down as known issues for the
+      README.
+    - Note the stale-editor report from 2026-10-08 (`today.md`) as "unexplained, monitoring". It has a passing
+      regression test, `e2e/external-edit.spec.ts`.
+    - `npm audit`: fix each critical finding, or record why it doesn't apply in a D-entry.
+
+- [ ] **T8.7 Packaging and installer**
+  - Spec: 07 (amended) §Beta release.
+  - Tests first: `scripts/install.test.sh` (plain sh, run by `npm run test:install`).
+    - Serve a fixture release (a tiny fake `Corral.app` zip and its `SHA256SUMS`) with
+      `python3 -m http.server` on a free port.
+    - Run `install.sh` with `CORRAL_RELEASE_BASE` set and an install dir override
+      (`CORRAL_INSTALL_DIR=<tmp>`): the app appears.
+    - Corrupt the zip: the script exits non-zero and leaves the previous app in place.
+  - Do:
+    - `electron-builder.yml` gets `target: zip`.
+    - `package:mac` drops `--dir`.
+    - Add `scripts/release.sh`.
+    - Run `npm run package:mac` and check the zip opens.
+
+- [ ] **T8.8 Going-public prep**
+  - Do, in order, and stop to ask the user at each **[ask]**:
+    1. Trademark check on "Corral": USPTO, EUIPO, GitHub, npm, Homebrew. Report the findings. **[ask]** if any looks
+       like a real conflict for developer software.
+    2. Root `LICENSE` (MIT, the current year, "Dhyey Sapara"), plus `THIRD_PARTY_NOTICES.md` (Theia EPL-2.0,
+       Electron MIT, Monaco MIT, herdr Apache-2.0, not bundled).
+    3. **[ask]** Create the private repo `dhyeys54/corral-notes` with `gh repo create --private`, then move
+       `docs/GTM.md` and `docs/FOR-REVIEW.md` there. Update the references in `AGENTS.md`, `CLAUDE.md`, the specs and
+       the memory file.
+    4. On a verified backup clone: `git filter-repo --path docs/GTM.md --path docs/FOR-REVIEW.md --invert-paths`.
+       Then `git log --all -- docs/GTM.md docs/FOR-REVIEW.md` must be empty. Scan the history for secrets
+       (`gitleaks` if installed, else a grep for key and token patterns).
+    5. Add `.github/ISSUE_TEMPLATE/` (`bug.yml`, `install.yml`, `idea.yml`, `config.yml` linking Discussions) and a
+       short `CONTRIBUTING.md`.
+    6. README rewrite for strangers:
+       - GTM's headline and sub-line.
+       - The install one-liner, then the zip with manual steps, then build from source.
+       - Requirements: Apple Silicon, macOS 13+, and that Setup installs the rest.
+       - Privacy: no telemetry, plus the one update request.
+       - Known issues (from T8.6).
+       - Slots for the demo GIF and 2–3 screenshots.
+  - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e && npm run test:install`.
+
+- [ ] **G8 Stage 8 gate**: all suites → `spec-reviewer` on spec 13 and stage 8 → fix must-fix findings → **human
+  checkpoint, stop**.
+  - Draft release `v0.1.0-beta.1` with `scripts/release.sh`. It stays a draft.
+  - Ask the user to test on a **fresh macOS user account** (System Settings → Users & Groups → Add User):
+    - The one-liner installs Corral. Use `CORRAL_VERSION` with the draft's asset URLs if the repo is still private.
+    - Corral opens with no Gatekeeper prompt.
+    - Setup shows herdr and agents missing. Install herdr and Claude Code from Setup; both succeed and turn found.
+    - Folders are picked, and + starts Claude Code; with a second agent installed, + shows the picker.
+    - Help → Report an Issue opens a prefilled issue page.
+  - After approval, each of these needs the user's explicit go-ahead: create the `dhyeys54/corral` GitHub repo, push,
+    make it public, enable Discussions, and publish the release. Then:
+    - record the demo GIF and screenshots with the user;
+    - send `dhyey-portfolio-06` the page content;
+    - hand over the drafts of the herdr maintainers' email and the LinkedIn, Reddit and X posts (scratchpad, never
+      posted by Claude).
+
 ## Progress log
 
 <!-- /next-task appends one line per finished task: `- YYYY-MM-DD T1.3 — project-list rules 1–7 (12 tests)` -->
@@ -1110,3 +1249,4 @@ inventing new ones:
 - 2026-10-08 T7.12 — README covers title line and timeline; all suites green (274 unit, 16 int, 53 E2E; roots and first-run alone); Corral.app repackaged and relaunched, timeline code confirmed in the installed app.asar (UI not viewed there; the E2E screenshot showed the timeline in the browser build)
 - 2026-10-08 T7.11 follow-up — timeline lanes look clickable: whole row is the target, pointer cursor, hover background, "Focus <kind> in herdr" tooltip; gone lanes say "No longer running" and are inert (E2E extended; 274 unit, 53 E2E)
 - 2026-10-08 G7 — approved by the user after trying the installed app (title lines, Agent Timeline, lane click)
+- 2026-10-08 T8.0 — spec 13 (setup, agent picker, beta plumbing), specs 03/05/07 amended, D44–D47, Stage 8 tasks and G8 (docs only)

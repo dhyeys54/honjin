@@ -83,8 +83,8 @@ Build it on `@theia/filesystem`'s `FileTreeWidget` / `FileTreeModel`, following 
 
 - **Hide / Unhide** adds the path to, or removes it from, `corral.hiddenProjects`.
 - **Remove from list** removes the path from `corral.extraProjects`. It never deletes files.
-- **Set startup command…** opens a QuickInput pre-filled with the current effective command. Empty input clears
-  the override. Details are in spec 05.
+- **Set startup command…** opens a QuickInput pre-filled with the project's override. Details are in spec 05.
+  Without an override, + shows the agent picker (spec 13 S9).
 - **Open Changes** opens the git diff of that file (working tree before staged; `common/scm-change.ts`). It shows
   only when git reports a change for the file.
 - **Show Changes** selects the git repository that holds the folder and opens Source Control on the right (spec 02),

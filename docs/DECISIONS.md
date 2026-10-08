@@ -276,3 +276,36 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 **Consequences.**
 - History is in memory only and starts when Corral starts (herdr has no timestamps). No new dependency: plain divs, no chart library.
 - No header button for the timeline: a toolbar item on the Agents part hides its badge (A7). It opens from the command palette.
+
+## D44 — Setup installs prerequisites in a visible terminal; + picks an agent (spec 13) · 2026-10-08
+**Decision.**
+- A Setup view checks for herdr, the agent CLIs (claude, codex, gemini, opencode) and git. Each missing item gets an **Install** button that runs the vendor's official installer in a visible Theia terminal through `$SHELL -lc`.
+- + shows a quick pick of the installed agents plus Shell. The global `corral.startupCommand` is replaced by `corral.agentCommands`, and the per-project override still skips the picker. "Use global startup command" becomes "Use agent picker".
+**Why.**
+- A public beta's testers start with nothing installed, and a "herdr not found" overlay is where they would quit.
+- A visible terminal shows exactly what runs and can be stopped. A silent background install would cost trust and hide failures.
+- The picker makes + work for Codex, Gemini and opencode users, which is GTM's launch gate.
+**Consequences.**
+- This is a second exception to AGENTS.md's "no shell" rule. It is allowed only for catalog strings (never user input), only after a click, and only in a visible terminal. The login-shell `command -v <binary>` lookup is extended from herdr to the catalog binaries, again from constants only.
+- The install commands are copied from vendor docs (checked 2026-10-08) and can go stale. G8 tests them by hand on a fresh macOS account.
+- Existing users lose a customised global startup command; they set it again in `corral.agentCommands`.
+
+## D45 — Unsigned beta, installed by a curl script (spec 07) · 2026-10-08
+**Decision.** The beta ships unsigned as an arm64 zip on GitHub Releases with `SHA256SUMS`. The headline install is `curl -fsSL …/scripts/install.sh | sh`, which verifies the checksum and replaces `/Applications/Corral.app`. This supersedes GTM's xattr-first install steps.
+**Why.** A file that curl downloads has no quarantine flag, so there is no "unverified developer" block, and this costs $0. The audience already installs herdr and Claude Code with the same pattern, and re-running the script is the update path.
+**Consequences.** Some people distrust `curl | sh`; the README offers the zip with manual Open Anyway steps, and building from source. Revisit signing ($99/yr) when downloads justify it. Signing would also unlock auto-update.
+
+## D46 — A daily update check against GitHub Releases (spec 13 S12) · 2026-10-08
+**Decision.** The backend GETs GitHub's latest-release API 10 s after start and then every 24 h. A newer version shows a notification with a copyable update command. `corral.updates.check` turns it off.
+**Why.** Beta builds change often, and testers on stale builds file bugs that are already fixed. Electron auto-update needs a signed app (D45).
+**Consequences.** This is one anonymous request to api.github.com, disclosed in the README. Failures are silent.
+
+## D47 — No telemetry · 2026-10-08
+**Decision.** Corral collects no usage data or crash reports. Feedback comes through GitHub Issues (templates plus a prefilled **Report an Issue** command) and Discussions.
+**Why.** The audience is developers from an unknown author's first public release. Telemetry would cost more trust than its data is worth at this scale.
+**Consequences.** Problems are known only when testers report them, so Report an Issue includes versions (no paths) to make each report useful.
+
+## D48 — Git status item follows the active editor (spec 02) · 2026-10-08
+**Decision.** `CorralScmContribution` listens to `EditorManager.onCurrentEditorChanged` and sets `ScmService.selectedRepository` to the repository containing the editor's file (`findRepository`). Preview/webview tabs leave the selection alone.
+**Why.** Theia selects the first repository that registers and never changes it, so with many project roots the bottom-left item named an arbitrary project (seen: `ai-job-search` while editing `us-lead-engine`).
+**Consequences.** Show Changes still selects its folder's repository, until the next editor change.
