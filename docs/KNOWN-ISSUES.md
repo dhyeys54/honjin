@@ -15,7 +15,7 @@ Things a new user can run into, with the workaround. Report anything else with *
 - **Closing Honjin leaves herdr's server and its agents running** (by design, spec 04). Stop them with `herdr server stop`, or quit each agent.
 - **Search can come back empty right after startup** (roughly 1 start in 3 under test). Run **Reload Window** from the command palette and search again.
 - **The Projects tree shows dotfolders such as `.git`.** Theia does not hide them.
-- **A file rewritten from outside once did not refresh in an open editor** (reported 2026-10-08, `today.md`, in-place rewrite, window up for hours). The cause was never found and it did not happen again in testing; `e2e/external-edit.spec.ts` guards the normal behaviour. If it happens, run **File: Revert File** from the command palette, or **Reload Window**, and tell us the time and file.
+- **A file rewritten from outside once did not refresh in an open editor** (reported 2026-10-08: a Markdown file rewritten in place, window open for hours). The cause was never found and it did not happen again in testing; `e2e/external-edit.spec.ts` guards the normal behaviour. If it happens, run **File: Revert File** from the command palette, or **Reload Window**, and tell us the time and file.
 - **No Dock badge or system notifications from Honjin.** herdr's own `[ui.toast]` and `[ui.sound]` settings cover that.
 - **Honjin never renames, stops or sends prompts to an agent.** The Agents view only focuses them.
 

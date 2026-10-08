@@ -52,7 +52,7 @@ export interface IssueEnv {
 
 /** S11: versions only. Paths and project names stay out, so a report never leaks the user's folder layout. */
 export function issueBody(env: IssueEnv): string {
-    const tools = env.tools.filter(t => t.found).map(t => `- ${t.id}: ${t.version || 'unknown version'}`);
+    const tools = env.tools.filter(t => t.found && t.id !== 'git').map(t => `- ${t.id}: ${t.version || 'unknown version'}`);
     return [
         '**What happened**', '', '', '**Steps to reproduce**', '', '',
         '**Environment**',

@@ -99,7 +99,7 @@ agents; stop it with `herdr server stop`.
 | `honjin.hiddenProjects` | `[]` | Hidden projects |
 | `honjin.agentCommands` | `{ "claude": "claude", "codex": "codex", … }` | The command + types for each agent in the picker; add flags here |
 | `honjin.projectOverrides` | `{}` | Per-project `{ "startupCommand": "…" }` |
-| `honjin.updates.check` | `true` | Ask GitHub once a day whether a newer Honjin exists (the only request Honjin makes) |
+| `honjin.updates.check` | `true` | Ask GitHub once a day whether a newer Honjin exists (Honjin's only request of its own) |
 | `honjin.herdr.path` / `honjin.herdr.session` | `"herdr"` / `""` | herdr binary, and session (empty = default) |
 
 These are stored in `~/.honjin/settings.json`, never inside your repos.
@@ -111,6 +111,7 @@ These are stored in `~/.honjin/settings.json`, never inside your repos.
   (`api.github.com/repos/dhyeys54/honjin/releases/latest`) so it can tell you when a new build is out. It sends no
   cookies, account or project information; GitHub sees your IP address and the request itself, as it would for any
   download. Turn it off with `honjin.updates.check: false` in `~/.honjin/settings.json`.
+- **Extensions** come from Open VSX (`open-vsx.org`), which the Extensions view contacts when you browse or search it.
 - **Your code stays on your Mac.** Honjin reads your project folders to list them and show their files. It never
   uploads them.
 - **Help → Report an Issue** opens your browser with a draft that holds only versions (Honjin, macOS, chip, herdr and

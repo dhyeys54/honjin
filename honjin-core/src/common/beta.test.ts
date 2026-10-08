@@ -20,7 +20,8 @@ describe('issueBody / issueUrl (S11)', () => {
         tools: [
             { id: 'herdr', found: true, path: '/Users/someone/.local/bin/herdr', version: 'herdr 0.9.1' },
             { id: 'claude', found: true, path: '/Users/someone/.local/bin/claude', version: '2.1.211 (Claude Code)' },
-            { id: 'codex', found: false, version: '' }
+            { id: 'codex', found: false, version: '' },
+            { id: 'git', found: true, version: 'git version 2.50.1' }
         ]
     };
 
@@ -31,6 +32,7 @@ describe('issueBody / issueUrl (S11)', () => {
         }
         expect(body).not.toContain('/Users');
         expect(body).not.toContain('codex');
+        expect(body).not.toContain('git version'); // S11: herdr and the agents only
     });
 
     it('builds the prefilled bug URL', () => {
