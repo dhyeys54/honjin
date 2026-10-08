@@ -1107,7 +1107,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
     - Set version `0.1.0-beta.1` in the three `package.json` files.
     - Add the S12 notification with Copy update command and Release notes, and the `corral.updates.check` setting.
 
-- [ ] **T8.6 Tester-facing bugs**
+- [x] **T8.6 Tester-facing bugs**
   - Spec: whichever spec owns each bug.
   - Do:
     - Reproduce, then fix, the Settings UI not persisting `corral.resourceMonitor.*Percent`, with a failing E2E first.
@@ -1118,7 +1118,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
       regression test, `e2e/external-edit.spec.ts`.
     - `npm audit`: fix each critical finding, or record why it doesn't apply in a D-entry.
 
-- [ ] **T8.7 Packaging and installer**
+- [x] **T8.7 Packaging and installer**
   - Spec: 07 (amended) §Beta release.
   - Tests first: `scripts/install.test.sh` (plain sh, run by `npm run test:install`).
     - Serve a fixture release (a tiny fake `Corral.app` zip and its `SHA256SUMS`) with
@@ -1253,3 +1253,6 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.1 — prerequisite catalog (vendor install commands), setupState, agentChoices, compareVersions (semver pre-release), issueBody/issueUrl without paths (20 tests; 294 unit)
 - 2026-10-08 T8.2 — findBinary generalises herdr's lookup (PATH, fallback dirs, installer-specific candidates, login shell with a checked name); CorralSetupService.check over RPC with versions, /usr/bin/git stub handled, CORRAL_TEST_PATH limits the search (9 unit + 1 int; 303 unit, 17 int)
 - 2026-10-08 T8.3 — Setup view (rows, state line, Install in a visible terminal, Re-check, Continue anyway), corral.setup.open, first run waits for setup then shows the + hint; E2E backend sees only a fake-agent dir (2 E2E; 57 E2E, 303 unit)
+- 2026-10-08 T8.6 — Settings UI persistence of `corral.resourceMonitor.*Percent` could not be reproduced (E2E `settings-ui.spec.ts` passes for both fields, typed and filled), kept as a regression test; sweep of FOR-REVIEW and the specs' not-covered lists; `docs/KNOWN-ISSUES.md`; stale-editor report listed as unexplained; npm audit: two criticals accepted (D55)
+- 2026-10-08 T8.7 — `scripts/install.sh` (checksum before any change, stage-then-swap, quits only the Corral at the target path), `install.test.sh` (fixture release over http.server; corrupt zip leaves the old app), `release.sh` (draft only), `package:mac` now builds the arm64 zip (225 MB, opens, installs via install.sh from file://), `test:install`
+- 2026-10-08 T8.8 (steps 1, 2, 5 only; task stays open) — LICENSE (MIT), THIRD_PARTY_NOTICES.md, `.github/ISSUE_TEMPLATE/{bug,install,idea,config}.yml`, CONTRIBUTING.md; trademark check reported to the user, not ticked
