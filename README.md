@@ -1,66 +1,94 @@
 <p align="center"><img src="branding/generated/icon-256.png" width="128" alt="Corral icon"></p>
 
 <h1 align="center">Corral</h1>
-<p align="center">One window for all your projects. Agents run in <a href="https://herdr.dev">herdr</a>.</p>
+<p align="center"><b>Run coding agents across all your projects from one window.</b><br>
+Click + on any folder to start Claude Code, Codex, Gemini CLI or opencode there.</p>
+<p align="center">Public beta · 0.1.0-beta.1 · macOS on Apple silicon · free and open source (MIT)</p>
 
 ---
 
-Corral is a macOS IDE built on [Eclipse Theia](https://theia-ide.org). It keeps every active project in one window
-and runs your coding agents (Claude Code) in herdr, not in a chat panel built into the IDE.
+<!-- DEMO GIF: docs/screenshots/demo.gif (60 s: + on a folder → pick an agent → agent works → Agents view shows it blocked → click to jump) -->
 
-```
-┌────────┬──────────────────────────┬──────────────────────────┬──────────────┐
-│ search │ editor                   │ herdr                    │ PROJECTS     │
-│ debug  │                          │  alpha ▸ 1 claude · 2 sh │ alpha      ▾ │
-│        │                          │                          │  src/    [+] │
-│        │                          │                          │ beta       ▸ │
-│        │                          │                          │ CHANGES      │
-│        │                          │                          │ alpha (2)  ● │
-│        │                          │                          │ AGENTS     1 │
-│        │                          │                          │ ● claude alp…│
-└────────┴──────────────────────────┴──────────────────────────┴──────────────┘
-```
+![Corral: the editor, a herdr terminal with two Claude Code tabs, and the Projects tree](docs/screenshots/hero.png)
 
-- **Projects panel (right):** every project under your chosen folders, each one a collapsible VS Code-style file
-  tree. Hide the ones you're not using; the eye button brings them back.
-- **Changes panel (right, under Projects):** every uncommitted git change in your visible projects, grouped by
-  project. A pulsing dot marks files written in the last 30 s, so you can see where agents are working. Click a file
-  for its diff against HEAD. Changed files also carry a letter in the Projects tree.
-- **Agents panel (right, under Changes):** every agent running in your herdr session, with the ones that need you
-  first: blocked, then done. Each row shows the agent, where it runs, its state and how long it has been in it.
-  Click a row to jump to its pane in the herdr tab. A badge on the panel and on the right-panel tab counts the
-  agents that are blocked or done. Each row also shows what the agent is working on (its terminal title).
-  `View: Toggle Agent Timeline` opens a bottom tab that draws a lane per agent over the last 15 minutes, coloured by
-  status, so you can see which agents were working, blocked or done at the same time. How often it checks is `corral.agents.intervalSeconds` (default 3).
-- **+ on any folder:** opens a new herdr tab in that folder, inside that project's own herdr workspace, and runs
-  your startup command (`claude` by default; can be set per project).
-- **herdr in the middle:** agents keep running when Corral closes, and herdr shows which ones are working, blocked
-  or done.
-- **A full IDE underneath:** LSP, git, debugger and VS Code extensions (from Open VSX). Theia's built-in AI is
-  included but switched off.
+If you run several coding agents at once, you end up with a pile of terminal windows and no idea which agent is
+waiting for you. Corral is a code editor that keeps all your projects in one window and runs your agents in
+[herdr](https://herdr.dev), a terminal that keeps them going in the background. One click starts an agent in any
+folder, and a side panel shows which agents are working, which are blocked and which are done.
 
-> **Status:** in development. The build follows [`docs/PLAN.md`](docs/PLAN.md); features land stage by stage.
+## What you get
+
+- **Projects (right):** every project in the folders you choose, each a normal file tree. Hide the ones you aren't
+  using.
+- **+ on any folder:** starts an agent in that folder, in a herdr tab that belongs to the project. Corral asks which
+  agent you want and remembers your last choice. A project can have its own fixed command instead.
+- **Agents:** every running agent, the ones that need you first. Click one to jump straight to it. A badge counts the
+  agents that are blocked or done. **View: Toggle Agent Timeline** shows the last 15 minutes as one lane per agent.
+- **Changes:** every uncommitted change across your projects, grouped by project. A pulsing dot marks files written
+  in the last 30 seconds, so you can see where agents are working. Click a file for its diff.
+- **herdr in the middle:** agents keep running when you close Corral.
+- **A full editor underneath:** built on [Eclipse Theia](https://theia-ide.org), with language support, git, a
+  debugger and VS Code extensions from Open VSX. Theia's own AI chat is switched off: your agents live in herdr.
 
 ## Requirements
 
-- macOS on Apple Silicon, Node ≥ 20 (developed on 24), npm ≥ 10, Xcode Command Line Tools (for native modules).
-- [herdr](https://herdr.dev/docs/install/) ≥ 0.9 on your `PATH` (or set `corral.herdr.path`).
-- [Claude Code](https://code.claude.com) CLI, or change the startup command to your own agent.
-- For icons only: `brew install librsvg imagemagick`.
+- A Mac with Apple silicon (M1 or later) running macOS 13 or later. Intel Macs, Windows and Linux are not built yet.
+- [herdr](https://herdr.dev) and at least one coding agent (Claude Code, Codex, Gemini CLI or opencode). You don't
+  need to install them first: on first launch Corral opens **Set Up Corral**, shows what is missing and has an
+  **Install** button for each. Re-open it any time from the command palette (**Corral: Set Up Prerequisites**).
+- git is optional. It only powers the Changes view and the branch in the status bar.
 
-## Run
+## Install
 
-```bash
-npm install
-npm run download:plugins          # built-in VS Code extensions (git, TS, JSON, …)
-npm run build:electron && npm run start:electron
+Paste this into Terminal:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/dhyeys54/corral/main/scripts/install.sh | sh
 ```
 
-On first launch Corral asks which folders hold your projects. You can pick several, and change them later with
-**Corral: Choose Project Folders…**.
+It downloads the latest release, checks it against the published `SHA256SUMS`, and puts `Corral.app` in
+`/Applications`. Corral opens without a macOS security prompt, because a file downloaded by `curl` is not
+quarantined. The script is short; [read it](scripts/install.sh) before you run it if you like.
 
-Build the app bundle: `npm run package:mac` → `electron-app/dist/mac-arm64/Corral.app`. It isn't code-signed, so
-the first time you open it, right-click → Open, or run `xattr -dr com.apple.quarantine Corral.app`.
+**To update**, run the same command again. It quits a running Corral first and keeps your settings.
+
+If `/Applications` isn't writable for your account, the script says so. Re-run it with `sudo sh` in place of `sh`, or
+install for yourself only with `CORRAL_INSTALL_DIR=$HOME/Applications` (create the folder first).
+
+### Install the zip by hand
+
+1. Download `Corral-<version>-arm64-mac.zip` and `SHA256SUMS` from the
+   [latest release](https://github.com/dhyeys54/corral/releases/latest).
+2. In the folder you saved them to, run `shasum -a 256 -c SHA256SUMS --ignore-missing`. It should print `OK`.
+3. Unzip it and drag `Corral.app` into `/Applications`.
+4. Corral is not signed or notarised (the beta is free of the $99/year Apple fee), so macOS blocks the first launch.
+   Open **System Settings → Privacy & Security**, scroll to the message about Corral and click **Open Anyway**.
+   Or remove the quarantine flag in Terminal: `xattr -dr com.apple.quarantine /Applications/Corral.app`.
+
+### Build from source
+
+```sh
+git clone https://github.com/dhyeys54/corral && cd corral
+npm install
+npm run package:mac        # electron-app/dist/mac-arm64/Corral.app
+```
+
+Needs Node 20 or later, npm 10 or later and the Xcode Command Line Tools. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Uninstall
+
+Quit Corral, delete `/Applications/Corral.app` and `~/.corral`. herdr keeps running in the background with your
+agents; stop it with `herdr server stop`.
+
+## First run
+
+1. **Set Up Corral** lists herdr and the agents, with a version for each one found. Click **Install** for anything
+   missing: a terminal opens and runs the vendor's own installer, so you see exactly what happens. Then Corral
+   checks again.
+2. Choose the folders that hold your projects (you can change them later with **Corral: Choose Project
+   Folders…**).
+3. Click **+** next to any folder. The agent starts in a herdr tab there. The first time, the agent asks you to sign
+   in; that's the agent's own login, not Corral's.
 
 ## Settings
 
@@ -75,6 +103,37 @@ the first time you open it, right-click → Open, or run `xattr -dr com.apple.qu
 | `corral.herdr.path` / `corral.herdr.session` | `"herdr"` / `""` | herdr binary, and session (empty = default) |
 
 These are stored in `~/.corral/settings.json`, never inside your repos.
+
+## Privacy
+
+- **No telemetry.** Corral collects no usage data, crash reports or analytics.
+- **One request of its own:** shortly after launch and then once a day, Corral asks GitHub for the latest release
+  (`api.github.com/repos/dhyeys54/corral/releases/latest`) so it can tell you when a new build is out. It sends no
+  cookies, account or project information; GitHub sees your IP address and the request itself, as it would for any
+  download. Turn it off with `corral.updates.check: false` in `~/.corral/settings.json`.
+- **Your code stays on your Mac.** Corral reads your project folders to list them and show their files. It never
+  uploads them.
+- **Help → Report an Issue** opens your browser with a draft that holds only versions (Corral, macOS, chip, herdr and
+  agents). It contains no file paths or project names, and nothing is sent until you press Submit on GitHub.
+- The agents you run (Claude Code, Codex and so on) and herdr have their own network behaviour and privacy policies.
+  Corral doesn't change them.
+- Settings live in `~/.corral/settings.json`, never inside your repositories.
+
+## Known issues
+
+The ones you're most likely to meet:
+
+- Corral isn't signed by Apple. The install command needs no extra step; the manual zip needs **Open Anyway** once.
+- Closing Corral leaves herdr and your agents running. That's on purpose. Stop them with `herdr server stop`.
+- Search can come back empty right after startup. Run **Reload Window** and search again.
+
+The full list, with workarounds: [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md).
+
+## Feedback
+
+This is a beta and feedback is the point. **Help → Report an Issue** opens a GitHub issue with your versions already
+filled in. There are also templates for [install problems and ideas](https://github.com/dhyeys54/corral/issues/new/choose),
+and [Discussions](https://github.com/dhyeys54/corral/discussions) for anything else.
 
 ## Develop
 
@@ -93,16 +152,9 @@ With Claude Code: open this folder, then run `/next-task` (one task) or `/loop /
 human checkpoint). Tests: `npm test` (unit), `npm run test:int` (real herdr, isolated session), `npm run test:e2e`
 (Playwright).
 
-## Screenshots
-
-![Corral: the editor, a herdr terminal with two Claude Code tabs (api-server and web-client), and the Projects tree](docs/screenshots/hero.png)
-
-Editor, herdr terminal and Projects tree in one window: three projects, two of them with their own herdr tab
-running `claude`. The screenshot is the real app, unedited. The `claude` trust prompt is Claude Code's own
-first-run question for a new folder.
-
-Before/after shots of the chrome polish pass are in [`docs/screenshots/`](docs/screenshots/).
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## License
 
-MIT for Corral's own code. Theia is EPL-2.0 / GPL-2.0-with-classpath-exception; JetBrains Mono is OFL-1.1.
+MIT for Corral's own code ([LICENSE](LICENSE)). Theia, Electron, Monaco and the bundled fonts keep their own licences;
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
