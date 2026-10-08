@@ -974,12 +974,61 @@ inventing new ones:
   - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and
     first-run must pass when run alone, as in T6.7). The installed app shows the Agents part under Changes.
 
+- [ ] **T7.9 History logic (pure)**
+  - Spec: 12 A14, A15.
+  - Tests first: in `corral-core/src/common/agents.test.ts`, add describes for `trackHistory`, `segmentGeometry` and `orderLanes`:
+    - `trackHistory`: new pane → one open segment at `now`; same status and kind → unchanged; status change → previous
+      closed at `now`, new open; kind change → same; missing pane → open segment closed, lane kept, closed again is a
+      no-op; reappearing pane → new open segment; `cwd` and `kind` take the latest; segments with `end <= now - windowMs`
+      are dropped and an empty lane is dropped; `prev` is not mutated.
+    - `segmentGeometry` (window 1000, now 1000): `{start:0}` → `{left:0,width:100}`; `{start:500,end:750}` → `{left:50,width:25}`;
+      `{start:-200,end:300}` (starts before the window) → `{left:0,width:30}`; an open segment ends at `now`.
+    - `orderLanes`: lanes in `rowPaneIds` order first, the rest by latest segment end, newest first (open counts as newest); ties by pane id.
+  - Do: implement in `common/agents.ts` with the signatures in spec 12 §Code layout; export `TIMELINE_WINDOW_MS = 15 * 60_000`.
+  - Verify: `npm test && npm run typecheck && npm run lint`.
+
+- [ ] **T7.10 Title line**
+  - Spec: 12 A5 (amended), D43.
+  - Tests first: extend the T7.5 E2E in `e2e/agents-view.spec.ts`: give the `beta` pane a terminal title by running
+    `printf '\033]0;Fix the login bug\007'` in it (`herdr pane run <pane> ...`; check the exact argv with `herdr pane run --help`),
+    then expect its row to contain a `.corral-agent-title` with that text, and the `out` row to have none.
+    If `terminal_title_stripped` does not appear in `herdr agent list` for that pane, stop and note it under `[!]`.
+  - Do: `AgentsWidget.getCaptionChildren` wraps the existing spans in `div.corral-agent-main` (the current flex row) and adds
+    `div.corral-agent-title` when `row.title` is non-empty; CSS in `agents.css` makes the caption a column, the title
+    `var(--theia-descriptionForeground)`, `white-space: nowrap; overflow: hidden; text-overflow: ellipsis`, indented to align
+    with the kind (dot width + margin). Check in the browser that Theia's virtualised rows grow to two lines.
+  - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`.
+
+- [ ] **T7.11 Agent Timeline (bottom panel)**
+  - Spec: 12 A14, A15.
+  - Tests first: a test in `e2e/agents-view.spec.ts` with the T7.5 helpers. Set up `beta` and `src`; `report(beta.pane, 'working')`.
+    1. `page.keyboard` is not needed: run the command through Theia's quick command (`F1`, type `Agents: Show Timeline`, Enter).
+       The bottom panel opens with a tab `Agent Timeline`; one lane for beta with a `.corral-agent-working` segment.
+    2. `report(beta.pane, 'blocked')`: within 10 s the beta lane has a `.corral-agent-blocked` segment and still a working one.
+    3. `report(src.pane, 'working')`: two lanes; the order is beta (blocked) first.
+    4. Click the beta lane label: the herdr tab becomes current (as in T7.5).
+    5. `release-agent` for src: its lane stays (segments closed); the beta lane is unchanged.
+    6. A segment's `title` matches `/^(working|blocked) \d+[smh]$/`.
+  - Do: `AgentsService` keeps `history` next to `seen` (updated in `onResult` via `trackHistory`) and exposes `lanes()`.
+    `AgentTimelineWidget` (ReactWidget) renders A15 with divs; `AgentTimelineContribution` (`AbstractViewContribution`,
+    `defaultWidgetOptions: { area: 'bottom' }`, toggle command `corral.agents.timeline.toggle`, label `Agents: Show Timeline`)
+    is bound with `bindViewContribution`; CSS in `agents.css` using only `var(--theia-…)`.
+    The default layout keeps the bottom panel collapsed (spec 02); opening the tab does not change that for new windows.
+  - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then `npm run test:e2e`.
+
+- [ ] **T7.12 Docs, full suite, package (7b)**
+  - Do: add the title line and the timeline to the README's Agents bullet; list any new uncovered behaviour in spec 12 §Tests;
+    run `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and first-run alone);
+    package and install as in T7.8.
+
 - [ ] **G7 Stage 7 gate**: all suites → `spec-reviewer` on spec 12 and stage 7 → fix must-fix findings → **human
   checkpoint, stop**.
   - Ask the user to check these in the installed app, with real agents in their own session:
     - every running agent appears, blocked and done first, with sensible ages;
     - clicking a `done` agent jumps to its pane in the herdr tab, and the row turns `idle` at once;
     - the part header and the right-panel tab badges count blocked + done;
+    - rows with a title show it as a second line; `Agents: Show Timeline` opens a bottom tab with one lane per agent,
+      coloured by status, in a sensible order, and clicking a lane label jumps to the pane;
     - Reveal in Projects and Copy Path work;
     - after the user quits herdr's server themselves, the view says `herdr is not running` within one interval.
 

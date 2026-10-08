@@ -267,3 +267,12 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 - **Both badges.** One on the part header (`BadgeWidget`), which needs the part to have no toolbar items, and one on the
   right-panel tab (`TabBarDecorator`).
 - **Reveal in Projects** reuses Changes' reveal, moved to `ProjectsContribution.revealPath`.
+
+## D43 — Agents: a title line and a bottom-panel timeline (spec 12 A5, A14, A15) · 2026-10-08
+**Decision.** Each Agents row gains a second line with the agent's terminal title. A new **Agent Timeline** tab in the bottom panel draws one lane per agent over the last 15 minutes, coloured by status.
+**Why.**
+- Claude Code sets the terminal title to a short task summary, which tells you what an agent is doing without opening its pane. We already fetched it and only showed it in a tooltip.
+- A list shows state now, not overlap over time. The bottom panel is empty by default and wide enough for a time axis; the right panel is not.
+**Consequences.**
+- History is in memory only and starts when Corral starts (herdr has no timestamps). No new dependency: plain divs, no chart library.
+- No header button for the timeline: a toolbar item on the Agents part hides its badge (A7). It opens from the command palette.
