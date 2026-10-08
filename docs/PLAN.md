@@ -1132,7 +1132,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
     - Add `scripts/release.sh`.
     - Run `npm run package:mac` and check the zip opens.
 
-- [ ] **T8.8 Going-public prep**
+- [x] **T8.8 Going-public prep**
   - Do, in order, and stop to ask the user at each **[ask]**:
     1. Trademark check on "Corral": USPTO, EUIPO, GitHub, npm, Homebrew. Report the findings. **[ask]** if any looks
        like a real conflict for developer software.
@@ -1261,3 +1261,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.5 — version 0.1.0-beta.1, title "Corral Beta", Help → Report an Issue (versions only, no paths), daily latest-release check with Copy update command / Release notes, corral.updates.check (5 unit + 1 E2E; 308 unit, 62 E2E)
 - 2026-10-08 T8.8 step 6 — README rewritten for testers: pitch, what you get, requirements, install (one-liner, zip, source, uninstall), first run, privacy, known issues, feedback; GIF slot left (docs only)
 - 2026-10-08 T8.8 step 3 — GTM.md, FOR-REVIEW.md and research/feature-gaps.md moved to the private dhyeys54/corral-notes; references fixed (docs only)
+- 2026-10-08 T8.8 step 4 — filter-repo stripped GTM.md, FOR-REVIEW.md and research/feature-gaps.md from all history (backup mirror ../corral-backup-2026-10-08.git; history secret scan clean); T8.8 done (308 unit, 17 int, 62 E2E, install)
