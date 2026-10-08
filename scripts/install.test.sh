@@ -4,7 +4,7 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 work=$(mktemp -d)
 server=
-trap '[ -n "$server" ] && { kill "$server"; wait "$server"; } 2>/dev/null; rm -rf "$work"' EXIT
+trap '[ -n "$server" ] && { kill "$server"; wait "$server" || true; } 2>/dev/null; rm -rf "$work"' EXIT
 
 fail() { echo "FAIL: $1"; exit 1; }
 [ "$(uname -s)-$(uname -m)" = "Darwin-arm64" ] || { echo "skipped: install.sh only runs on Apple Silicon macOS"; exit 0; }
