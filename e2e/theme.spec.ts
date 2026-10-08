@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { colors } from '../corral-core/src/common/design-tokens';
+import { colors } from '../honjin-core/src/common/design-tokens';
 
-test('Corral Dark is the active theme', async ({ page }) => {
+test('Honjin Dark is the active theme', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#theia-app-shell')).toBeVisible({ timeout: 60_000 });
     const bg = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--theia-editor-background').trim().toLowerCase());

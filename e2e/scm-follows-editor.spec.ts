@@ -4,7 +4,7 @@ import { join } from 'path';
 import { git, row, settingsFile, tempDir, writeSettings } from './helpers';
 
 function repo(branch: string): string {
-    const dir = tempDir('corral-scm-');
+    const dir = tempDir('honjin-scm-');
     git(dir, 'init', '-q', '-b', branch);
     writeFileSync(join(dir, 'notes.md'), branch);
     git(dir, 'add', '.');
@@ -18,9 +18,9 @@ test('the git status item follows the repository of the active editor', async ({
     const one = repo('zz-branch-one');
     const two = repo('zz-branch-two');
     try {
-        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [one, two] });
+        writeSettings({ ...JSON.parse(original), 'honjin.extraProjects': [one, two] });
         await page.goto('/');
-        await expect.poll(() => page.url(), { timeout: 30_000 }).toContain('corral.code-workspace');
+        await expect.poll(() => page.url(), { timeout: 30_000 }).toContain('honjin.code-workspace');
         const status = page.locator('#theia-statusBar');
         const open = async (dir: string) => {
             const name = dir.split('/').pop()!;

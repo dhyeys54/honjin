@@ -9,7 +9,7 @@ const workspaces = (label: string) => json('workspace', 'list').result.workspace
 
 async function plus(page: Page, name: string) {
     await row(page, name).hover();
-    await row(page, name).getByTestId('corral-new-tab').click();
+    await row(page, name).getByTestId('honjin-new-tab').click();
 }
 
 async function setCommand(page: Page, name: string, value: string) {
@@ -37,7 +37,7 @@ test('a per-project startup command overrides the global one; empty means a plai
         await plus(page, 'beta');
         await expect.poll(() => panes('beta').length, { timeout: 20_000 }).toBeGreaterThan(0);
         const beta = panes('beta').pop()!;
-        await expect.poll(() => herdr('pane', 'read', beta.pane_id), { timeout: 20_000 }).toContain('corral-e2e');
+        await expect.poll(() => herdr('pane', 'read', beta.pane_id), { timeout: 20_000 }).toContain('honjin-e2e');
 
         await setCommand(page, 'alpha', '');
         const beforePlain = panes('alpha').map(p => p.pane_id);
@@ -47,7 +47,7 @@ test('a per-project startup command overrides the global one; empty means a plai
         await page.waitForTimeout(2000);
         const text = herdr('pane', 'read', plain.pane_id);
         expect(text).not.toContain('alpha-override');
-        expect(text).not.toContain('corral-e2e');
+        expect(text).not.toContain('honjin-e2e');
 
         const oldBeta = workspaces('beta');
         expect(oldBeta).toHaveLength(1);

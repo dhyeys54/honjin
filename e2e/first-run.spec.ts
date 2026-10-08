@@ -6,17 +6,17 @@ import { join, resolve } from 'path';
 import { row } from './helpers';
 
 // Needs its own backend: the shared one is seeded with settings, first run needs an empty profile.
-const PORT = Number(process.env.CORRAL_E2E_PORT ?? 3100) + 10; // next to the shared server, so a parallel worktree on another port does not collide
+const PORT = Number(process.env.HONJIN_E2E_PORT ?? 3100) + 10; // next to the shared server, so a parallel worktree on another port does not collide
 const url = `http://127.0.0.1:${PORT}`;
 const root = resolve(__dirname, '..');
 const projectsDir = resolve(__dirname, 'fixtures/projects');
-const configDir = join(mkdtempSync(join(tmpdir(), 'corral-first-run-')), 'corral-config');
+const configDir = join(mkdtempSync(join(tmpdir(), 'honjin-first-run-')), 'honjin-config');
 let server: ChildProcess | undefined;
 
 async function startServer(): Promise<void> {
     server = spawn('npm', ['--prefix', 'browser-app', 'start', '--', '--hostname', '127.0.0.1', '--port', String(PORT)], {
         cwd: root,
-        env: { ...process.env, THEIA_CONFIG_DIR: configDir, CORRAL_HERDR_SESSION: process.env.CORRAL_E2E_SESSION! },
+        env: { ...process.env, THEIA_CONFIG_DIR: configDir, HONJIN_HERDR_SESSION: process.env.HONJIN_E2E_SESSION! },
         stdio: 'ignore',
         detached: true
     });
@@ -56,8 +56,8 @@ test('first run asks for folders, fills the tree, and does not ask again', async
     await page.getByRole('button', { name: 'Choose', exact: true }).click();
 
     await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
-    await expect.poll(() => readFileSync(join(configDir, 'settings.json'), 'utf8')).toContain('"corral.firstRunCompleted": true');
-    expect(JSON.parse(readFileSync(join(configDir, 'settings.json'), 'utf8'))['corral.scanRoots']).toEqual([projectsDir.startsWith(homedir() + '/') ? '~' + projectsDir.slice(homedir().length) : projectsDir]); // spec 05: stored with ~
+    await expect.poll(() => readFileSync(join(configDir, 'settings.json'), 'utf8')).toContain('"honjin.firstRunCompleted": true');
+    expect(JSON.parse(readFileSync(join(configDir, 'settings.json'), 'utf8'))['honjin.scanRoots']).toEqual([projectsDir.startsWith(homedir() + '/') ? '~' + projectsDir.slice(homedir().length) : projectsDir]); // spec 05: stored with ~
 
     await stopServer();
     await startServer();

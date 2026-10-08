@@ -1,5 +1,5 @@
 name: Install problem
-description: The install script, the zip, or Set Up Corral did not work.
+description: The install script, the zip, or Set Up Honjin did not work.
 labels: [install]
 body:
   - type: dropdown

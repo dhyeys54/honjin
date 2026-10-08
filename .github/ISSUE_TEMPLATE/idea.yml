@@ -1,5 +1,5 @@
 name: Idea
-description: Suggest something Corral could do.
+description: Suggest something Honjin could do.
 labels: [idea]
 body:
   - type: textarea

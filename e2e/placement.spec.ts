@@ -1,6 +1,6 @@
 import { expect, test, Page } from '@playwright/test';
 
-const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
+const projects = (page: Page) => page.locator('[data-testid="honjin-projects"]');
 const tab = (page: Page, name: string | RegExp) => page.locator('#theia-main-content-panel .lm-TabBar-tab', { hasText: name });
 
 test('a file opened by another opener while herdr is focused lands in the left half', async ({ page }) => {

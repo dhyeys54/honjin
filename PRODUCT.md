@@ -46,15 +46,16 @@ An IDE whose agent layer is **herdr + the Claude Code CLI**, not an agent built 
 - Layout: left (search, git, debug) · editor · herdr · Projects (right).
 - Projects come from scan roots (asked for on first run, several allowed) plus projects added by hand. They can be
   hidden or shown with an eye toggle.
-- The startup command for new herdr tabs is a global setting with per-project overrides, stored in Corral's
+- The startup command for new herdr tabs is a global setting with per-project overrides, stored in Honjin's
   settings, never in the repos.
 - Theia AI is included but disabled.
 - Extensions come from Open VSX only.
 
 ## Brand Commitments
 
-- The name is **Corral** (a pen for a herd, because it hosts herdr). The icon is `branding/icon.svg`: a terminal
-  prompt inside an enclosure with an open gate, in phosphor green on near-black.
+- The name is **Honjin** (本陣, a field commander's headquarters: one place to run many projects and agents).
+  The icon is `branding/icon.svg`: a camp ring with its gate open, a dim grid of posts inside, and a formation of
+  agents with speed trails, led by one lit agent at the gate. Phosphor green on near-black.
 - The owner's stated feel: dark, "a typical developer, more terminal feel".
 - Voice: terse, lowercase-friendly, technical. No marketing adjectives inside the app.
 
@@ -68,7 +69,7 @@ task T3.4.
 1. **The terminal is a first-class citizen.** herdr gets half the main area by default, and nothing steals its
    keystrokes.
 2. **One click to an agent.** Any folder → a running agent, with no dialogs in between.
-3. **Never touch what we didn't create.** Corral leaves the user's existing herdr workspaces and project repos
+3. **Never touch what we didn't create.** Honjin leaves the user's existing herdr workspaces and project repos
    alone.
 4. **Quiet chrome.** The UI recedes; code and terminal output carry the colour.
 

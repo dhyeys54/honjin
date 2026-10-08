@@ -32,7 +32,7 @@ test('the terminal runs a herdr client against the test session', async ({ page 
     await open(page);
     // xterm paints to a canvas, so there is no text to read; the client process is the observable signal.
     await expect.poll(clientRunning, { timeout: 30_000 }).toBe(true);
-    await expect(page.locator('.corral-herdr-overlay')).toHaveCount(0);
+    await expect(page.locator('.honjin-herdr-overlay')).toHaveCount(0);
 });
 
 test('detaching shows the exited overlay and Reattach attaches again', async ({ page }) => {
@@ -45,7 +45,7 @@ test('detaching shows the exited overlay and Reattach attaches again', async ({ 
     await page.keyboard.press('Control+b');
     await page.waitForTimeout(300);
     await page.keyboard.press('q');
-    const overlay = page.locator('.corral-herdr-overlay');
+    const overlay = page.locator('.honjin-herdr-overlay');
     await expect(overlay).toContainText('herdr exited', { timeout: 15_000 });
     await overlay.locator('button.theia-button').click();
     await expect(overlay).toBeHidden({ timeout: 15_000 });

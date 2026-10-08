@@ -1,0 +1,55 @@
+/* A tree in a view container part gets no height from the dock panel. */
+.honjin-changes {
+    height: 100%;
+}
+
+.honjin-changes-empty {
+    padding: 12px;
+    color: var(--theia-descriptionForeground);
+}
+
+.honjin-change-count {
+    margin-left: 8px;
+    color: var(--theia-descriptionForeground);
+}
+
+.honjin-change-letter {
+    display: inline-block;
+    width: 1.5em;
+    text-align: center;
+    font-weight: 600;
+}
+
+.honjin-change-modified { color: var(--theia-honjin-changes-modified); }
+.honjin-change-added { color: var(--theia-honjin-changes-added); }
+.honjin-change-deleted { color: var(--theia-honjin-changes-deleted); }
+.honjin-change-conflict { color: var(--theia-honjin-changes-conflict); }
+
+.honjin-change-deleted.honjin-change-deleted:not(.honjin-change-letter) {
+    text-decoration: line-through;
+    color: var(--theia-disabledForeground);
+}
+
+/* A file written in the last 30 s: agents are working on it (spec 09 C7, C13). */
+.honjin-live .theia-TreeNodeContent::after,
+.honjin-projects .theia-TreeNode.honjin-live .theia-TreeNodeContent::after {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin: 0 6px;
+    border-radius: 50%;
+    background: var(--theia-honjin-changes-live);
+    animation: honjin-live-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes honjin-live-pulse {
+    50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .honjin-live .theia-TreeNodeContent::after,
+    .honjin-projects .theia-TreeNode.honjin-live .theia-TreeNodeContent::after {
+        animation: none;
+    }
+}

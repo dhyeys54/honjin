@@ -21,7 +21,7 @@ test('an open editor reloads when an agent rewrites the file in place on disk', 
         // Hiding and showing the project removes and re-adds its workspace root (and its recursive watcher).
         const original = readFileSync(settingsFile(), 'utf8');
         const hidden = JSON.parse(original);
-        hidden['corral.hiddenProjects'] = [resolve(__dirname, 'fixtures/projects/beta')];
+        hidden['honjin.hiddenProjects'] = [resolve(__dirname, 'fixtures/projects/beta')];
         try {
             writeSettings(JSON.stringify(hidden));
             await expect(row(page, 'beta')).toHaveCount(0, { timeout: 20_000 });

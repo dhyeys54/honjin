@@ -7,7 +7,7 @@ The generator uses npm workspaces, lerna and jest, and bundles with esbuild (The
 
 ```bash
 cd "$(mktemp -d)" && npx -y -p yo -p generator-theia-extension -- \
-  yo theia-extension corral-core --extensionType empty --author "Corral" --license MIT --skip-install
+  yo theia-extension honjin-core --extensionType empty --author "Honjin" --license MIT --skip-install
 ```
 
 Copy the output into the repo root without overwriting `README.md` or `.gitignore`: append the generated
@@ -15,12 +15,12 @@ gitignore lines instead. Delete the generator's VS Code `launch.json` unless you
 
 ## Packages
 
-`corral-core` is the only extension. Its `package.json` declares both entry points:
+`honjin-core` is the only extension. Its `package.json` declares both entry points:
 
 ```json
 "theiaExtensions": [{
-  "frontend": "lib/browser/corral-frontend-module",
-  "backend": "lib/node/corral-backend-module"
+  "frontend": "lib/browser/honjin-frontend-module",
+  "backend": "lib/node/honjin-backend-module"
 }]
 ```
 
@@ -50,38 +50,38 @@ that.
 "theia": {
   "target": "electron",            // "browser" in browser-app
   "frontend": { "config": {
-    "applicationName": "Corral",
-    "defaultTheme": { "light": "corral-dark", "dark": "corral-dark" },
+    "applicationName": "Honjin",
+    "defaultTheme": { "light": "honjin-dark", "dark": "honjin-dark" },
     "defaultIconTheme": "theia-file-icons",
     "preferences": {
       "editor.enablePreview": true,
       "terminal.integrated.enablePersistentSessions": false
     }
   }},
-  "backend": { "config": { "configurationFolder": ".corral" } }
+  "backend": { "config": { "configurationFolder": ".honjin" } }
 }
 ```
 
 - Both apps also set `files.watcherExclude` to Theia's two `.git` defaults plus `node_modules`, `dist`, `build`,
   `out`, `.next`, `.nuxt`, `.turbo`, `.cache`, `coverage`, `.venv`, `__pycache__` and `target` (D33). The frontend
   config replaces the default object whole, so the `.git` entries must stay in the list.
-- Until task T3.1 registers the `corral-dark` theme, use `"dark"` for `defaultTheme`.
+- Until task T3.1 registers the `honjin-dark` theme, use `"dark"` for `defaultTheme`.
 - Check every preference key in this block against the installed packages (search `node_modules/@theia/**/lib/**/*preferences*.js`
   for the key). If a key was renamed, use the new name and record it in `DECISIONS.md`.
 - The browser-app favicon comes from `branding/generated/favicon.*`. Copy it via the browser-app `resources` /
   `theia.frontend.config` mechanism that exists in 1.76. Check how the Theia IDE's browser app does it.
 
 ## Theia AI stays off
-- Theia 1.76 has no working `enableAI` switch (`@theia/ai-core` always turns AI on), so Corral does not install the
+- Theia 1.76 has no working `enableAI` switch (`@theia/ai-core` always turns AI on), so Honjin does not install the
   AI packages at all (DECISIONS D9). No AI views may appear in the default layout.
   the default layout.
 - E2E test `e2e/ai-disabled.spec.ts`: a fresh start shows no chat/AI view in any panel.
 
 ## Other shell behaviour
 
-- The window title is `Corral — <focused project name>`. The focused project is the one owning the active editor,
+- The window title is `Honjin — <focused project name>`. The focused project is the one owning the active editor,
   or the last project whose **+** was clicked.
-- On startup Corral always opens its managed workspace `<configDir>/corral.code-workspace` (`~/.corral/` in normal use). If Theia restored a
-  different workspace, Corral switches to the managed one once, during startup (spec 03 §Roots sync).
+- On startup Honjin always opens its managed workspace `<configDir>/honjin.code-workspace` (`~/.honjin/` in normal use). If Theia restored a
+  different workspace, Honjin switches to the managed one once, during startup (spec 03 §Roots sync).
 - `@theia/getting-started` stays installed, but its welcome page must not open on startup (preference
   `workbench.startupEditor: "none"`).

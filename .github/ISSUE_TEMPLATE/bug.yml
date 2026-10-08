@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in Corral does not work as expected.
+description: Something in Honjin does not work as expected.
 labels: [bug]
 body:
   - type: textarea

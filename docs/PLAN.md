@@ -1,10 +1,10 @@
-# Corral — Development plan
+# Honjin — Development plan
 
 How to use this file: `/next-task` takes the **first** line that starts with `- [ ]`, does that task (TDD, per
 `AGENTS.md`), ticks it to `- [x]`, and appends a line to the Progress log at the bottom. A blocked task becomes
 `- [!]` with a note underneath; the loop stops there. **G** tasks are gates: a review, then a human checkpoint.
 
-Paths are relative to `corral-core/src/` unless they start with a top-level folder.
+Paths are relative to `honjin-core/src/` unless they start with a top-level folder.
 
 ---
 
@@ -1159,12 +1159,12 @@ command, Corral helps them install herdr and an agent, the first + starts an age
   checkpoint, stop**.
   - Draft release `v0.1.0-beta.1` with `scripts/release.sh`. It stays a draft.
   - Ask the user to test on a **fresh macOS user account** (System Settings → Users & Groups → Add User):
-    - The one-liner installs Corral. Use `CORRAL_VERSION` with the draft's asset URLs if the repo is still private.
-    - Corral opens with no Gatekeeper prompt.
+    - The one-liner installs Honjin. Use `HONJIN_VERSION` with the draft's asset URLs if the repo is still private.
+    - Honjin opens with no Gatekeeper prompt.
     - Setup shows herdr and agents missing. Install herdr and Claude Code from Setup; both succeed and turn found.
     - Folders are picked, and + starts Claude Code; with a second agent installed, + shows the picker.
     - Help → Report an Issue opens a prefilled issue page.
-  - After approval, each of these needs the user's explicit go-ahead: create the `dhyeys54/corral` GitHub repo, push,
+  - After approval, each of these needs the user's explicit go-ahead: create the `dhyeys54/honjin` GitHub repo, push,
     make it public, enable Discussions, and publish the release. Then:
     - record the demo GIF and screenshots with the user;
     - send `dhyey-portfolio-06` the page content;
@@ -1262,3 +1262,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.8 step 6 — README rewritten for testers: pitch, what you get, requirements, install (one-liner, zip, source, uninstall), first run, privacy, known issues, feedback; GIF slot left (docs only)
 - 2026-10-08 T8.8 step 3 — GTM.md, FOR-REVIEW.md and research/feature-gaps.md moved to the private dhyeys54/corral-notes; references fixed (docs only)
 - 2026-10-08 T8.8 step 4 — filter-repo stripped GTM.md, FOR-REVIEW.md and research/feature-gaps.md from all history (backup mirror ../corral-backup-2026-10-08.git; history secret scan clean); T8.8 done (308 unit, 17 int, 62 E2E, install)
+- 2026-10-08 Rename — Corral → Honjin across code, config, docs and icons (new icon), D57; history left as written

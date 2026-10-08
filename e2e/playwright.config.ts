@@ -5,27 +5,27 @@ import { join, resolve } from 'path';
 import { FAKE_CLAUDE } from './fake-agents';
 
 // Workers re-evaluate this file, so compute once and let them inherit through env.
-process.env.CORRAL_E2E_SESSION ??= 'corral-test-e2e-' + process.pid;
-if (!process.env.CORRAL_E2E_CONFIG_DIR) {
-    const dir = join(mkdtempSync(join(realpathSync(tmpdir()), 'corral-e2e-')), 'corral-config');
+process.env.HONJIN_E2E_SESSION ??= 'honjin-test-e2e-' + process.pid;
+if (!process.env.HONJIN_E2E_CONFIG_DIR) {
+    const dir = join(mkdtempSync(join(realpathSync(tmpdir()), 'honjin-e2e-')), 'honjin-config');
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'settings.json'), JSON.stringify({
-        'corral.scanRoots': [resolve(__dirname, 'fixtures/projects')],
-        'corral.firstRunCompleted': true,
-        'corral.agentCommands': { claude: 'echo corral-e2e', codex: 'echo corral-e2e-codex' }
+        'honjin.scanRoots': [resolve(__dirname, 'fixtures/projects')],
+        'honjin.firstRunCompleted': true,
+        'honjin.agentCommands': { claude: 'echo honjin-e2e', codex: 'echo honjin-e2e-codex' }
     }, undefined, 2));
-    process.env.CORRAL_E2E_CONFIG_DIR = dir;
+    process.env.HONJIN_E2E_CONFIG_DIR = dir;
 }
 
 // Spec 13 S2: the backend searches only this dir for agents. A fake claude makes every suite "ready"; setup.spec removes it.
-if (!process.env.CORRAL_TEST_PATH) {
-    const bin = mkdtempSync(join(realpathSync(tmpdir()), 'corral-e2e-bin-'));
+if (!process.env.HONJIN_TEST_PATH) {
+    const bin = mkdtempSync(join(realpathSync(tmpdir()), 'honjin-e2e-bin-'));
     writeFileSync(join(bin, 'claude'), FAKE_CLAUDE, { mode: 0o755 });
-    process.env.CORRAL_TEST_PATH = bin;
+    process.env.HONJIN_TEST_PATH = bin;
 }
 
-// A second checkout (git worktree) running E2E at the same time sets CORRAL_E2E_PORT.
-const port = process.env.CORRAL_E2E_PORT ?? '3100';
+// A second checkout (git worktree) running E2E at the same time sets HONJIN_E2E_PORT.
+const port = process.env.HONJIN_E2E_PORT ?? '3100';
 
 export default defineConfig({
     testDir: '.',
@@ -41,9 +41,9 @@ export default defineConfig({
         reuseExistingServer: false,
         timeout: 120_000,
         env: {
-            THEIA_CONFIG_DIR: process.env.CORRAL_E2E_CONFIG_DIR,
-            CORRAL_HERDR_SESSION: process.env.CORRAL_E2E_SESSION!,
-            CORRAL_TEST_PATH: process.env.CORRAL_TEST_PATH
+            THEIA_CONFIG_DIR: process.env.HONJIN_E2E_CONFIG_DIR,
+            HONJIN_HERDR_SESSION: process.env.HONJIN_E2E_SESSION!,
+            HONJIN_TEST_PATH: process.env.HONJIN_TEST_PATH
         }
     }
 });

@@ -1,8 +1,8 @@
-id = "corral.agent-hibernate"
-name = "Corral Agent Hibernate"
+id = "honjin.agent-hibernate"
+name = "Honjin Agent Hibernate"
 version = "0.4.0"
 min_herdr_version = "0.9.0"
-description = "Auto-sleep idle agent panes in Corral workspaces (Claude Code, OpenCode; Codex opt-in) and resume the same session on focus. Never sleeps an agent with a shell running."
+description = "Auto-sleep idle agent panes in Honjin workspaces (Claude Code, OpenCode; Codex opt-in) and resume the same session on focus. Never sleeps an agent with a shell running."
 platforms = ["macos", "linux"]
 
 # Spawn the idle watcher (no-op if one is already running this code).

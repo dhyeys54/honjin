@@ -1,8 +1,8 @@
-# AGENTS.md — Corral
+# AGENTS.md — Honjin
 
 Instructions for any coding agent working in this repo. Read this file fully before your first edit.
 
-## What Corral is
+## What Honjin is
 
 A macOS IDE built on **Eclipse Theia** (1.76.x) for working on many projects from one window, with coding agents
 (Claude Code) running in **herdr** instead of an agent built into the IDE.
@@ -37,13 +37,13 @@ defines without updating that spec **in the same commit** and adding a `DECISION
 ## Repo layout (after task T0.1)
 
 ```
-corral-core/            the one Theia extension: all Corral code
+honjin-core/            the one Theia extension: all Honjin code
   src/common/           pure logic + RPC protocol. No DOM, no Node APIs. Unit-tested.
   src/node/             backend: herdr CLI client, project scanner, stores. Integration-tested against real herdr.
   src/browser/          frontend: widgets, contributions, theme. Thin; logic lives in common/.
   test/                 jest config + shared test helpers
 browser-app/            Theia browser target: used for dev and Playwright E2E
-electron-app/           Theia electron target: the shipped Corral.app
+electron-app/           Theia electron target: the shipped Honjin.app
 e2e/                    Playwright tests (against browser-app)
 herdr-plugin/           standalone herdr plugin (fork of herdr-agent-hibernate, spec 11): plain Node, own tests
 branding/               icon.svg / favicon.svg masters; generated/ is produced by scripts/make-icons.sh
@@ -55,7 +55,7 @@ docs/                   specs, plan, decisions
 | Purpose | Command |
 |---|---|
 | Install | `npm install` (root; npm workspaces) |
-| Build the extension | `npm run build -w corral-core` |
+| Build the extension | `npm run build -w honjin-core` |
 | Unit tests | `npm test` |
 | Hibernate plugin tests | `npm run test:plugin` |
 | Integration tests (real herdr) | `npm run test:int` |
@@ -64,7 +64,7 @@ docs/                   specs, plan, decisions
 | Lint | `npm run lint` |
 | Run in the browser (dev) | `npm run build:browser && npm run start:browser`, then open http://127.0.0.1:3000 |
 | Run Electron (dev) | `npm run build:electron && npm run start:electron` |
-| Package Corral.app | `npm run package:mac` |
+| Package Honjin.app | `npm run package:mac` |
 | Regenerate icons | `./scripts/make-icons.sh` |
 
 Task T0.2 creates these scripts. Until they exist, do T0.1 and T0.2 first.
@@ -83,9 +83,9 @@ The full loop is in `.claude/skills/next-task/SKILL.md`. The test layers are in 
 
 ## Hard rules
 
-- **Never touch the user's live herdr session.** Tests and E2E runs use a named session (`corral-test-*`) started
+- **Never touch the user's live herdr session.** Tests and E2E runs use a named session (`honjin-test-*`) started
   headless by the test helpers. Never run `herdr server stop`, `herdr session stop` or `herdr session delete` on
-  `default`. Never close workspaces, tabs or panes that Corral did not create.
+  `default`. Never close workspaces, tabs or panes that Honjin did not create.
 - **Call herdr without a shell.** Use `execFile` with an argument array; never `exec` or a shell string. Folder
   paths can contain spaces, quotes and `$`. The one exception is the fixed login-shell lookup in
   `node/herdr-binary.ts` (spec 04), which takes no user input.
@@ -103,7 +103,7 @@ The full loop is in `.claude/skills/next-task/SKILL.md`. The test layers are in 
 
 - TypeScript strict (`strictNullChecks`, `noImplicitAny`), following the generator's tsconfig. 4-space indent,
   single quotes, as in Theia's own code.
-- Theia DI: `@injectable()` classes, bound in `corral-frontend-module.ts` / `corral-backend-module.ts`.
+- Theia DI: `@injectable()` classes, bound in `honjin-frontend-module.ts` / `honjin-backend-module.ts`.
 - Name files `kebab-case.ts`; tests sit next to their subject as `*.test.ts` (unit) or `*.int.test.ts` (integration).
 - Comments explain *why*, not *what*. No commented-out code.
 - CSS: only the `DESIGN.md` tokens, read as the `--theia-*` variables the theme maps them to (D27). No hard-coded colours in components.

@@ -1,8 +1,8 @@
-appId: dev.corral.ide
-productName: Corral
+appId: dev.honjin.ide
+productName: Honjin
 directories:
   output: dist
-# The Theia bundle lives in lib/ and src-gen/; plugins ship as a resource and corral-backend-module points
+# The Theia bundle lives in lib/ and src-gen/; plugins ship as a resource and honjin-backend-module points
 # THEIA_DEFAULT_PLUGINS at them.
 files:
   - package.json
@@ -22,6 +22,6 @@ mac:
   target:
     - target: zip
       arch: arm64
-  icon: ../branding/generated/corral.icns
+  icon: ../branding/generated/honjin.icns
   category: public.app-category.developer-tools
   identity: null

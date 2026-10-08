@@ -10,13 +10,13 @@ const toolbar = (page: Page, id: string) => page.locator(`[id="${id}"]`).first()
 test('add a folder outside the scan root, remove it, then see a deleted one as missing', async ({ page }) => {
     test.setTimeout(120_000);
     const original = readFileSync(settingsFile(), 'utf8');
-    const outside = join(tempDir('corral-add-'), 'gamma');
+    const outside = join(tempDir('honjin-add-'), 'gamma');
     mkdirSync(outside);
     try {
         await page.goto('/');
         await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
 
-        await toolbar(page, 'corral.projects.add').click();
+        await toolbar(page, 'honjin.projects.add').click();
         await page.locator('.theia-LocationInputToggle').click();
         const location = page.locator('.theia-LocationListPanel input');
         await location.fill(join(outside, '..'));
@@ -31,18 +31,18 @@ test('add a folder outside the scan root, remove it, then see a deleted one as m
         expect(existsSync(outside)).toBe(true);
 
         // Put it back through settings, delete it on disk, and refresh.
-        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [outside] });
+        writeSettings({ ...JSON.parse(original), 'honjin.extraProjects': [outside] });
         await expect(row(page, 'gamma')).toBeVisible({ timeout: 20_000 });
         rmSync(outside, { recursive: true });
-        await toolbar(page, 'corral.projects.refresh').click();
-        await expect(row(page, 'gamma')).toHaveClass(/corral-project-missing/, { timeout: 20_000 });
-        await expect(row(page, 'gamma').locator('[data-testid="corral-project-flag"]')).toHaveText('missing');
-        await expect(row(page, 'gamma').locator('[data-testid="corral-new-tab"]')).toBeDisabled();
+        await toolbar(page, 'honjin.projects.refresh').click();
+        await expect(row(page, 'gamma')).toHaveClass(/honjin-project-missing/, { timeout: 20_000 });
+        await expect(row(page, 'gamma').locator('[data-testid="honjin-project-flag"]')).toHaveText('missing');
+        await expect(row(page, 'gamma').locator('[data-testid="honjin-new-tab"]')).toBeDisabled();
 
         // Spec 03 rule 4: a missing project stays listed even when hidden, so it can be removed or unhidden.
-        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [outside], 'corral.hiddenProjects': [outside, alpha] });
+        writeSettings({ ...JSON.parse(original), 'honjin.extraProjects': [outside], 'honjin.hiddenProjects': [outside, alpha] });
         await expect(row(page, 'alpha')).toHaveCount(0, { timeout: 20_000 }); // the hidden list has been applied
-        await expect(row(page, 'gamma')).toHaveClass(/corral-project-missing/);
+        await expect(row(page, 'gamma')).toHaveClass(/honjin-project-missing/);
     } finally {
         writeSettings(original);
     }

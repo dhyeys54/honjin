@@ -1,0 +1,143 @@
+import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
+// The shared React typings use `export =`, which this tsconfig (no esModuleInterop) only allows via require-style import.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import React = require('@theia/core/shared/react');
+import { CommandService } from '@theia/core/lib/common';
+import { ContextMenuRenderer, NodeProps, TreeNode, TreeProps } from '@theia/core/lib/browser';
+import { DirNode, FileStatNode, FileTreeWidget } from '@theia/filesystem/lib/browser';
+import { ChangesService } from '../changes/changes-service';
+import { HonjinPreferences } from '../honjin-preferences';
+import { ProjectListService } from './project-list-service';
+import { ADD_PROJECT_COMMAND_ID, CHOOSE_SCAN_ROOTS_COMMAND_ID, NEW_TAB_COMMAND_ID } from '../../common/command-ids';
+import { ProjectsModel } from './projects-model';
+import { PROJECTS_ROOT_ID } from './projects-tree';
+
+export const PROJECTS_VIEW_ID = 'honjin-projects';
+export const PROJECTS_CONTEXT_MENU = ['honjin-projects-context-menu'];
+
+@injectable()
+export class ProjectsWidget extends FileTreeWidget {
+
+    @inject(CommandService) protected readonly commandService: CommandService;
+    @inject(ProjectListService) protected readonly projectList: ProjectListService;
+    @inject(HonjinPreferences) protected readonly prefs: HonjinPreferences;
+    @inject(ChangesService) protected readonly changes: ChangesService;
+
+    constructor(
+        @inject(TreeProps) props: TreeProps,
+        @inject(ProjectsModel) readonly model: ProjectsModel,
+        @inject(ContextMenuRenderer) contextMenuRenderer: ContextMenuRenderer
+    ) {
+        super(props, model, contextMenuRenderer);
+        this.id = PROJECTS_VIEW_ID;
+        this.title.label = 'Projects';
+        this.title.caption = 'Projects';
+        this.title.closable = true;
+        this.title.iconClass = 'codicon codicon-root-folder';
+        this.addClass('honjin-projects');
+        this.node.dataset.testid = 'honjin-projects';
+    }
+
+    @postConstruct()
+    protected override init(): void {
+        super.init();
+        this.model.reload();
+        this.toDispose.push(this.projectList.onDidChange(() => this.update()));
+        this.toDispose.push(this.changes.onDidChange(() => this.update()));
+    }
+
+    // Spec 03: a single click previews a file, as in Theia's Explorer.
+    protected override tapNode(node?: TreeNode): void {
+        if (node && this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+            this.model.previewNode(node);
+        }
+        super.tapNode(node);
+    }
+
+    // Only expansion and show-hidden are kept: the tree itself is rebuilt from the project list.
+    override storeState(): object {
+        return { expanded: this.model.expandedIds, showHidden: this.model.showHidden };
+    }
+
+    override restoreState(state: { expanded?: string[], showHidden?: boolean }): void {
+        this.model.restoreView(state.expanded ?? [], !!state.showHidden);
+    }
+
+    // Spec 03 §Empty states. Hidden projects count as projects, so hiding the last one is not "empty".
+    protected override render(): React.ReactNode {
+        if (!this.projectList.loaded || this.projectList.entries(true).length > 0) {
+            return super.render();
+        }
+        const roots = this.prefs['honjin.scanRoots'];
+        const button = (label: string, command: string) => React.createElement('button',
+            { className: 'theia-button', onClick: () => this.commandService.executeCommand(command) }, label);
+        const noRoots = roots.length === 0 && this.prefs['honjin.extraProjects'].length === 0;
+        return React.createElement('div', { className: 'honjin-projects-empty', 'data-testid': 'honjin-projects-empty' },
+            React.createElement('p', undefined, noRoots
+                ? 'Choose the folders that hold your projects'
+                : `No projects found in ${roots.join(', ')}`),
+            button(noRoots ? 'Choose folders…' : 'Change folders…', CHOOSE_SCAN_ROOTS_COMMAND_ID),
+            noRoots ? undefined : button('Add project…', ADD_PROJECT_COMMAND_ID));
+    }
+
+    protected override createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
+        const classes = super.createNodeClassNames(node, props);
+        if (DirNode.is(node) && this.model.hiddenPaths.has(node.uri.path.toString())) {
+            classes.push('honjin-project-hidden');
+        }
+        if (DirNode.is(node) && this.model.missingPaths.has(node.uri.path.toString())) {
+            classes.push('honjin-project-missing');
+        }
+        if (this.changes.isLive(this.pathOf(node))) {
+            classes.push('honjin-live');
+        }
+        return classes;
+    }
+
+    protected pathOf(node: TreeNode): string {
+        return FileStatNode.is(node) ? node.uri.path.toString() : '';
+    }
+
+    // The + button of every directory row; CSS shows it on hover and keyboard focus.
+    protected override renderTailDecorations(node: TreeNode, props: NodeProps): React.ReactNode {
+        const decorations = super.renderTailDecorations(node, props);
+        const marks = this.renderChangeMark(node);
+        if (!DirNode.is(node)) {
+            return React.createElement(React.Fragment, undefined, decorations, marks);
+        }
+        const label = this.labelProvider.getName(node.uri);
+        const path = node.uri.path.toString();
+        const flag = this.model.missingPaths.has(path)
+            ? React.createElement('span', { className: 'honjin-project-flag', 'data-testid': 'honjin-project-flag' }, 'missing')
+            : this.model.hiddenPaths.has(path)
+                ? React.createElement('span', { className: 'honjin-project-flag codicon codicon-eye-closed', title: 'Hidden', 'data-testid': 'honjin-project-flag' })
+                : undefined;
+        // The tail shows where the project lives. CSS draws it from data-path (so it is not row text) and hides it when the view is narrow (DESIGN.md Projects tree row).
+        const tail = node.parent?.id === PROJECTS_ROOT_ID
+            ? React.createElement('span', { className: 'honjin-project-path', 'data-path': node.uri.parent.path.toString(), 'aria-hidden': true })
+            : undefined;
+        return React.createElement(React.Fragment, undefined, decorations, tail, flag, marks,
+            React.createElement('button', {
+                className: 'honjin-new-tab codicon codicon-add',
+                title: 'New herdr tab here (⌥⌘T)',
+                'aria-label': `New herdr tab in ${label}`,
+                disabled: this.model.missingPaths.has(node.uri.path.toString()),
+                'data-testid': 'honjin-new-tab',
+                onClick: (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    this.commandService.executeCommand(NEW_TAB_COMMAND_ID, node.uri);
+                }
+            }));
+    }
+
+    // Spec 09 C12: the letter of a changed file, or the number of changed files under a project.
+    protected renderChangeMark(node: TreeNode): React.ReactNode {
+        const path = this.pathOf(node);
+        const file = this.changes.fileFor(path);
+        if (file) {
+            return React.createElement('span', { className: `honjin-change-letter honjin-change-${file.kind}` }, file.letter);
+        }
+        const group = this.changes.groupFor(path);
+        return group ? React.createElement('span', { className: 'honjin-change-count' }, group.files.length) : undefined;
+    }
+}

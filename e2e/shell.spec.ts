@@ -5,9 +5,9 @@ test.beforeEach(async ({ page }) => {
     await expect(page.locator('#theia-app-shell')).toBeVisible({ timeout: 60_000 });
 });
 
-// In the managed workspace Theia titles the window after the workspace file ("corral"); T2.5 owns the real title.
-test('the document title contains Corral', async ({ page }) => {
-    await expect(page).toHaveTitle(/corral/i);
+// In the managed workspace Theia titles the window after the workspace file ("honjin"); T2.5 owns the real title.
+test('the document title contains Honjin', async ({ page }) => {
+    await expect(page).toHaveTitle(/honjin/i);
 });
 
 test('the left activity bar has Search and Debug, and no Source Control (D31)', async ({ page }) => {

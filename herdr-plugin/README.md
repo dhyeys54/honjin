@@ -1,4 +1,4 @@
-# Corral Agent Hibernate
+# Honjin Agent Hibernate
 
 > **Origin:** forked from [dalogax/herdr-agent-hibernate](https://github.com/dalogax/herdr-agent-hibernate) at commit `50c29cb` (MIT, see `LICENSE`).
 
@@ -16,19 +16,19 @@ This exists because Herdr has no "free the process, keep the pane"
 primitive — `pane release-agent` only clears an agent's registration, it
 does not stop it. See herdrdev/herdr discussion #631.
 
-## Corral changes
+## Honjin changes
 
-This fork is scoped to [Corral](../README.md), the IDE that creates herdr workspaces per project. Compared with
+This fork is scoped to [Honjin](../README.md), the IDE that creates herdr workspaces per project. Compared with
 upstream (`50c29cb`) it:
 
-- **Sleeps only Corral's panes.** A pane is eligible only if its workspace is in Corral's map,
-  `${CORRAL_CONFIG_DIR:-~/.corral}/herdr-workspaces.json`, for this herdr session (`""` in the map means `default`).
+- **Sleeps only Honjin's panes.** A pane is eligible only if its workspace is in Honjin's map,
+  `${HONJIN_CONFIG_DIR:-~/.honjin}/herdr-workspaces.json`, for this herdr session (`""` in the map means `default`).
   A missing, unreadable or empty map means nothing is slept. Applies to the watcher and to `sleep-pane`.
 - **Never sleeps an agent that has a shell running under it** (a background task or dev server the agent started).
   Other children, such as MCP servers, don't count. When a shell ends, the pane waits a full idle window first.
   Set `HIBERNATE_PS_PATH` to use a different `ps` (used by the tests).
 - **Leaves Codex alone by default** (`HIBERNATE_AGENTS=opencode,claude`).
-- Uses the plugin id `corral.agent-hibernate`, so it can be installed beside the upstream plugin.
+- Uses the plugin id `honjin.agent-hibernate`, so it can be installed beside the upstream plugin.
 
 Spec: `docs/specs/11-agent-hibernate.md`. Decision: D39. Run the tests with `npm run test:plugin` from the repo root.
 
@@ -102,7 +102,7 @@ For local development, link a checkout instead:
 
 ```sh
 herdr plugin link /path/to/herdr-agent-hibernate
-herdr plugin action list --plugin corral.agent-hibernate
+herdr plugin action list --plugin honjin.agent-hibernate
 ```
 
 **Cautious rollout:** `plugin install` and `plugin link` register the plugin
@@ -111,7 +111,7 @@ herdr plugin action list --plugin corral.agent-hibernate
 window elapses. To turn it off entirely:
 
 ```sh
-herdr plugin disable corral.agent-hibernate
+herdr plugin disable honjin.agent-hibernate
 ```
 
 ## Actions
@@ -124,7 +124,7 @@ herdr plugin disable corral.agent-hibernate
 | `list` | JSON dump of the sleeper registry |
 | `ensure-watcher` | Start the watcher if the server predates plugin enablement; replaces a watcher running outdated plugin code |
 
-Invoke with `herdr plugin action invoke <action> --plugin corral.agent-hibernate`.
+Invoke with `herdr plugin action invoke <action> --plugin honjin.agent-hibernate`.
 CLI equivalents (for testing):
 
 ```sh
@@ -149,7 +149,7 @@ environment (set before the server starts, then run `ensure-watcher`):
 ## State and logs
 
 `$HERDR_PLUGIN_STATE_DIR` (usually
-`~/.local/state/herdr/plugins/corral.agent-hibernate/`) holds
+`~/.local/state/herdr/plugins/honjin.agent-hibernate/`) holds
 `registry.json`, `watcher.pid` and `watch.log`. The log records state
 changes, sleeps and resumes, and rotates at 1 MB. Herdr's plugin state dir
 is shared by all Herdr sessions, but pane ids are per session, so named

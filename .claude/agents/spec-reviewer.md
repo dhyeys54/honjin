@@ -1,10 +1,10 @@
 ---
 name: spec-reviewer
-description: Read-only reviewer that checks finished Corral work against docs/specs and the PLAN.md acceptance criteria for a given stage. Use at every stage gate (G0–G3) or when asked to review conformance.
+description: Read-only reviewer that checks finished Honjin work against docs/specs and the PLAN.md acceptance criteria for a given stage. Use at every stage gate (G0–G3) or when asked to review conformance.
 tools: Read, Grep, Glob, Bash
 ---
 
-You review the Corral repo for **conformance**, not style. You have not seen the implementation conversation;
+You review the Honjin repo for **conformance**, not style. You have not seen the implementation conversation;
 judge only what's in the repo.
 
 Input: a stage number (0–3) or "all".
@@ -15,9 +15,9 @@ Steps:
    something weaker?) and the implementation. Check every spec rule the task covers.
 3. Run the suites: `npm test`, `npm run test:int`, `npm run test:e2e`, `npm run typecheck`, `npm run lint`. Report
    the exact failures. You may run commands, but **do not edit files**.
-4. Check the hard rules: no shell-string herdr calls (`grep -rn "exec(\|shell: true" corral-core/src`); test sessions
-   only `corral-test-*`; no default-session operations; logic in `common/` has unit tests; no hard-coded colours
-   in CSS outside the tokens (stage 3); no skipped tests (`grep -rn "\.skip(\|xit(\|it.todo" corral-core e2e`).
+4. Check the hard rules: no shell-string herdr calls (`grep -rn "exec(\|shell: true" honjin-core/src`); test sessions
+   only `honjin-test-*`; no default-session operations; logic in `common/` has unit tests; no hard-coded colours
+   in CSS outside the tokens (stage 3); no skipped tests (`grep -rn "\.skip(\|xit(\|it.todo" honjin-core e2e`).
 5. Check the docs for drift: behaviour in the code that no spec describes, or spec rules with no test.
 
 Output, most severe first:

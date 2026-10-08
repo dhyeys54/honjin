@@ -34,7 +34,7 @@
  * is a detached child spawned by the `startup` hook, kept to one instance
  * via watcher.pid.
  *
- * Corral changes (docs/specs/11): only panes in Corral's workspaces are slept,
+ * Honjin changes (docs/specs/11): only panes in Honjin's workspaces are slept,
  * never while a shell runs under the agent, and Codex is opt-in.
  *
  * Env injected by Herdr:
@@ -51,7 +51,7 @@ const HERDR = process.env.HERDR_BIN_PATH || "herdr";
 // (e.g. ~/.local/state/herdr/plugins/<id>) when running hooks/actions, but
 // shell-launched instances (manual runs) get no env injection. Resolve the
 // same layout from HOME so every entrypoint converges on one directory.
-const PLUGIN_ID = "corral.agent-hibernate";
+const PLUGIN_ID = "honjin.agent-hibernate";
 const FALLBACK_STATE_DIR = path.join(
   process.env.HOME || ".",
   ".local", "state", "herdr", "plugins", PLUGIN_ID,
@@ -69,10 +69,10 @@ const LOOP_PID = path.join(STATE_DIR, "watcher.pid");
 const LOG = process.env.HIBERNATE_LOG || path.join(STATE_DIR, "watch.log");
 const LOG_MAX_BYTES = 1_000_000;
 
-// --- Corral additions: scope + shell guard inputs (see docs/specs/11) -----------
-// Corral (the IDE) records which herdr workspace it made for each project in
+// --- Honjin additions: scope + shell guard inputs (see docs/specs/11) -----------
+// Honjin (the IDE) records which herdr workspace it made for each project in
 // this file; only those workspaces are ever slept.
-const CORRAL_MAP = path.join(process.env.CORRAL_CONFIG_DIR || path.join(process.env.HOME || ".", ".corral"), "herdr-workspaces.json");
+const HONJIN_MAP = path.join(process.env.HONJIN_CONFIG_DIR || path.join(process.env.HOME || ".", ".honjin"), "herdr-workspaces.json");
 const PS = process.env.HIBERNATE_PS_PATH || "ps";
 const SHELLS = new Set(["sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "nu"]);
 
@@ -218,19 +218,19 @@ function normalizeAgent(a) {
   };
 }
 
-// --- corral scope + shell guard ----------------------------------------------
+// --- honjin scope + shell guard ----------------------------------------------
 /** Thrown when a pane is fine to sleep in principle but busy right now. The
  *  watcher restarts its idle clock instead of retrying every poll. */
 class BusyError extends Error {}
 
-/** Workspace ids Corral created in this herdr session. Throws when the map is
+/** Workspace ids Honjin created in this herdr session. Throws when the map is
  *  missing or unreadable, so callers fail closed: no map, no sleeping. */
-function corralWorkspaces() {
-  const map = JSON.parse(fs.readFileSync(CORRAL_MAP, "utf8"));
+function honjinWorkspaces() {
+  const map = JSON.parse(fs.readFileSync(HONJIN_MAP, "utf8"));
   if (!map || typeof map !== "object" || Array.isArray(map)) throw new Error("not an object");
   const ids = new Set();
   for (const e of Object.values(map)) {
-    // Corral writes "" for the default session.
+    // Honjin writes "" for the default session.
     if (e && typeof e.workspaceId === "string" && (e.session || "default") === SESSION) ids.add(e.workspaceId);
   }
   return ids;
@@ -243,20 +243,20 @@ function paneWorkspaces() {
   return new Map(panes.map((p) => [p.pane_id, p.workspace_id]));
 }
 
-/** A predicate over pane ids: true for panes in a Corral workspace of this
+/** A predicate over pane ids: true for panes in a Honjin workspace of this
  *  session. Throws when the map or pane list can't be read (callers fail closed). */
-function corralPaneFilter() {
-  const allowed = corralWorkspaces();
+function honjinPaneFilter() {
+  const allowed = honjinWorkspaces();
   const ws = paneWorkspaces();
   return (paneId) => allowed.has(ws.get(paneId));
 }
 
-function assertCorralPane(paneId) {
+function assertHonjinPane(paneId) {
   let inScope;
-  try { inScope = corralPaneFilter(); } catch (e) {
-    throw new Error(`${paneId}: cannot read the Corral workspace map ${CORRAL_MAP} (${e.message}) — not sleeping`);
+  try { inScope = honjinPaneFilter(); } catch (e) {
+    throw new Error(`${paneId}: cannot read the Honjin workspace map ${HONJIN_MAP} (${e.message}) — not sleeping`);
   }
-  if (!inScope(paneId)) throw new Error(`${paneId} is not in a Corral workspace — refusing to sleep it`);
+  if (!inScope(paneId)) throw new Error(`${paneId} is not in a Honjin workspace — refusing to sleep it`);
 }
 
 /** Refuse while the agent has a shell running under it (a background task or
@@ -303,7 +303,7 @@ function assertSleepable(paneId, { allowFocused = false } = {}) {
   if (!norm.session) {
     throw new Error(`${paneId} has no native session reference yet — send it a message first, and make sure the integration is installed (herdr integration install ${norm.kind})`);
   }
-  assertCorralPane(paneId);
+  assertHonjinPane(paneId);
   assertNoShell(paneId, norm.kind);
   return norm;
 }
@@ -551,9 +551,9 @@ function watchLoop() {
 
   // Change-only log for the scope check, like lastState below.
   let lastScopeError = "";
-  const inCorralScope = (agents) => {
+  const inHonjinScope = (agents) => {
     try {
-      const inScope = corralPaneFilter();
+      const inScope = honjinPaneFilter();
       lastScopeError = "";
       return agents.filter((a) => inScope(a.pane_id));
     } catch (e) {
@@ -573,7 +573,7 @@ function watchLoop() {
     try {
       panes = listAgents();
       failures = 0;
-      panes = inCorralScope(panes);
+      panes = inHonjinScope(panes);
     } catch (e) {
       // The session's server was stopped; the next server start runs the
       // startup hook and spawns a fresh watcher.

@@ -10,8 +10,8 @@ const FAKE = path.join(__dirname, "fake-herdr.js");
 const FAKE_PS = path.join(__dirname, "fake-ps.js");
 fs.chmodSync(FAKE, 0o755);
 fs.chmodSync(FAKE_PS, 0o755);
-// What Corral writes: one workspace per project; "" = the default session.
-const CORRAL_MAP = { "/proj": { workspaceId: "w1", session: "" } };
+// What Honjin writes: one workspace per project; "" = the default session.
+const HONJIN_MAP = { "/proj": { workspaceId: "w1", session: "" } };
 
 const children = [];
 const tmpDirs = [];
@@ -40,14 +40,14 @@ function setup(state, extraEnv = {}) {
     HERDR_PLUGIN_STATE_DIR: path.join(dir, "state"),
     HIBERNATE_EXIT_TIMEOUT_SECONDS: "1",
     HIBERNATE_PS_PATH: FAKE_PS,
-    CORRAL_CONFIG_DIR: path.join(dir, "corral"),
+    HONJIN_CONFIG_DIR: path.join(dir, "honjin"),
     ...extraEnv,
   };
   const writeMap = (map) => {
-    fs.mkdirSync(env.CORRAL_CONFIG_DIR, { recursive: true });
-    fs.writeFileSync(path.join(env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"), typeof map === "string" ? map : JSON.stringify(map));
+    fs.mkdirSync(env.HONJIN_CONFIG_DIR, { recursive: true });
+    fs.writeFileSync(path.join(env.HONJIN_CONFIG_DIR, "herdr-workspaces.json"), typeof map === "string" ? map : JSON.stringify(map));
   };
-  writeMap(CORRAL_MAP);
+  writeMap(HONJIN_MAP);
   // Same lock dir as fake-herdr.js, so a patch can't be clobbered by a running call.
   const setState = (patch) => {
     const lock = stateFile + ".lock";
@@ -355,8 +355,8 @@ test("invalid HIBERNATE_IDLE_MINUTES falls back to the default", async () => {
   }
 });
 
-// --- Corral scope -------------------------------------------------------------
-test("a pane outside a Corral workspace is never slept, manually or by the watcher", async () => {
+// --- Honjin scope -------------------------------------------------------------
+test("a pane outside a Honjin workspace is never slept, manually or by the watcher", async () => {
   const proc = fakeAgentProcess();
   await new Promise((r) => setTimeout(r, 200));
   const t = setup(
@@ -365,7 +365,7 @@ test("a pane outside a Corral workspace is never slept, manually or by the watch
   );
   const r = t.run("sleep-pane", "w2:p1");
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /not in a Corral workspace/);
+  assert.match(r.stderr, /not in a Honjin workspace/);
   t.run("startup");
   try {
     await new Promise((res) => setTimeout(res, 1000));
@@ -376,12 +376,12 @@ test("a pane outside a Corral workspace is never slept, manually or by the watch
   }
 });
 
-test("a missing, corrupt or wrong-session Corral map means nothing is slept", async () => {
+test("a missing, corrupt or wrong-session Honjin map means nothing is slept", async () => {
   const proc = fakeAgentProcess();
   await new Promise((r) => setTimeout(r, 200));
   const t = setup({ agents: [agent({ pid: proc.pid })] });
   const cases = [
-    ["missing", () => fs.rmSync(path.join(t.env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"))],
+    ["missing", () => fs.rmSync(path.join(t.env.HONJIN_CONFIG_DIR, "herdr-workspaces.json"))],
     ["corrupt", () => t.writeMap("{ not json")],
     ["array", () => t.writeMap("[]")],
     ["empty", () => t.writeMap({})],
@@ -496,9 +496,9 @@ test("a shell that came and went inside the idle window still restarts the clock
 });
 
 // --- watcher fails closed ------------------------------------------------------
-test("the watcher sleeps nothing when the Corral map is missing, corrupt or for another session", async () => {
+test("the watcher sleeps nothing when the Honjin map is missing, corrupt or for another session", async () => {
   const cases = [
-    ["missing", (t) => fs.rmSync(path.join(t.env.CORRAL_CONFIG_DIR, "herdr-workspaces.json"))],
+    ["missing", (t) => fs.rmSync(path.join(t.env.HONJIN_CONFIG_DIR, "herdr-workspaces.json"))],
     ["corrupt", (t) => t.writeMap("{ not json")],
     ["other session", (t) => t.writeMap({ "/proj": { workspaceId: "w1", session: "work" } })],
   ];

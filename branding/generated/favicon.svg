@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <!-- Small-size variant of icon.svg: no gradients, heavier strokes. -->
+  <!-- Small-size variant of icon.svg: no grid, trails or gradients; heavier ring, fewer dots. -->
   <rect width="64" height="64" rx="14" fill="#0e1211"/>
-  <path d="M 10 27 V 16 A 5 5 0 0 1 15 11 H 49 A 5 5 0 0 1 54 16 V 48 A 5 5 0 0 1 49 53 H 15 A 5 5 0 0 1 10 48 V 37"
-        fill="none" stroke="#8fe388" stroke-opacity="0.5" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 20 24 L 29 32 L 20 40" fill="none" stroke="#8fe388" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="33" y="37.5" width="12" height="5" rx="2.5" fill="#8fe388"/>
+  <path d="M 52.33 25.00 A 21.5 21.5 0 1 1 39.00 11.67" fill="none" stroke="#8fe388" stroke-opacity="0.55" stroke-width="3.5" stroke-linecap="round"/>
+  <g transform="translate(32 32) rotate(-45)" fill="#8fe388">
+    <circle cx="4" cy="-8" r="3" fill-opacity="0.55"/><circle cx="4" cy="8" r="3" fill-opacity="0.55"/>
+    <circle cx="9" cy="-4.5" r="3.6" fill-opacity="0.85"/><circle cx="9" cy="4.5" r="3.6" fill-opacity="0.85"/>
+    <circle cx="14" cy="0" r="5" fill="#c4f7bd"/>
+  </g>
 </svg>

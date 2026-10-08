@@ -8,7 +8,7 @@ const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNod
 test('Open Changes diffs a changed file; Show Changes opens that project\'s Source Control on the right', async ({ page }) => {
     test.setTimeout(120_000);
     const original = readFileSync(settingsFile(), 'utf8');
-    const repo = join(tempDir('corral-git-'), 'delta');
+    const repo = join(tempDir('honjin-git-'), 'delta');
     mkdirSync(repo);
     git(repo, 'init', '-q');
     writeFileSync(join(repo, 'a.txt'), 'one\n');
@@ -17,7 +17,7 @@ test('Open Changes diffs a changed file; Show Changes opens that project\'s Sour
     git(repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'init');
     writeFileSync(join(repo, 'a.txt'), 'two\n');
     try {
-        writeSettings({ ...JSON.parse(original), 'corral.extraProjects': [repo] });
+        writeSettings({ ...JSON.parse(original), 'honjin.extraProjects': [repo] });
         await page.goto('/');
         await expect(row(page, 'delta')).toBeVisible({ timeout: 30_000 });
         await row(page, 'delta').click();

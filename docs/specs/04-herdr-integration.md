@@ -11,7 +11,7 @@ prints herdr's own agent guide.
 - `herdr --session S server` runs a **headless** server in the foreground. `herdr --session S server stop` stops it,
   and `herdr session delete S` removes its directory. Integration tests use this.
 - `herdr` (no args) launches or attaches the TUI and starts the server if it isn't running. This is what the
-  Corral terminal widget runs.
+  Honjin terminal widget runs.
 - Control commands print JSON on stdout and exit 0. Server errors print JSON on **stderr** and exit 1; CLI syntax
   errors exit 2. For example, when the server isn't running:
   `{"id":"cli:workspace:list","error":{"code":"server_not_running","message":"…"}}`.
@@ -22,7 +22,7 @@ prints herdr's own agent guide.
   resolved cwd).
 - `herdr workspace get W` returns `.result.workspace`. An unknown id returns an error JSON with exit 1.
 - `herdr workspace list` returns `.result.workspaces[]` with `workspace_id`, `label`, `focused` and
-  `agent_status`. It has **no cwd**, which is why Corral persists the mapping.
+  `agent_status`. It has **no cwd**, which is why Honjin persists the mapping.
 - `herdr workspace focus W` focuses a workspace.
 - `herdr tab create --workspace W --cwd F --label L --focus` returns `.result.tab.tab_id` and
   `.result.root_pane.pane_id`.
@@ -62,18 +62,18 @@ class HerdrCli {
 ## Resolving the binary: `node/herdr-binary.ts`
 
 An app launched from Finder has a minimal `PATH`. Resolve the binary in this order:
-1. The preference `corral.herdr.path`, if it is an absolute path to an existing executable.
-2. The `PATH` lookup of `corral.herdr.path` (default `herdr`).
+1. The preference `honjin.herdr.path`, if it is an absolute path to an existing executable.
+2. The `PATH` lookup of `honjin.herdr.path` (default `herdr`).
 3. The candidates `~/.local/bin/herdr`, `/opt/homebrew/bin/herdr`, `/usr/local/bin/herdr`.
 4. `execFileFn($SHELL, ['-lc', 'command -v herdr'])` (login shell), with a 3s timeout. The script is a fixed
    string with no user input; this is the one allowed shell use (AGENTS.md §Hard rules).
 
-Cache the result per value of `corral.herdr.path`. If nothing is found, return `undefined`; the terminal widget
+Cache the result per value of `honjin.herdr.path`. If nothing is found, return `undefined`; the terminal widget
 then shows its "not found" overlay.
 
 ## Effective session
 
-`effectiveSession = process.env.CORRAL_HERDR_SESSION || preference corral.herdr.session || ''` (empty means
+`effectiveSession = process.env.HONJIN_HERDR_SESSION || preference honjin.herdr.session || ''` (empty means
 herdr's default session). The env variable exists so E2E and dev runs never touch the user's live session.
 
 ## Workspace mapping
@@ -90,10 +90,10 @@ its path or shape must update that plugin and its tests.
   `--cwd <folderPath> --label <project name>` (the clicked folder, so the first tab opens where the user clicked)
   and store the new id under the project path.
 
-Corral **never adopts** a herdr workspace it didn't create, even when the labels match. This avoids hijacking the
+Honjin **never adopts** a herdr workspace it didn't create, even when the labels match. This avoids hijacking the
 user's existing workspaces.
 
-## The open-tab flow: `CorralHerdrService.openTab(req)`
+## The open-tab flow: `HonjinHerdrService.openTab(req)`
 
 ```ts
 interface OpenTabRequest { projectPath: string; folderPath: string; command: string /* may be '' */ }
@@ -110,7 +110,7 @@ interface OpenTabResult { workspaceId: string; tabId: string; paneId: string; cr
 Calls are **serialised per project path** (a promise chain keyed by path), so a double click never creates two
 workspaces. Unit-test this with a fake cli.
 
-**Frontend side** (`corral.herdr.newTab` command handler):
+**Frontend side** (`honjin.herdr.newTab` command handler):
 1. Resolve the owning project with `owningProject()` from `common/startup-command.ts` (spec 05, path-boundary rule).
 2. Compute the command (spec 05).
 3. Call `openTab`, then reveal and activate the herdr terminal widget.

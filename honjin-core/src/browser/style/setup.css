@@ -1,0 +1,61 @@
+.honjin-setup {
+    overflow-y: auto;
+}
+
+.honjin-setup-body {
+    max-width: 560px;
+    padding: 24px;
+}
+
+.honjin-setup-intro {
+    color: var(--theia-descriptionForeground);
+}
+
+.honjin-setup-state {
+    margin: 16px 0 8px;
+    font-weight: 600;
+}
+
+.honjin-setup-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    border-bottom: 1px solid var(--theia-panel-border);
+}
+
+.honjin-setup-name {
+    min-width: 120px;
+}
+
+.honjin-setup-detail {
+    flex: 1;
+    color: var(--theia-descriptionForeground);
+}
+
+.honjin-setup-found {
+    color: var(--theia-honjin-agents-done);
+}
+
+.honjin-setup-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.honjin-setup-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--theia-textLink-foreground);
+    cursor: pointer;
+}
+
+.honjin-setup-link:hover {
+    text-decoration: underline;
+}
+
+.honjin-setup-actions .theia-button {
+    margin-left: 0;
+}

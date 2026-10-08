@@ -1,9 +1,9 @@
 ---
 name: theia-dev
-description: Working guide for Eclipse Theia 1.76 in Corral. Covers where to find true API signatures, the DI and contribution patterns, widgets and trees, preferences, frontend-backend RPC, the terminal, layout, plugins and build commands. Use before writing or changing any code that imports @theia/*.
+description: Working guide for Eclipse Theia 1.76 in Honjin. Covers where to find true API signatures, the DI and contribution patterns, widgets and trees, preferences, frontend-backend RPC, the terminal, layout, plugins and build commands. Use before writing or changing any code that imports @theia/*.
 ---
 
-# Theia development in Corral
+# Theia development in Honjin
 
 ## Rule 0: verify, don't recall
 
@@ -22,8 +22,8 @@ If the spec assumed an API that doesn't exist, adapt it, update the spec, and ad
 
 | Kind | File |
 |---|---|
-| Frontend DI bindings | `src/browser/corral-frontend-module.ts` |
-| Backend DI bindings | `src/node/corral-backend-module.ts` |
+| Frontend DI bindings | `src/browser/honjin-frontend-module.ts` |
+| Backend DI bindings | `src/node/honjin-backend-module.ts` |
 | RPC paths + interfaces | `src/common/protocol.ts` |
 | Preferences schema | `src/common/preferences-schema.ts` |
 | Views | `src/browser/<feature>/*-widget.tsx`, `*-contribution.ts` |
@@ -62,7 +62,7 @@ If the spec assumed an API that doesn't exist, adapt it, update the spec, and ad
 
 | Need | Command |
 |---|---|
-| Recompile the extension only | `npm run build -w corral-core` (tsc to `lib/`) |
+| Recompile the extension only | `npm run build -w honjin-core` (tsc to `lib/`) |
 | Rebuild the browser bundle (after any extension change, for E2E) | `npm run build:browser` |
 | Dev server | `npm run start:browser` → http://127.0.0.1:3000 |
 | Electron dev | `npm run build:electron && npm run start:electron` |

@@ -1,6 +1,6 @@
 ---
 name: next-task
-description: Do exactly one task from docs/PLAN.md, the first unchecked one, using red-green-refactor TDD. Then verify, tick it, log it and commit. Use when the user says "next task", "continue the plan", "build Corral", or runs /next-task (or /loop /next-task).
+description: Do exactly one task from docs/PLAN.md, the first unchecked one, using red-green-refactor TDD. Then verify, tick it, log it and commit. Use when the user says "next task", "continue the plan", "build Honjin", or runs /next-task (or /loop /next-task).
 ---
 
 # /next-task
@@ -30,7 +30,7 @@ without one (G0) you tick yourself once its must-fix findings are fixed. When st
 
 ## 2. Red
 
-- Write the tests the task's **Tests first** line lists. Put them where spec 08 says; load the `corral-tdd` skill
+- Write the tests the task's **Tests first** line lists. Put them where spec 08 says; load the `honjin-tdd` skill
   for patterns and the herdr harness.
 - Run just those tests. They must **fail, and for the expected reason** (a missing module or function, or a wrong
   value). A syntax or config error doesn't count as red. Fix the test setup until the failure is meaningful.
@@ -47,7 +47,7 @@ without one (G0) you tick yourself once its must-fix findings are fixed. When st
 - Remove duplication and unclear names, with the tests kept green.
 - Run the task's **Verify** block exactly as written, plus `npm run typecheck && npm run lint` (once they exist,
   from T0.2 on).
-- For E2E tasks, check that no `corral-test-*` herdr sessions are left: `herdr session list`.
+- For E2E tasks, check that no `honjin-test-*` herdr sessions are left: `herdr session list`.
 - If the task changes UI, look at it once: use the Playwright MCP on http://127.0.0.1:3000 or an E2E screenshot.
   Don't loop on cosmetics before stage 3.
 

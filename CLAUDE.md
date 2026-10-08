@@ -17,10 +17,10 @@ each stage.
 | Skill | Use when |
 |---|---|
 | `next-task` | Doing the next plan task (the main entry point) |
-| `corral-tdd` | Writing any test; choosing unit vs integration vs E2E; the herdr test harness |
+| `honjin-tdd` | Writing any test; choosing unit vs integration vs E2E; the herdr test harness |
 | `theia-dev` | Touching any Theia API: widgets, contributions, preferences, RPC, terminal, layout, packaging |
 | `herdr-integration` | Anything that calls the herdr CLI or depends on its JSON output |
-| `corral-polish` | Stage 3 design work: theme, typography, spacing, icons, UX copy |
+| `honjin-polish` | Stage 3 design work: theme, typography, spacing, icons, UX copy |
 
 ## Agents (`.claude/agents/`)
 

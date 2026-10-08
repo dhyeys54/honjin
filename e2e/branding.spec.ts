@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-test('the favicon is the Corral favicon', async ({ page }) => {
+test('the favicon is the Honjin favicon', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#theia-app-shell')).toBeVisible({ timeout: 60_000 });
     const href = await page.locator('link[rel="icon"]').getAttribute('href');
@@ -14,10 +14,10 @@ test('the favicon is the Corral favicon', async ({ page }) => {
     expect(flat(decoded)).toBe(flat(svg));
 });
 
-test('Help → About names the application Corral', async ({ page }) => {
+test('Help → About names the application Honjin', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#theia-app-shell')).toBeVisible({ timeout: 60_000 });
     await page.locator('.lm-MenuBar-itemLabel', { hasText: 'Help' }).click();
     await page.locator('.lm-Menu-itemLabel', { hasText: 'About' }).click();
-    await expect(page.locator('.theia-aboutDialog, .dialogBlock').getByText('Corral', { exact: false }).first()).toBeVisible();
+    await expect(page.locator('.theia-aboutDialog, .dialogBlock').getByText('Honjin', { exact: false }).first()).toBeVisible();
 });

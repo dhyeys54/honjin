@@ -10,14 +10,14 @@ test('search covers visible projects only, in the managed workspace, without rel
     const original = readFileSync(settingsFile(), 'utf8');
     try {
         await page.goto('/');
-        await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('[data-testid="honjin-projects"]')).toBeVisible({ timeout: 30_000 });
         // The first start moves into the managed workspace (one reload); wait for that to settle.
-        await expect.poll(() => page.url(), { timeout: 30_000 }).toContain('corral.code-workspace');
-        await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
+        await expect.poll(() => page.url(), { timeout: 30_000 }).toContain('honjin.code-workspace');
+        await expect(page.locator('[data-testid="honjin-projects"]')).toBeVisible({ timeout: 30_000 });
 
         const hit = page.locator('span.match', { hasText: 'zebrafinch-marker-7431' });
         const search = async () => {
-            await page.locator('[data-testid="corral-projects"]').click({ position: { x: 5, y: 150 } }); // empty tree space (the Projects part is a third of the panel); keys go to herdr while its terminal has focus
+            await page.locator('[data-testid="honjin-projects"]').click({ position: { x: 5, y: 150 } }); // empty tree space (the Projects part is a third of the panel); keys go to herdr while its terminal has focus
             await page.keyboard.press('ControlOrMeta+Shift+F');
             const input = page.locator('#search-input-field');
             await input.fill('zebrafinch-marker-7431');
@@ -25,25 +25,25 @@ test('search covers visible projects only, in the managed workspace, without rel
         };
         // Roots arrive asynchronously after startup, so the first searches may find nothing yet.
         // Occasionally (mostly late in a full run) the Search view of a freshly loaded page never returns anything and its
-        // input keeps clearing; a reload gives it a fresh widget. Not a Corral reload: the no-reload check starts after this.
+        // input keeps clearing; a reload gives it a fresh widget. Not a Honjin reload: the no-reload check starts after this.
         let attempts = 0;
         await expect(async () => {
             if (attempts++ % 4 === 3) {
                 await page.reload();
-                await expect(page.locator('[data-testid="corral-projects"]')).toBeVisible({ timeout: 30_000 });
+                await expect(page.locator('[data-testid="honjin-projects"]')).toBeVisible({ timeout: 30_000 });
             }
             await search();
             await expect(hit).toBeVisible({ timeout: 3_000 });
         }).toPass({ timeout: 90_000 });
-        await page.evaluate(() => { (window as unknown as Record<string, unknown>).__corralMarker = true; });
+        await page.evaluate(() => { (window as unknown as Record<string, unknown>).__honjinMarker = true; });
 
         const settings = JSON.parse(original);
-        settings['corral.hiddenProjects'] = [beta];
+        settings['honjin.hiddenProjects'] = [beta];
         writeSettings(JSON.stringify(settings, undefined, 2));
-        await expect(page.locator('[data-testid="corral-projects"] .theia-TreeNode', { hasText: /^beta$/ })).toHaveCount(0, { timeout: 20_000 });
+        await expect(page.locator('[data-testid="honjin-projects"] .theia-TreeNode', { hasText: /^beta$/ })).toHaveCount(0, { timeout: 20_000 });
         await search();
         await expect(hit).toHaveCount(0, { timeout: 20_000 });
-        expect(await page.evaluate(() => (window as unknown as Record<string, unknown>).__corralMarker)).toBe(true);
+        expect(await page.evaluate(() => (window as unknown as Record<string, unknown>).__honjinMarker)).toBe(true);
     } finally {
         writeSettings(original);
     }

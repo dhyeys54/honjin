@@ -4,7 +4,7 @@ import { mkdtempSync, realpathSync, renameSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-export const settingsFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'settings.json');
+export const settingsFile = () => join(process.env.HONJIN_E2E_CONFIG_DIR!, 'settings.json');
 
 /** Replaces the file (as editors do) so the watcher sees a change even when the inode would stay the same. */
 export function writeSettings(value: object | string): void {
@@ -13,7 +13,7 @@ export function writeSettings(value: object | string): void {
     renameSync(tmp, settingsFile());
 }
 
-export const projects = (page: Page) => page.locator('[data-testid="corral-projects"]');
+export const projects = (page: Page) => page.locator('[data-testid="honjin-projects"]');
 /** The Projects row whose whole label is `name`. */
 export const row = (page: Page, name: string) => projects(page).locator('.theia-TreeNode', { hasText: new RegExp(`^${name}$`) });
 
@@ -26,7 +26,7 @@ export async function closeMenu(page: Page): Promise<void> {
 export const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd });
 
 /** The E2E herdr session, never the user's own. */
-export const session = () => process.env.CORRAL_E2E_SESSION!;
+export const session = () => process.env.HONJIN_E2E_SESSION!;
 export const herdr = (...args: string[]) => execFileSync('herdr', ['--session', session(), ...args], { encoding: 'utf8' });
 
 /** A new directory under the resolved temp dir: macOS tmpdir is a symlink, and git and herdr report real paths. */

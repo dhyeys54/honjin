@@ -45,10 +45,10 @@ test('expanded folders and show-hidden survive a reload (spec 03)', async ({ pag
     await row(page, 'src').click();
     await page.keyboard.press('ArrowRight');
     await expect(row(page, 'index.ts')).toBeVisible();
-    await page.locator('[id="corral.projects.toggleShowHidden"]').first().click();
-    await expect(page.locator('[id="corral.projects.toggleShowHidden.on"]').first()).toBeVisible();
+    await page.locator('[id="honjin.projects.toggleShowHidden"]').first().click();
+    await expect(page.locator('[id="honjin.projects.toggleShowHidden.on"]').first()).toBeVisible();
 
     await page.reload();
     await expect(row(page, 'index.ts')).toBeVisible({ timeout: 30_000 });
-    await expect(page.locator('[id="corral.projects.toggleShowHidden.on"]').first()).toBeVisible();
+    await expect(page.locator('[id="honjin.projects.toggleShowHidden.on"]').first()).toBeVisible();
 });

@@ -24,7 +24,7 @@
     "@theia/terminal": "1.76.0",
     "@theia/vsx-registry": "1.76.0",
     "@theia/workspace": "1.76.0",
-    "corral-core": "0.1.0-beta.1"
+    "honjin-core": "0.1.0-beta.1"
   },
   "devDependencies": {
     "@theia/cli": "1.76.0"
@@ -40,10 +40,10 @@
     "target": "browser",
     "frontend": {
       "config": {
-        "applicationName": "Corral",
+        "applicationName": "Honjin",
         "defaultTheme": {
-          "light": "corral-dark",
-          "dark": "corral-dark"
+          "light": "honjin-dark",
+          "dark": "honjin-dark"
         },
         "defaultIconTheme": "theia-file-icons",
         "preferences": {
@@ -77,7 +77,7 @@
     },
     "backend": {
       "config": {
-        "configurationFolder": ".corral"
+        "configurationFolder": ".honjin"
       }
     }
   },

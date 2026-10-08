@@ -4,7 +4,7 @@ import { join, resolve } from 'path';
 import { row, settingsFile, writeSettings } from './helpers';
 
 const scanRoot = resolve(__dirname, 'fixtures/projects');
-const workspaceFile = () => join(process.env.CORRAL_E2E_CONFIG_DIR!, 'corral.code-workspace');
+const workspaceFile = () => join(process.env.HONJIN_E2E_CONFIG_DIR!, 'honjin.code-workspace');
 const roots = () => existsSync(workspaceFile())
     ? (JSON.parse(readFileSync(workspaceFile(), 'utf8')).folders as { path: string }[]).map(f => decodeURIComponent(f.path.replace('file://', '')))
     : [];
@@ -15,14 +15,14 @@ test('Add project refuses a folder that holds other projects', async ({ page }) 
     try {
         await page.goto('/');
         await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
-        await page.locator('[id="corral.projects.add"]').first().click();
+        await page.locator('[id="honjin.projects.add"]').first().click();
         await page.locator('.theia-LocationInputToggle').click();
         const location = page.locator('.theia-LocationListPanel input');
         await location.fill(scanRoot); // with nothing selected, Choose takes the folder the dialog is in
         await location.press('Enter');
         await page.getByRole('button', { name: 'Choose', exact: true }).click();
         await expect(page.getByText(/projects holds 2 listed projects/).first()).toBeVisible({ timeout: 15_000 });
-        expect(JSON.parse(readFileSync(settingsFile(), 'utf8'))['corral.extraProjects'] ?? []).toEqual([]);
+        expect(JSON.parse(readFileSync(settingsFile(), 'utf8'))['honjin.extraProjects'] ?? []).toEqual([]);
     } finally {
         writeSettings(original);
     }
@@ -35,7 +35,7 @@ test('a listed folder that holds other projects stays out of the workspace roots
     try {
         await page.goto('/');
         await expect(row(page, 'alpha')).toBeVisible({ timeout: 30_000 });
-        writeSettings(JSON.stringify({ ...JSON.parse(original), 'corral.extraProjects': [scanRoot] }));
+        writeSettings(JSON.stringify({ ...JSON.parse(original), 'honjin.extraProjects': [scanRoot] }));
         await expect(row(page, 'projects')).toBeVisible({ timeout: 20_000 });
         await expect.poll(roots, { timeout: 20_000 }).toContain(join(scanRoot, 'alpha'));
         await page.waitForTimeout(2_000); // give a wrong sync time to happen

@@ -1,5 +1,5 @@
 ---
-name: Corral
+name: Honjin
 description: A dark, terminal-first IDE shell for many projects and their herdr agents.
 colors:
   bg: "#0c0f0e"
@@ -85,7 +85,7 @@ components:
     padding: "4px 12px"
 ---
 
-# Design System: Corral
+# Design System: Honjin
 
 ## Overview
 
@@ -95,7 +95,7 @@ green** (`accent`), taken from the app icon. It marks the live and actionable: t
 action on hover, and an agent that is working. Starting mood: an old green-phosphor terminal, rendered with modern
 restraint.
 
-Stage 3 (`corral-polish` skill) may refine these values. Change this file first, then the code.
+Stage 3 (`honjin-polish` skill) may refine these values. Change this file first, then the code.
 
 ## Colors
 
