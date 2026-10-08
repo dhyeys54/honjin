@@ -1107,7 +1107,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
     - Set version `0.1.0-beta.1` in the three `package.json` files.
     - Add the S12 notification with Copy update command and Release notes, and the `corral.updates.check` setting.
 
-- [ ] **T8.6 Tester-facing bugs**
+- [x] **T8.6 Tester-facing bugs**
   - Spec: whichever spec owns each bug.
   - Do:
     - Reproduce, then fix, the Settings UI not persisting `corral.resourceMonitor.*Percent`, with a failing E2E first.
@@ -1252,3 +1252,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.0 — spec 13 (setup, agent picker, beta plumbing), specs 03/05/07 amended, D44–D47, Stage 8 tasks and G8 (docs only)
 - 2026-10-08 T8.1 — prerequisite catalog (vendor install commands), setupState, agentChoices, compareVersions (semver pre-release), issueBody/issueUrl without paths (20 tests; 294 unit)
 - 2026-10-08 T8.2 — findBinary generalises herdr's lookup (PATH, fallback dirs, installer-specific candidates, login shell with a checked name); CorralSetupService.check over RPC with versions, /usr/bin/git stub handled, CORRAL_TEST_PATH limits the search (9 unit + 1 int; 303 unit, 17 int)
+- 2026-10-08 T8.6 — Settings UI persistence of `corral.resourceMonitor.*Percent` could not be reproduced (E2E `settings-ui.spec.ts` passes for both fields, typed and filled), kept as a regression test; sweep of FOR-REVIEW and the specs' not-covered lists; `docs/KNOWN-ISSUES.md`; stale-editor report listed as unexplained; npm audit: two criticals accepted (D55)

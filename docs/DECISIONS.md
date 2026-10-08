@@ -309,3 +309,8 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 **Decision.** `CorralScmContribution` listens to `EditorManager.onCurrentEditorChanged` and sets `ScmService.selectedRepository` to the repository containing the editor's file (`findRepository`). Preview/webview tabs leave the selection alone.
 **Why.** Theia selects the first repository that registers and never changes it, so with many project roots the bottom-left item named an arbitrary project (seen: `ai-job-search` while editing `us-lead-engine`).
 **Consequences.** Show Changes still selects its folder's repository, until the next editor change.
+
+## D55 — Two critical `npm audit` findings are accepted (T8.6) · 2026-10-08
+**Decision.** `npm audit` reports two critical advisories and Corral ships with both: `decompress` 4.2.1 (zip-slip, via `@theia/plugin-ext-vscode`, `@theia/plugin-ext` and `@theia/cli`) and `tar` (hardlink and symlink path traversal, via `lerna`). No fixed version exists for `decompress`, and `tar` sits behind a `lerna` major. Neither is pinned or overridden.
+**Why.** Both only bite when an attacker-chosen archive is extracted. `tar` is reached only by `lerna`, a development tool that is not in the packaged app. `decompress` runs at build time (the built-in extension tarball, fetched from the Eclipse Theia release) and when a user installs a `.vsix` file themselves; Corral never fetches or extracts an archive on its own at run time. The remaining 126 findings are moderate, high or low and sit in the same Theia dependency tree.
+**Consequences.** Listed in `docs/KNOWN-ISSUES.md`: install extensions only from sources you trust. Revisit when Theia moves off `decompress` or ships a newer `lerna`.
