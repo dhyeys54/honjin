@@ -987,7 +987,7 @@ inventing new ones:
   - Do: implement in `common/agents.ts` with the signatures in spec 12 §Code layout; export `TIMELINE_WINDOW_MS = 15 * 60_000`.
   - Verify: `npm test && npm run typecheck && npm run lint`.
 
-- [ ] **T7.10 Title line**
+- [x] **T7.10 Title line**
   - Spec: 12 A5 (amended), D43.
   - Tests first: extend the T7.5 E2E in `e2e/agents-view.spec.ts`: give the `beta` pane a terminal title by running
     `printf '\033]0;Fix the login bug\007'` in it (`herdr pane run <pane> ...`; check the exact argv with `herdr pane run --help`),
@@ -1105,3 +1105,4 @@ inventing new ones:
 - 2026-10-08 T7.8 — A1–A13 mapped to tests (gaps listed in spec 12 "Not covered"), README documents the Agents panel and corral.agents.intervalSeconds, tooltip asserted; all suites green (262 unit, 16 int, 52 E2E; roots and first-run pass alone); Corral.app packaged, installed and relaunched (Agents part not viewed: no screen capture here)
 - 2026-10-08 G7 — spec-reviewer on stage 7: no must-fix; should-fix docs done (even initial split stated in spec 12 A12 and D42, untested behaviours listed in spec 12 §Tests). Waiting on the human checkpoint.
 - 2026-10-08 T7.9 — trackHistory, segmentGeometry, orderLanes (A14/A15) (8 unit tests, 270 total)
+- 2026-10-08 T7.10 — agent rows show the pane title on a second line (title set via OSC in the E2E pane); row grows to two lines; tooltip is title then cwd (E2E extended, 52 total)

@@ -101,6 +101,7 @@ test('A3, A5, A8, A10: rows are ordered, coloured, aged, and a click focuses the
         herdr('workspace', 'focus', beta.ws); // so src and out aren't the focused pane
 
         report(beta.pane, 'blocked');
+        herdr('pane', 'run', beta.pane, "printf '\\033]0;Fix the login bug\\007'"); // sets the terminal title (A5)
         report(out.pane, 'working', 'codex');
         report(src.pane, 'working');
         report(src.pane, 'idle');
@@ -118,14 +119,20 @@ test('A3, A5, A8, A10: rows are ordered, coloured, aged, and a click focuses the
         expect(texts[2]).toContain(`${basename(dirname(dir))}/${basename(dir)}`);
         expect(texts[2]).toContain('working');
 
-        // A5: the tooltip is the cwd (this fake agent has no pane title)
-        await expect(agentRow(page, 'beta')).toHaveAttribute('title', realpathSync(join(FIXTURES, 'beta')));
+        // A5 (amended): the title gets a line of its own; a pane without a title stays one line
+        await expect(agentRow(page, 'beta').locator('.corral-agent-title')).toHaveText('Fix the login bug', { timeout: 15_000 });
+        await expect(agentRow(page, 'codex').locator('.corral-agent-title')).toHaveCount(0);
+        const height = async (text: string) => (await agentRow(page, text).boundingBox())!.height;
+        expect(await height('beta')).toBeGreaterThan(await height('codex') + 8); // two lines, not clipped to one
+        // A5: the tooltip is the pane title, then the cwd; with no title, the cwd alone
+        await expect(agentRow(page, 'beta')).toHaveAttribute('title', `Fix the login bug\n${realpathSync(join(FIXTURES, 'beta'))}`);
+        await expect(agentRow(page, 'codex')).toHaveAttribute('title', realpathSync(dir));
         const blockedDot = agentRow(page, 'beta').locator('.corral-agent-dot.corral-agent-blocked');
         await expect(blockedDot).toHaveCount(1);
         expect(await blockedDot.evaluate(e => getComputedStyle(e).backgroundColor)).toBe('rgb(229, 115, 107)');
         const workingDot = agentRow(page, 'codex').locator('.corral-agent-dot.corral-agent-working');
         expect(await workingDot.evaluate(e => getComputedStyle(e).animationName)).toBe('corral-live-pulse');
-        for (const text of await rows.allInnerTexts()) {
+        for (const text of await rows.locator('.corral-agent-main').allInnerTexts()) {
             expect(text.replace(/\s+/g, ' ').trim()).toMatch(/(blocked|done|working|idle|unknown) \d+[smh]$/);
         }
 

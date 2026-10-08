@@ -87,12 +87,13 @@ export class AgentsWidget extends TreeWidget implements BadgeWidget {
     protected override getCaptionChildren(node: TreeNode, props: NodeProps): React.ReactNode[] {
         if (isAgentNode(node)) {
             const { row } = node;
-            return [
-                React.createElement('span', { key: 'd', className: `corral-agent-dot corral-agent-${row.status}` }),
-                React.createElement('span', { key: 'k', className: 'corral-agent-kind' }, row.kind),
-                React.createElement('span', { key: 'l', className: 'corral-agent-location' }, row.location),
-                React.createElement('span', { key: 's', className: 'corral-agent-state' }, `${row.status} ${formatAge(Date.now() - row.since)}`)
-            ];
+            return [React.createElement('div', { key: 'r', className: 'corral-agent-row-body' },
+                React.createElement('div', { className: 'corral-agent-main' },
+                    React.createElement('span', { className: `corral-agent-dot corral-agent-${row.status}` }),
+                    React.createElement('span', { className: 'corral-agent-kind' }, row.kind),
+                    React.createElement('span', { className: 'corral-agent-location' }, row.location),
+                    React.createElement('span', { className: 'corral-agent-state' }, `${row.status} ${formatAge(Date.now() - row.since)}`)),
+                row.title ? React.createElement('div', { className: 'corral-agent-title' }, row.title) : undefined)];
         }
         return super.getCaptionChildren(node, props);
     }

@@ -8,9 +8,23 @@
     color: var(--theia-descriptionForeground);
 }
 
-.corral-agents .theia-TreeNodeSegmentGrow {
+.corral-agent-row-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.corral-agent-main {
     display: flex;
     align-items: center;
+}
+
+/* One line under the main one, aligned with the kind (dot 6px + its 6px margin). */
+.corral-agent-title {
+    padding-left: 12px;
+    color: var(--theia-descriptionForeground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .corral-agent-dot {
