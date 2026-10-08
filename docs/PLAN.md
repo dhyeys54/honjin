@@ -1160,6 +1160,9 @@ command, Corral helps them install herdr and an agent, the first + starts an age
   - The GitHub repo doesn't exist yet, so the test installs from a local release: `npm run package:mac`, then copy
     `electron-app/dist/Honjin-0.1.0-beta.1-arm64-mac.zip`, a `SHA256SUMS` for it (`shasum -a 256 <zip>`) and
     `scripts/install.sh` into `/Users/Shared/honjin-release/` so the other account can read them.
+  - Before the test, the user quits Honjin and moves `/Applications/Honjin.app` to the Trash: it belongs to their own
+    account, so the new account could not replace it (D58), and a fresh Mac has none. Afterwards the copy the test
+    account installed runs for them too; to own it again, delete it (Finder asks for the password) and re-install.
   - Ask the user to test on a **fresh macOS user account** (System Settings → Users & Groups → Add User, an admin so
     `/Applications` is writable):
     - `HONJIN_RELEASE_BASE=file:///Users/Shared/honjin-release sh /Users/Shared/honjin-release/install.sh` installs

@@ -12,8 +12,12 @@ dir=${HONJIN_INSTALL_DIR:-/Applications}
 [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || { echo "Honjin's beta runs on Apple Silicon Macs only." >&2; exit 1; }
 [ "$(sw_vers -productVersion | cut -d. -f1)" -ge 13 ] || { echo "Honjin needs macOS 13 or later." >&2; exit 1; }
 
-if [ ! -w "$dir" ]; then
-    echo "Can't write to $dir. Re-run with:" >&2
+# Replacing an app moves it to a new folder, which needs write access to the app too (another account's install).
+cant=
+[ -w "$dir" ] || cant=$dir
+[ -d "$dir/Honjin.app" ] && [ ! -w "$dir/Honjin.app" ] && cant=$dir/Honjin.app
+if [ -n "$cant" ]; then
+    echo "Can't write to $cant. Re-run with:" >&2
     echo "  curl -fsSL https://raw.githubusercontent.com/$repo/main/scripts/install.sh | sudo sh" >&2
     echo "or install for yourself only: HONJIN_INSTALL_DIR=\$HOME/Applications (create it first)." >&2
     exit 1

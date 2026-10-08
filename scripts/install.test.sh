@@ -45,7 +45,14 @@ if out=$(HONJIN_RELEASE_BASE="http://127.0.0.1:$port" HONJIN_INSTALL_DIR="$work/
 echo "$out" | grep -q "Can't write to" || fail "no write-permission message: $out"
 chmod 755 "$work/readonly"
 
-# 4. A Honjin that will not quit stops the install and leaves the app in place.
+# 4. An existing Honjin.app the user can't write (another account's install) is reported too: replacing moves it.
+chmod 555 "$work/apps/Honjin.app"
+out=$(install 2>&1) && ok=1 || ok=0
+chmod 755 "$work/apps/Honjin.app"
+[ "$ok" = 0 ] || fail "replaced an app it can't write: $out"
+echo "$out" | grep -q "Can't write to $work/apps/Honjin.app" || fail "no write-permission message for the app: $out"
+
+# 5. A Honjin that will not quit stops the install and leaves the app in place.
 mkdir -p "$work/apps/Honjin.app/Contents/MacOS"
 printf '#!/bin/sh\nsleep 60\n' > "$work/apps/Honjin.app/Contents/MacOS/Honjin"; chmod +x "$work/apps/Honjin.app/Contents/MacOS/Honjin"
 "$work/apps/Honjin.app/Contents/MacOS/Honjin" >/dev/null 2>&1 & running=$!

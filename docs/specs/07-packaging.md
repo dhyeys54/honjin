@@ -22,7 +22,7 @@
 - **`scripts/install.sh`** (POSIX `sh`, kept short enough to read before running). The README one-liner is
   `curl -fsSL https://raw.githubusercontent.com/dhyeys54/honjin/main/scripts/install.sh | sh`. The script:
   1. Exits with a message unless `uname -s` is `Darwin`, `uname -m` is `arm64` and macOS is 13 or later. It then exits with a message if the install
-     directory is not writable, naming the `sudo sh` re-run and `HONJIN_INSTALL_DIR=$HOME/Applications`; it never falls
+     directory, or a `Honjin.app` already in it, is not writable (replacing the app moves it, D58), naming the `sudo sh` re-run and `HONJIN_INSTALL_DIR=$HOME/Applications`; it never falls
      back silently.
   2. Reads the latest release from `https://api.github.com/repos/dhyeys54/honjin/releases/latest`, or the tag in
      `HONJIN_VERSION` when set (a leading `v` is optional). `/releases/latest` skips prereleases, so releases are not
