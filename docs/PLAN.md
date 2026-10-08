@@ -1157,15 +1157,21 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 
 - [ ] **G8 Stage 8 gate**: all suites → `spec-reviewer` on spec 13 and stage 8 → fix must-fix findings → **human
   checkpoint, stop**.
-  - Draft release `v0.1.0-beta.1` with `scripts/release.sh`. It stays a draft.
-  - Ask the user to test on a **fresh macOS user account** (System Settings → Users & Groups → Add User):
-    - The one-liner installs Honjin. Use `HONJIN_VERSION` with the draft's asset URLs if the repo is still private.
+  - The GitHub repo doesn't exist yet, so the test installs from a local release: `npm run package:mac`, then copy
+    `electron-app/dist/Honjin-0.1.0-beta.1-arm64-mac.zip`, a `SHA256SUMS` for it (`shasum -a 256 <zip>`) and
+    `scripts/install.sh` into `/Users/Shared/honjin-release/` so the other account can read them.
+  - Ask the user to test on a **fresh macOS user account** (System Settings → Users & Groups → Add User, an admin so
+    `/Applications` is writable):
+    - `HONJIN_RELEASE_BASE=file:///Users/Shared/honjin-release sh /Users/Shared/honjin-release/install.sh` installs
+      Honjin (`HONJIN_VERSION` alone can't reach a private or draft release).
     - Honjin opens with no Gatekeeper prompt.
-    - Setup shows herdr and agents missing. Install herdr and Claude Code from Setup; both succeed and turn found.
+    - Setup shows herdr and agents missing. Install herdr and Claude Code from Setup; both succeed and turn found,
+      and the herdr tab replaces "herdr not found" with herdr.
     - Folders are picked, and + starts Claude Code; with a second agent installed, + shows the picker.
-    - Help → Report an Issue opens a prefilled issue page.
-  - After approval, each of these needs the user's explicit go-ahead: create the `dhyeys54/honjin` GitHub repo, push,
-    make it public, enable Discussions, and publish the release. Then:
+    - Help → Report an Issue opens the browser at a prefilled issue URL (GitHub shows 404 until the repo is public).
+  - After approval, each of these needs the user's explicit go-ahead, in this order: create the `dhyeys54/honjin`
+    GitHub repo, push, make it public, enable Discussions, draft the release with `scripts/release.sh`, and publish
+    it. Then:
     - record the demo GIF and screenshots with the user;
     - send `dhyey-portfolio-06` the page content;
     - hand over the drafts of the herdr maintainers' email and the LinkedIn, Reddit and X posts (scratchpad, never

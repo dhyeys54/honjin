@@ -34,7 +34,8 @@
      (`HONJIN_QUIT_WAIT`, default 10), exits changing nothing. Otherwise it replaces `/Applications/Honjin.app` with the
      unzipped app (`ditto -x -k`), keeping the old app aside until the new one is in place.
   6. Prints the version installed and "Open Honjin from Applications". Running it again updates.
-- **`scripts/release.sh <version>`**: runs `package:mac`, writes `SHA256SUMS` for the zip, and runs
-  `gh release create v<version> --draft --notes-file <notes>` with both files. It never publishes; the user publishes
+- **`scripts/release.sh <version>`**: stops at once unless `gh repo view dhyeys54/honjin` succeeds, then runs
+  `package:mac`, writes `SHA256SUMS` for the zip, and runs
+  `gh release create v<version> --repo dhyeys54/honjin --draft --notes-file <notes>` with both files. It never publishes; the user publishes
   the draft.
 - **Version:** `0.1.0-beta.1` (spec 13 S11). Release notes per build list changes and known issues.

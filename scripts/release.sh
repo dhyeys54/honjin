@@ -8,6 +8,9 @@ version=$1
 cd "$(dirname "$0")/.."
 
 grep -q "\"version\": \"$version\"" electron-app/package.json || { echo "electron-app/package.json is not at version $version." >&2; exit 1; }
+# Checked before the long build: the release needs the repo to exist with this commit pushed.
+repo=dhyeys54/honjin
+gh repo view "$repo" >/dev/null || { echo "Create $repo on GitHub and push to it first." >&2; exit 1; }
 
 npm run package:mac
 
@@ -19,8 +22,8 @@ zip=Honjin-$version-arm64-mac.zip
 notes=${2:-}
 if [ -z "$notes" ]; then
     notes=$(mktemp)
-    echo "Honjin $version. Install: curl -fsSL https://raw.githubusercontent.com/dhyeys54/honjin/main/scripts/install.sh | sh" > "$notes"
+    echo "Honjin $version. Install: curl -fsSL https://raw.githubusercontent.com/$repo/main/scripts/install.sh | sh" > "$notes"
 fi
 
-gh release create "v$version" --draft --title "Honjin $version" --notes-file "$notes" "$dist/$zip" "$dist/SHA256SUMS"
+gh release create "v$version" --repo "$repo" --draft --title "Honjin $version" --notes-file "$notes" "$dist/$zip" "$dist/SHA256SUMS"
 echo "Draft release v$version created. Publish it on GitHub when you are happy with it."
