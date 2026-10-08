@@ -974,7 +974,7 @@ inventing new ones:
   - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and
     first-run must pass when run alone, as in T6.7). The installed app shows the Agents part under Changes.
 
-- [ ] **T7.9 History logic (pure)**
+- [x] **T7.9 History logic (pure)**
   - Spec: 12 A14, A15.
   - Tests first: in `corral-core/src/common/agents.test.ts`, add describes for `trackHistory`, `segmentGeometry` and `orderLanes`:
     - `trackHistory`: new pane → one open segment at `now`; same status and kind → unchanged; status change → previous
@@ -1104,3 +1104,4 @@ inventing new ones:
 - 2026-10-08 T7.7 — needs-you badge on the Agents part header (BadgeWidget) and the right-panel tab (TabBarDecorator), updated only when the count changes (1 E2E test added, 52 E2E total)
 - 2026-10-08 T7.8 — A1–A13 mapped to tests (gaps listed in spec 12 "Not covered"), README documents the Agents panel and corral.agents.intervalSeconds, tooltip asserted; all suites green (262 unit, 16 int, 52 E2E; roots and first-run pass alone); Corral.app packaged, installed and relaunched (Agents part not viewed: no screen capture here)
 - 2026-10-08 G7 — spec-reviewer on stage 7: no must-fix; should-fix docs done (even initial split stated in spec 12 A12 and D42, untested behaviours listed in spec 12 §Tests). Waiting on the human checkpoint.
+- 2026-10-08 T7.9 — trackHistory, segmentGeometry, orderLanes (A14/A15) (8 unit tests, 270 total)

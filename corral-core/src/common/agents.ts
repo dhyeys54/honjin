@@ -6,6 +6,10 @@ export interface AgentList { running: boolean; agents: AgentInfo[] }
 export interface Seen { kind: string; status: AgentStatus; since: number }
 export interface AgentRow extends AgentInfo { since: number; project?: string; location: string }
 export interface ProjectRef { path: string; name: string }
+export interface Segment { status: AgentStatus; start: number; end?: number }
+export interface AgentLane { paneId: string; kind: string; cwd: string; segments: Segment[] }
+
+export const TIMELINE_WINDOW_MS = 15 * 60_000;
 
 const STATUSES: readonly AgentStatus[] = ['idle', 'working', 'blocked', 'done', 'unknown'];
 const RANK: Record<AgentStatus, number> = { blocked: 0, done: 1, working: 2, unknown: 3, idle: 4 };
@@ -57,6 +61,52 @@ export function formatAge(ms: number): string {
 /** A13 */
 export function agentsIntervalMs(value: unknown): number {
     return (typeof value === 'number' && Number.isFinite(value) ? Math.max(1, value) : 3) * 1000;
+}
+
+/** A14: status history per pane for the timeline. Nothing here mutates `prev`. */
+export function trackHistory(prev: ReadonlyMap<string, AgentLane>, agents: AgentInfo[], now: number, windowMs: number): Map<string, AgentLane> {
+    const next = new Map<string, AgentLane>();
+    const close = (segments: Segment[]): Segment[] => segments.map(s => s.end === undefined ? { ...s, end: now } : s);
+    for (const [paneId, lane] of prev) {
+        next.set(paneId, { ...lane, segments: lane.segments.map(s => ({ ...s })) });
+    }
+    const listed = new Set(agents.map(agent => agent.paneId));
+    for (const lane of next.values()) {
+        if (!listed.has(lane.paneId)) {
+            lane.segments = close(lane.segments);
+        }
+    }
+    for (const { paneId, kind, status, cwd } of agents) {
+        const old = next.get(paneId);
+        const open = old?.segments.find(s => s.end === undefined);
+        const same = old !== undefined && open?.status === status && old.kind === kind;
+        const segments = same ? old.segments : [...close(old?.segments ?? []), { status, start: now }];
+        next.set(paneId, { paneId, kind, cwd, segments });
+    }
+    for (const [paneId, lane] of next) {
+        lane.segments = lane.segments.filter(s => s.end === undefined || s.end > now - windowMs);
+        if (lane.segments.length === 0) {
+            next.delete(paneId);
+        }
+    }
+    return next;
+}
+
+/** A15: where a segment sits on the track, in percent of the window ending at `now`. */
+export function segmentGeometry(seg: Segment, now: number, windowMs: number): { left: number; width: number } {
+    const windowStart = now - windowMs;
+    const start = Math.max(seg.start, windowStart);
+    const end = Math.min(seg.end ?? now, now);
+    return { left: (start - windowStart) / windowMs * 100, width: Math.max(0, end - start) / windowMs * 100 };
+}
+
+/** A15: lanes of listed panes in row order, then the others newest first. */
+export function orderLanes(lanes: AgentLane[], rowPaneIds: string[]): AgentLane[] {
+    const lastEnd = (lane: AgentLane) => lane.segments[lane.segments.length - 1]?.end ?? Infinity;
+    const listed = rowPaneIds.map(id => lanes.find(l => l.paneId === id)).filter((l): l is AgentLane => l !== undefined);
+    const rest = lanes.filter(l => !rowPaneIds.includes(l.paneId))
+        .sort((x, y) => lastEnd(y) - lastEnd(x) || x.paneId.localeCompare(y.paneId));
+    return [...listed, ...rest];
 }
 
 /** A6: one setTimeout chain; calls never overlap; refresh() supersedes anything in flight. */

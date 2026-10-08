@@ -1,6 +1,6 @@
 import {
-    AgentInfo, AgentList, AgentsPoller, AgentStatus, ProjectRef, Seen, agentLocation, agentRows, agentsIntervalMs, badgeTooltip, formatAge, needsYou,
-    toAgentStatus, trackSince
+    AgentInfo, AgentLane, AgentList, AgentsPoller, AgentStatus, ProjectRef, Seen, agentLocation, agentRows, agentsIntervalMs, badgeTooltip, formatAge, needsYou,
+    orderLanes, segmentGeometry, toAgentStatus, trackHistory, trackSince
 } from './agents';
 
 const a = (paneId: string, status: AgentStatus, extra: Partial<AgentInfo> = {}): AgentInfo =>
@@ -124,6 +124,85 @@ describe('A13 agentsIntervalMs', () => {
     const cases: [unknown, number][] = [[3, 3000], [2.5, 2500], [1, 1000], [0, 1000], [-4, 1000], [undefined, 3000], ['5', 3000], [NaN, 3000], [Infinity, 3000]];
     it.each(cases)('%j', (value, ms) => {
         expect(agentsIntervalMs(value)).toBe(ms);
+    });
+});
+
+describe('A14 trackHistory', () => {
+    const W = 1000;
+    const lane = (paneId: string, segments: AgentLane['segments'], extra: Partial<AgentLane> = {}): AgentLane =>
+        ({ paneId, kind: 'claude', cwd: '/x', segments, ...extra });
+    const map = (...lanes: AgentLane[]) => new Map(lanes.map(l => [l.paneId, l]));
+
+    it('starts a lane with one open segment for a new pane', () => {
+        const next = trackHistory(new Map(), [a('p1', 'working')], 100, W);
+        expect(next.get('p1')).toEqual(lane('p1', [{ status: 'working', start: 100 }]));
+    });
+
+    it('leaves the open segment alone while status and kind are unchanged', () => {
+        const prev = map(lane('p1', [{ status: 'working', start: 100 }]));
+        expect(trackHistory(prev, [a('p1', 'working')], 200, W).get('p1')?.segments).toEqual([{ status: 'working', start: 100 }]);
+    });
+
+    it('closes the open segment and opens a new one on a status or kind change', () => {
+        const prev = map(lane('p1', [{ status: 'working', start: 100 }]));
+        expect(trackHistory(prev, [a('p1', 'blocked')], 200, W).get('p1')?.segments)
+            .toEqual([{ status: 'working', start: 100, end: 200 }, { status: 'blocked', start: 200 }]);
+        const kind = trackHistory(prev, [a('p1', 'working', { kind: 'codex' })], 200, W).get('p1');
+        expect(kind?.kind).toBe('codex');
+        expect(kind?.segments).toEqual([{ status: 'working', start: 100, end: 200 }, { status: 'working', start: 200 }]);
+    });
+
+    it('closes the open segment of a missing pane once, keeps its lane, and starts a new segment if it returns', () => {
+        const prev = map(lane('p1', [{ status: 'working', start: 100 }]));
+        const gone = trackHistory(prev, [], 200, W);
+        expect(gone.get('p1')?.segments).toEqual([{ status: 'working', start: 100, end: 200 }]);
+        expect(trackHistory(gone, [], 300, W).get('p1')?.segments).toEqual([{ status: 'working', start: 100, end: 200 }]);
+        expect(trackHistory(gone, [a('p1', 'working')], 300, W).get('p1')?.segments)
+            .toEqual([{ status: 'working', start: 100, end: 200 }, { status: 'working', start: 300 }]);
+    });
+
+    it('takes the latest cwd', () => {
+        const prev = map(lane('p1', [{ status: 'idle', start: 0 }]));
+        expect(trackHistory(prev, [a('p1', 'idle', { cwd: '/y' })], 10, W).get('p1')?.cwd).toBe('/y');
+    });
+
+    it('drops segments that ended at or before the window start, and lanes left empty', () => {
+        const prev = map(
+            lane('p1', [{ status: 'working', start: 0, end: 500 }, { status: 'idle', start: 500, end: 1600 }, { status: 'blocked', start: 1600 }]),
+            lane('p2', [{ status: 'working', start: 0, end: 500 }])
+        );
+        const next = trackHistory(prev, [a('p1', 'blocked')], 1500, W);
+        expect(next.get('p1')?.segments).toEqual([{ status: 'idle', start: 500, end: 1600 }, { status: 'blocked', start: 1600 }]);
+        expect(next.has('p2')).toBe(false);
+    });
+
+    it('returns a new map and leaves prev alone', () => {
+        const prev = map(lane('p1', [{ status: 'working', start: 100 }]));
+        const copy = JSON.parse(JSON.stringify([...prev]));
+        const next = trackHistory(prev, [a('p1', 'idle')], 200, W);
+        expect(next).not.toBe(prev);
+        expect(JSON.parse(JSON.stringify([...prev]))).toEqual(copy);
+    });
+});
+
+describe('A15 segmentGeometry', () => {
+    const cases: [{ status: AgentStatus; start: number; end?: number }, { left: number; width: number }][] = [
+        [{ status: 'working', start: 0 }, { left: 0, width: 100 }],
+        [{ status: 'working', start: 500, end: 750 }, { left: 50, width: 25 }],
+        [{ status: 'working', start: -200, end: 300 }, { left: 0, width: 30 }],
+        [{ status: 'working', start: 900 }, { left: 90, width: 10 }]
+    ];
+    it.each(cases)('%j', (seg, expected) => {
+        expect(segmentGeometry(seg, 1000, 1000)).toEqual(expected);
+    });
+});
+
+describe('A15 orderLanes', () => {
+    const lane = (paneId: string, end?: number): AgentLane => ({ paneId, kind: 'claude', cwd: '/x', segments: [{ status: 'idle', start: 0, end }] });
+
+    it('puts listed panes first in row order, then the rest newest first (open counts as newest), ties by pane id', () => {
+        const lanes = [lane('g1', 300), lane('p2', 10), lane('g3', 300), lane('p1', 20), lane('g2', undefined)];
+        expect(orderLanes(lanes, ['p1', 'p2']).map(l => l.paneId)).toEqual(['p1', 'p2', 'g2', 'g1', 'g3']);
     });
 });
 
