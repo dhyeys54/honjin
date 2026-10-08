@@ -1041,7 +1041,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - Install commands in the S1 catalog were checked against vendor docs on 2026-10-08. If a vendor's docs now differ,
   update S1 and D44 in the same commit.
 
-- [ ] **T8.1 Prerequisite catalog and beta logic (pure)**
+- [x] **T8.1 Prerequisite catalog and beta logic (pure)**
   - Spec: 13 S1, S3, S8, S11 (`issueBody`), S12 (`compareVersions`).
   - Tests first: `common/prerequisites.test.ts`, `common/agent-choice.test.ts`, `common/beta.test.ts`.
     - Catalog order and ids. The herdr, claude, codex and opencode install strings match S1 exactly. gemini gives
@@ -1250,3 +1250,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T7.11 follow-up — timeline lanes look clickable: whole row is the target, pointer cursor, hover background, "Focus <kind> in herdr" tooltip; gone lanes say "No longer running" and are inert (E2E extended; 274 unit, 53 E2E)
 - 2026-10-08 G7 — approved by the user after trying the installed app (title lines, Agent Timeline, lane click)
 - 2026-10-08 T8.0 — spec 13 (setup, agent picker, beta plumbing), specs 03/05/07 amended, D44–D47, Stage 8 tasks and G8 (docs only)
+- 2026-10-08 T8.1 — prerequisite catalog (vendor install commands), setupState, agentChoices, compareVersions (semver pre-release), issueBody/issueUrl without paths (20 tests; 294 unit)
