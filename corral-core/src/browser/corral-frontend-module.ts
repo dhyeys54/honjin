@@ -33,6 +33,7 @@ import { FirstRunContribution } from './first-run-contribution';
 import { SetupService } from './setup/setup-service';
 import { SETUP_ID, SetupWidget } from './setup/setup-widget';
 import { SetupContribution } from './setup/setup-contribution';
+import { BetaContribution } from './beta-contribution';
 import { EditorPlacementGuard } from './editor-placement-guard';
 import { CorralWindowTitle, CorralWindowTitleRefresh } from './window-title-contribution';
 import { WindowTitleContribution } from '@theia/core/lib/browser/window/window-title-service';
@@ -140,6 +141,10 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     })).inSingletonScope();
     bindViewContribution(bind, SetupContribution);
     bind(FrontendApplicationContribution).toService(SetupContribution);
+    bind(BetaContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(BetaContribution);
+    bind(CommandContribution).toService(BetaContribution);
+    bind(MenuContribution).toService(BetaContribution);
     bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ProjectsViewContainerFactory);
     bindViewContribution(bind, ProjectsContribution);

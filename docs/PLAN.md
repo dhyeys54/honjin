@@ -1097,7 +1097,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
     - Update the README settings table.
     - If the owner's own settings set `corral.startupCommand`, tell them the value to move into `corral.agentCommands`.
 
-- [ ] **T8.5 Beta plumbing**
+- [x] **T8.5 Beta plumbing**
   - Spec: 13 S11, S12.
   - Tests first:
     - `node/corral-setup-service.test.ts`: `latestRelease()` with a fake fetch returns the tag and URL, and returns
@@ -1258,3 +1258,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.8 (steps 1, 2, 5 only; task stays open) — LICENSE (MIT), THIRD_PARTY_NOTICES.md, `.github/ISSUE_TEMPLATE/{bug,install,idea,config}.yml`, CONTRIBUTING.md; trademark check reported to the user, not ticked
 - 2026-10-08 T8.4 — + asks which installed agent to run (last choice first, none → Setup, one → no prompt, project override skips it); corral.agentCommands replaces corral.startupCommand; "Use agent picker" (3 E2E; 303 unit, 61 E2E)
 - 2026-10-08 T8.7 follow-up (review) — release.sh not prerelease (D56); install.sh: macOS 13 check, unwritable-dir message, aborts while Corral runs, old app kept aside, optional `v` in CORRAL_VERSION; KNOWN-ISSUES gaps filled (install.test.sh +2 cases)
+- 2026-10-08 T8.5 — version 0.1.0-beta.1, title "Corral Beta", Help → Report an Issue (versions only, no paths), daily latest-release check with Copy update command / Release notes, corral.updates.check (5 unit + 1 E2E; 308 unit, 62 E2E)

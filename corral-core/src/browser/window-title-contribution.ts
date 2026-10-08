@@ -8,7 +8,7 @@ import { owningProject } from '../common/paths';
 import { ProjectListService } from './projects/project-list-service';
 
 /**
- * `Corral — <project>`: the project owning the active editor, or the last one a herdr tab was opened for (spec 01).
+ * `Corral Beta — <project>`: the project owning the active editor, or the last one a herdr tab was opened for (spec 01).
  * It must have no injected dependencies: WindowTitleService resolves its contributions while initialising, and
  * anything that reaches back to it (EditorManager does) is a cycle. `CorralWindowTitleRefresh` does the wiring instead.
  */
@@ -26,7 +26,7 @@ export class CorralWindowTitle implements WindowTitleContribution {
 
     enhanceTitle(): string {
         const name = this.project?.split('/').filter(Boolean).pop();
-        return name ? `Corral — ${name}` : 'Corral';
+        return name ? `Corral Beta — ${name}` : 'Corral Beta';
     }
 }
 

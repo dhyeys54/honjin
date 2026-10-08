@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { CorralSetupService } from '../common/protocol';
+import { CorralSetupService, LatestRelease, Platform } from '../common/protocol';
 import { PREREQUISITES, Prerequisite, PrerequisiteStatus } from '../common/prerequisites';
 import { ExecFileFn } from './herdr-cli';
 import { FindBinaryOptions, findBinary } from './binary-resolver';
@@ -9,7 +9,10 @@ export interface SetupEnv {
     execFileFn: ExecFileFn;
     /** Where to look beyond `PATH`. The E2E leaves this out so only its fake `PATH` counts. */
     fallbacks?: { dirs: string[]; home: string; shell?: string };
+    fetchFn?: (url: string, init?: RequestInit) => Promise<Pick<Response, 'ok' | 'status' | 'json'>>;
 }
+
+const LATEST_RELEASE_URL = 'https://api.github.com/repos/dhyeys54/corral/releases/latest';
 
 /** Spec 13 S2, S4. Nothing is cached: a re-check right after an install must see the new binary. */
 export class CorralSetupServiceImpl implements CorralSetupService {
@@ -64,5 +67,24 @@ export class CorralSetupServiceImpl implements CorralSetupService {
             const install = p.install({ brew: !!brew, npm: !!npm });
             return { id: p.id, found: false, version: '', ...(install === undefined ? {} : { install }) };
         }));
+    }
+
+    /** Spec 13 S12: the one request Corral makes itself (D46, D47). Any failure means "nothing new". */
+    async latestRelease(): Promise<LatestRelease | undefined> {
+        try {
+            const res = await (this.env.fetchFn ?? fetch)(LATEST_RELEASE_URL, {
+                credentials: 'omit', headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(10_000)
+            });
+            const body = res.ok ? await res.json() : undefined;
+            return typeof body?.tag_name === 'string' && typeof body.html_url === 'string' ? { tag: body.tag_name, url: body.html_url } : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /** Spec 13 S11: for the issue report; no paths or names. */
+    async platform(): Promise<Platform> {
+        const { stdout } = await this.env.execFileFn('/usr/bin/sw_vers', ['-productVersion'], { timeoutMs: 5000 }).catch(() => ({ stdout: '' }));
+        return { macos: stdout.trim() || 'unknown', arch: process.arch };
     }
 }

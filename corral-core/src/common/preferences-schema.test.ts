@@ -14,7 +14,8 @@ const expected: Record<string, { type: string; default: unknown }> = {
     'corral.resourceMonitor.warningPercent': { type: 'number', default: 50 },
     'corral.resourceMonitor.dangerPercent': { type: 'number', default: 75 },
     'corral.resourceMonitor.intervalSeconds': { type: 'number', default: 5 },
-    'corral.agents.intervalSeconds': { type: 'number', default: 3 }
+    'corral.agents.intervalSeconds': { type: 'number', default: 3 },
+    'corral.updates.check': { type: 'boolean', default: true }
 };
 
 describe('corral preference schema', () => {

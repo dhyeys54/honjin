@@ -88,4 +88,9 @@ export const CorralSetupService = Symbol('CorralSetupService');
 export interface CorralSetupService {
     /** Spec 13 S4: every prerequisite in catalog order, found or with its install command. */
     check(): Promise<PrerequisiteStatus[]>;
+    /** Spec 13 S12: GitHub's latest release, or `undefined` on any failure. */
+    latestRelease(): Promise<LatestRelease | undefined>;
+    platform(): Promise<Platform>;
 }
+export interface LatestRelease { tag: string; url: string }
+export interface Platform { macos: string; arch: string }

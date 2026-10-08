@@ -15,7 +15,8 @@ export const CorralPreferenceKeys = {
     resourceMonitorWarningPercent: 'corral.resourceMonitor.warningPercent',
     resourceMonitorDangerPercent: 'corral.resourceMonitor.dangerPercent',
     resourceMonitorIntervalSeconds: 'corral.resourceMonitor.intervalSeconds',
-    agentsIntervalSeconds: 'corral.agents.intervalSeconds'
+    agentsIntervalSeconds: 'corral.agents.intervalSeconds',
+    updatesCheck: 'corral.updates.check'
 } as const;
 
 export interface ProjectOverride {
@@ -37,6 +38,7 @@ export interface CorralConfiguration {
     'corral.resourceMonitor.dangerPercent': number;
     'corral.resourceMonitor.intervalSeconds': number;
     'corral.agents.intervalSeconds': number;
+    'corral.updates.check': boolean;
 }
 
 // User scope only: project repos must never be touched by Corral settings (spec 05).
@@ -63,6 +65,10 @@ export const corralPreferenceSchema: PreferenceSchema = {
         },
         'corral.herdr.path': { type: 'string', default: 'herdr', scope, description: 'herdr binary name or absolute path.' },
         'corral.herdr.session': { type: 'string', default: '', scope, description: 'herdr session name. Empty means herdr\'s default session.' },
+        'corral.updates.check': {
+            type: 'boolean', default: true, scope,
+            description: 'Once a day, ask GitHub whether a newer Corral release exists. This is the only request Corral makes itself.'
+        },
         'corral.firstRunCompleted': { type: 'boolean', default: false, scope, description: 'Set once the first-run folder picker has been shown.' },
         'corral.resourceMonitor.enabled': { type: 'boolean', default: true, scope, description: 'Show the memory, CPU and process total of Corral and its herdr session in the status bar.' },
         'corral.resourceMonitor.warningPercent': {

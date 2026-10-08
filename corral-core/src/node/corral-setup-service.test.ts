@@ -2,7 +2,7 @@ import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { ExecFileFn } from './herdr-cli';
-import { CorralSetupServiceImpl } from './corral-setup-service';
+import { CorralSetupServiceImpl, SetupEnv } from './corral-setup-service';
 
 function exe(dir: string, name: string): string {
     mkdirSync(dir, { recursive: true });
@@ -70,5 +70,37 @@ describe('CorralSetupService.check (spec 13 S2, S4)', () => {
         const pathOnly = new CorralSetupServiceImpl({ pathEnv: '', execFileFn: exec }, async () => undefined);
         expect((await withFallbacks.check()).find(s => s.id === 'opencode')?.found).toBe(true);
         expect((await pathOnly.check()).find(s => s.id === 'opencode')?.found).toBe(false);
+    });
+});
+
+describe('CorralSetupService.latestRelease (spec 13 S12)', () => {
+    const service = (fetchFn: NonNullable<SetupEnv['fetchFn']>) =>
+        new CorralSetupServiceImpl({ pathEnv: '', execFileFn: fake({}).exec, fetchFn }, async () => undefined);
+    const reply = (status: number, body: unknown) => async () => ({ ok: status === 200, status, json: async () => body });
+
+    it('returns the latest tag and its page, asking GitHub with no credentials', async () => {
+        const calls: [string, RequestInit | undefined][] = [];
+        const s = service(async (url, init) => {
+            calls.push([url, init]);
+            return reply(200, { tag_name: 'v0.1.0-beta.2', html_url: 'https://github.com/dhyeys54/corral/releases/tag/v0.1.0-beta.2' })();
+        });
+        expect(await s.latestRelease()).toEqual({ tag: 'v0.1.0-beta.2', url: 'https://github.com/dhyeys54/corral/releases/tag/v0.1.0-beta.2' });
+        expect(calls[0][0]).toBe('https://api.github.com/repos/dhyeys54/corral/releases/latest');
+        expect(calls[0][1]?.credentials).toBe('omit');
+    });
+
+    it('returns undefined on 404, a network error or a body without a tag', async () => {
+        expect(await service(reply(404, { message: 'Not Found' })).latestRelease()).toBeUndefined();
+        expect(await service(async () => { throw new Error('offline'); }).latestRelease()).toBeUndefined();
+        expect(await service(reply(200, { nope: 1 })).latestRelease()).toBeUndefined();
+        expect(await service(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('bad json'); } })).latestRelease()).toBeUndefined();
+    });
+});
+
+describe('CorralSetupService.platform (spec 13 S11)', () => {
+    it('reads the macOS version from sw_vers and the chip from the process', async () => {
+        const { exec } = fake({ '/usr/bin/sw_vers -productVersion': { stdout: '15.6\n' } });
+        const s = new CorralSetupServiceImpl({ pathEnv: '', execFileFn: exec }, async () => undefined);
+        expect(await s.platform()).toEqual({ macos: '15.6', arch: process.arch });
     });
 });

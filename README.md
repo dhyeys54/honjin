@@ -71,6 +71,7 @@ the first time you open it, right-click → Open, or run `xattr -dr com.apple.qu
 | `corral.hiddenProjects` | `[]` | Hidden projects |
 | `corral.agentCommands` | `{ "claude": "claude", "codex": "codex", … }` | The command + types for each agent in the picker; add flags here |
 | `corral.projectOverrides` | `{}` | Per-project `{ "startupCommand": "…" }` |
+| `corral.updates.check` | `true` | Ask GitHub once a day whether a newer Corral exists (the only request Corral makes) |
 | `corral.herdr.path` / `corral.herdr.session` | `"herdr"` / `""` | herdr binary, and session (empty = default) |
 
 These are stored in `~/.corral/settings.json`, never inside your repos.

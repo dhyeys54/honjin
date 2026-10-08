@@ -49,5 +49,5 @@ test('the title names the project of the active editor', async ({ page }) => {
     await row(page, 'src').click();
     await row(page, 'src').dblclick();
     await row(page, 'index.ts').dblclick();
-    await expect.poll(() => page.title(), { timeout: 15_000 }).toContain('Corral — alpha');
+    await expect.poll(() => page.title(), { timeout: 15_000 }).toContain('Corral Beta — alpha');
 });
