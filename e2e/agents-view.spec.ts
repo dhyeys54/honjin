@@ -269,7 +269,17 @@ test('A14, A15: the Agent Timeline tab draws one lane per agent, coloured by sta
         }
 
         await expect(timeline.locator('.corral-timeline-axis span')).toHaveText(['-15m', '-10m', '-5m', 'now']);
-        await lanes.first().locator('.corral-timeline-label').click();
+        // A15: a label click focuses the agent. Prove it for real: herdr is not the current tab, and the pane is `done`
+        // (herdr turns that into `idle` only when the pane is focused).
+        herdr('workspace', 'focus', beta.ws);
+        report(src.pane, 'idle');
+        await expect.poll(() => herdrStatus(src.pane)).toBe('done');
+        await page.keyboard.press('ControlOrMeta+p');
+        await page.keyboard.type('beta readme');
+        await page.locator('.quick-input-widget .monaco-list-row', { hasText: 'README.md' }).first().click();
+        await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^README\.md$/ })).toBeVisible({ timeout: 10_000 });
+        await timeline.locator('.corral-timeline-lane', { hasText: 'alpha/src' }).locator('.corral-timeline-label').click();
+        await expect.poll(() => herdrStatus(src.pane), { timeout: 10_000 }).toBe('idle');
         await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^herdr$/ })).toBeVisible({ timeout: 10_000 });
 
         herdr('pane', 'release-agent', src.pane, '--source', 'corral-e2e', '--agent', 'claude');
