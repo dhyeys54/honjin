@@ -3,7 +3,7 @@
 The right panel's container gets a third section, **Agents**. It lists every coding agent running in Corral's herdr
 session, across all projects. The ones that need the user come first: blocked on a question or approval, or done and
 not yet looked at. Clicking a row jumps to that agent's pane in the herdr terminal. Until now this state was only
-visible inside herdr's own TUI, although `PRODUCT.md` promises it (D42, `docs/research/feature-gaps.md`).
+visible inside herdr's own TUI, although `PRODUCT.md` promises it (D42).
 
 ```
 AGENTS                                   2

@@ -192,7 +192,7 @@ Theia's generated `index.html` has no icon link and `browser-app` is regenerated
 Left as they are: integration tests `describe.skip` with a loud message when herdr is missing (spec 08 says so); backend services are built by hand in `corral-backend-module.ts` from plain constructor arguments, which keeps them unit-testable without a DI container; the frontend detects a stopped herdr server by `server_not_running` in the error message, because the RPC boundary drops the `HerdrError` class (D13).
 **Consequences.** A warning shows once per new problem: reloads that report the same warnings stay quiet, and a root that breaks again after a clean scan is reported again.
 
-## D37 — Go-to-market, and a later move to Corral's own Rust IDE (docs/GTM.md) · 2026-09-30
+## D37 — Go-to-market, and a later move to Corral's own Rust IDE (GTM notes, private repo dhyeys54/corral-notes) · 2026-09-30
 **Decision.** Corral launches as a free, MIT-licensed open-core Theia build for macOS. The launch adds an agent picker on **+** and is released unsigned, with install steps. Linux, keymap presets, a skills panel and MCP shared memory follow in v1.x. Paid enterprise features stay parked until an organization asks. After launch, and only if the founder approves it on benchmark numbers, Corral gets rewritten as its own Rust IDE: iced plus cosmic-text, `alacritty_terminal`, and a `corral-rs/` Cargo workspace in this repo. It replaces the Theia build once it is the founder's only editor for 2 weeks and beats Theia-Corral on RAM and startup.
 **Why.** There are zero users, so everything before launch is a guess. A council review cut the launch to the one distinctive feature. The Rust version is Corral's own code, not a Zed fork: a fork is GPL-3 and has to absorb about 100 upstream commits a week, GPUI is effectively GPL today, and Zed's extensions and tasks can't add the Projects tree or **+**.
 **Consequences.** Nothing in `docs/specs/` changes yet. Specs change when their tasks land, starting with Linux packaging and signing in spec 07. `PRODUCT.md` still says macOS-only and single-user, and will change at launch. The Rust build loses VS Code extensions that draw their own UI, and that loss is accepted.
@@ -231,7 +231,7 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 
 **Why.**
 - `PRODUCT.md` promises that herdr "shows which ones are working, blocked or done". Corral never surfaced that, and
-  every comparable tool does (`docs/research/feature-gaps.md` §2).
+  every comparable tool does (feature-gap research, private notes).
 - **Polling, not the socket.** The CLI is the seam Corral already uses and tests. herdr's `events.subscribe` socket
   API would push changes, but its stability is still an open question for herdr's maintainers (GTM).
 - **All agents in the session.** Agents in workspaces Corral didn't create are listed as well. Reading and focusing
