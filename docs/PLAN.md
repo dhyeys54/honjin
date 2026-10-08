@@ -1155,7 +1155,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
        - Slots for the demo GIF and 2–3 screenshots.
   - Verify: `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e && npm run test:install`.
 
-- [ ] **G8 Stage 8 gate**: all suites → `spec-reviewer` on spec 13 and stage 8 → fix must-fix findings → **human
+- [x] **G8 Stage 8 gate**: all suites → `spec-reviewer` on spec 13 and stage 8 → fix must-fix findings → **human
   checkpoint, stop**.
   - The GitHub repo doesn't exist yet, so the test installs from a local release: `npm run package:mac`, then copy
     `electron-app/dist/Honjin-0.1.0-beta.1-arm64-mac.zip`, a `SHA256SUMS` for it (`shasum -a 256 <zip>`) and
@@ -1272,3 +1272,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.8 step 3 — GTM.md, FOR-REVIEW.md and research/feature-gaps.md moved to the private dhyeys54/corral-notes; references fixed (docs only)
 - 2026-10-08 T8.8 step 4 — filter-repo stripped GTM.md, FOR-REVIEW.md and research/feature-gaps.md from all history (backup mirror ../corral-backup-2026-10-08.git; history secret scan clean); T8.8 done (308 unit, 17 int, 62 E2E, install)
 - 2026-10-08 Rename — Corral → Honjin across code, config, docs and icons (new icon), D57; history left as written
+- 2026-10-08 G8 — fresh-account install test passed (user): one-liner install, Setup installed herdr and agents, herdr integrations see Claude (D59), Antigravity CLI replaces Gemini (D60), + and picker work
