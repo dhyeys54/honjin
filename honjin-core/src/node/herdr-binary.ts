@@ -6,11 +6,12 @@ export interface HerdrBinaryResolverOptions {
     /** The `PATH` string to search; the real one is minimal when launched from Finder. */
     pathEnv: string;
     candidates: string[];
-    shell: string;
+    /** The login shell for the last-resort lookup; omitted, there is none. */
+    shell?: string;
     execFileFn: ExecFileFn;
 }
 
-/** Resolves the herdr binary (spec 04 §Resolving the binary), caching each hit per configured value; a miss is retried. */
+/** Resolves the herdr binary (spec 04 §Resolving the binary), caching each hit per configured value; a miss, or a hit that has since gone, is looked up again. */
 export class HerdrBinaryResolver {
     protected readonly cache = new Map<string, string>();
 
@@ -18,7 +19,7 @@ export class HerdrBinaryResolver {
 
     async resolve(configured: string): Promise<string | undefined> {
         const hit = this.cache.get(configured);
-        if (hit !== undefined) {
+        if (hit !== undefined && isExecutable(hit)) {
             return hit;
         }
         const found = await this.lookup(configured);

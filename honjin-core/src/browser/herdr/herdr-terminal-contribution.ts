@@ -1,5 +1,5 @@
 import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common';
-import { ApplicationShell, BaseWidget, CommonCommands, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { ApplicationShell, BaseWidget, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { TerminalService } from '@theia/terminal/lib/browser/base/terminal-service';
 import { TerminalWidget } from '@theia/terminal/lib/browser/base/terminal-widget';
@@ -10,6 +10,8 @@ import { HonjinHerdrService } from '../../common/protocol';
 import { FileUri } from '@theia/core/lib/common/file-uri';
 import { exitReason } from '../../common/exit-reason';
 import { herdrClientEnv } from '../../common/herdr-client-env';
+import { SetupService } from '../setup/setup-service';
+import { SetupCommand } from '../setup/setup-contribution';
 
 export const HerdrCommands = {
     FOCUS: { id: 'honjin.herdr.focus', label: 'Honjin: Focus herdr' } as Command,
@@ -27,21 +29,35 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
     @inject(EnvVariablesServer) protected readonly env: EnvVariablesServer;
     @inject(CommandRegistry) protected readonly commands: CommandRegistry;
     @inject(PreferenceService) protected readonly preferences: PreferenceService;
+    @inject(SetupService) protected readonly setup: SetupService;
 
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
 
     protected widget?: TerminalWidget;
     protected placeholder?: BaseWidget;
+    /** The placeholder says herdr is missing, so a later lookup may succeed (spec 02 step 5). */
+    protected missing = false;
 
     async onDidInitializeLayout(): Promise<void> {
         if (!this.widget) {
             await this.create();
         }
+        // Setup re-checks after its install terminal closes; that is when a missing herdr appears.
+        this.setup.onDidChange(() => {
+            if (this.missing && this.setup.statuses?.some(s => s.id === 'herdr' && s.found)) {
+                this.missing = false; // a second check while this one resolves must not start a second terminal
+                this.recreate();
+            }
+        });
     }
 
     registerCommands(registry: CommandRegistry): void {
         registry.registerCommand(HerdrCommands.FOCUS, {
             execute: async () => {
+                if (this.missing) {
+                    await this.recreate();
+                    return;
+                }
                 if (!this.widget && this.placeholder && !this.placeholder.isDisposed) {
                     // The notice stands in for the herdr tab; a second tab with the same id would sit beside it.
                     await this.shell.activateWidget(this.placeholder.id);
@@ -56,24 +72,32 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
             }
         });
         registry.registerCommand(HerdrCommands.REATTACH, {
-            execute: async () => {
-                this.placeholder?.dispose();
-                this.widget?.dispose();
-                this.widget = undefined;
-                await this.create();
-            }
+            execute: () => this.recreate()
         });
+    }
+
+    protected async recreate(): Promise<void> {
+        this.placeholder?.dispose();
+        this.widget?.dispose();
+        this.widget = undefined;
+        await this.create();
     }
 
     protected async create(): Promise<void> {
         const { binary, session } = await this.herdr.resolveBinary();
+        this.missing = !binary;
+        if (!binary) {
+            // Without a binary the terminal would fall back to the user's shell, so the notice stands in for it.
+            await this.showPlaceholder('herdr not found', 'Set Up Honjin',
+                () => this.commands.executeCommand(SetupCommand.id));
+            return;
+        }
         const home = FileUri.fsPath(await this.env.getHomeDirUri());
         // xterm measures its cell once at creation. Measured against the fallback font, the rows overflow the
         // pane (edges cut off) until something resizes it, so wait for the terminal font first.
         const family = this.preferences.get<string>('terminal.integrated.fontFamily', 'monospace');
         const size = this.preferences.get<number>('terminal.integrated.fontSize', 11);
         await document.fonts.load(`${size}px ${family}`).catch(() => undefined);
-        // Without a binary the widget would fall back to the user's shell, so start it only when herdr exists.
         const widget = await this.terminals.newTerminal({
             id: HERDR_TERMINAL_ID,
             title: 'herdr',
@@ -102,12 +126,6 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
         });
         // Open before start: herdr aborts with "zero-sized grid" if the pty is created before the widget has a size.
         await this.terminals.open(widget, { mode: 'activate', widgetOptions: { area: 'main', mode: 'split-right' } });
-        if (!binary) {
-            widget.dispose();
-            await this.showPlaceholder('herdr not found. Set honjin.herdr.path in Settings', 'Open Settings',
-                () => this.commands.executeCommand(CommonCommands.OPEN_PREFERENCES.id));
-            return;
-        }
         // Keep a short tail of output: when herdr quits, its error is the last thing it printed.
         let tail = '';
         const output = widget.onOutput(data => { tail = (tail + data).slice(-4096); });
@@ -137,7 +155,7 @@ export class HerdrTerminalContribution implements FrontendApplicationContributio
         const button = document.createElement('button');
         button.className = 'theia-button';
         button.textContent = action;
-        button.addEventListener('click', () => { placeholder.dispose(); run(); });
+        button.addEventListener('click', () => run());
         placeholder.node.append(text, button);
         this.placeholder = placeholder;
         await this.shell.addWidget(placeholder, { area: 'main', mode: 'split-right' });

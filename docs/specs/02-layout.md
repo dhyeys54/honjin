@@ -61,8 +61,10 @@ writing code.
    placement. It never recreates it automatically in a loop.
 4. Closing the widget or quitting Honjin ends only the herdr **client**. The herdr server and its agents keep
    running; Honjin never stops the server. On the next launch step 1 attaches to it again (R15, tested in T1.9).
-5. If the herdr binary can't be found, the overlay reads "herdr not found. Set `honjin.herdr.path` in Settings" and
-   has an **Open Settings** button.
+5. If the herdr binary can't be found, the overlay reads "herdr not found" and has a **Set Up Honjin** button that
+   opens the Setup view (spec 13 S5). No terminal is started. When a Setup check later finds herdr, or
+   `honjin.herdr.focus` runs while this overlay is up, Honjin looks for herdr again and replaces the overlay with
+   the herdr terminal; still missing, the overlay stays.
 
 **Key handling.** Keys typed while the herdr terminal has focus must reach herdr. That includes its prefix
 `ctrl+b` and its alt/arrow bindings. If Theia keybindings swallow any of these, add them to the terminal's

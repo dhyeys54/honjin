@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { ExecFileFn } from './herdr-cli';
@@ -69,5 +69,14 @@ describe('HerdrBinaryResolver', () => {
         expect(await r.resolve('herdr')).toBeUndefined();
         const bin = exe(dir);
         expect(await r.resolve('herdr')).toBe(bin);
+    });
+
+    it('looks again when a cached hit is gone', async () => {
+        const dir = tmp();
+        const bin = exe(dir);
+        const r = new HerdrBinaryResolver({ pathEnv: dir, candidates: [], execFileFn: shellFake('').exec });
+        expect(await r.resolve('herdr')).toBe(bin);
+        rmSync(bin);
+        expect(await r.resolve('herdr')).toBeUndefined();
     });
 });

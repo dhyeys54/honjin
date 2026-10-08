@@ -33,12 +33,14 @@ if (!process.env.THEIA_DEFAULT_PLUGINS && resourcesPath && existsSync(packagedPl
 
 /** How to find herdr: the binary and session are re-read from settings per call, so a preference change applies without a restart. */
 function createHerdrAccess(env: EnvVariablesServer) {
-    const resolver = new HerdrBinaryResolver({
+    // The E2E sets HONJIN_TEST_PATH to choose exactly which tools exist (spec 13 S2), herdr included.
+    const testPath = process.env.HONJIN_TEST_PATH;
+    const resolver = new HerdrBinaryResolver(testPath === undefined ? {
         pathEnv: process.env.PATH ?? '',
         candidates: FALLBACK_DIRS.map(d => join(d, 'herdr')),
         shell: process.env.SHELL || '/bin/zsh',
         execFileFn: defaultExecFile
-    });
+    } : { pathEnv: testPath, candidates: [], execFileFn: defaultExecFile });
     const resolveBinary = async () => {
         const configDir = fileURLToPath(await env.getConfigDirUri());
         const settings = await readSettings(configDir);

@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'fs';
+import { execFileSync } from 'child_process';
+import { mkdirSync, mkdtempSync, realpathSync, symlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 import { FAKE_CLAUDE } from './fake-agents';
@@ -17,10 +18,12 @@ if (!process.env.HONJIN_E2E_CONFIG_DIR) {
     process.env.HONJIN_E2E_CONFIG_DIR = dir;
 }
 
-// Spec 13 S2: the backend searches only this dir for agents. A fake claude makes every suite "ready"; setup.spec removes it.
+// Spec 13 S2: the backend searches only this dir for agents and herdr. A fake claude makes every suite "ready"; setup.spec removes it.
 if (!process.env.HONJIN_TEST_PATH) {
     const bin = mkdtempSync(join(realpathSync(tmpdir()), 'honjin-e2e-bin-'));
     writeFileSync(join(bin, 'claude'), FAKE_CLAUDE, { mode: 0o755 });
+    // herdr is searched only here too, so setup.spec can take it away; the link points at the real one.
+    symlinkSync(execFileSync('which', ['herdr'], { encoding: 'utf8' }).trim(), join(bin, 'herdr'));
     process.env.HONJIN_TEST_PATH = bin;
 }
 

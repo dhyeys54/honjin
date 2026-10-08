@@ -29,7 +29,7 @@ interface Prerequisite {
 Docs URLs: herdr.dev/docs/install, code.claude.com/docs/en/setup, github.com/openai/codex,
 github.com/google-gemini/gemini-cli, github.com/sst/opencode, developer.apple.com/xcode/resources.
 
-| S2 | **Detection.** `node/binary-resolver.ts` generalises `HerdrBinaryResolver` (spec 04 §Resolving the binary) to any binary from the catalog: `PATH`, then `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and the entry's `extraCandidates`, then the login shell `command -v <binary>`. `<binary>` comes only from the catalog constant, never from user input (D44). herdr keeps its `honjin.herdr.path` first step and its behaviour. A found binary's version is the first non-empty line of `execFile(path, ['--version'])` with a 5 s timeout, or `''` if that fails. **Misses are not cached**, so a re-check after an install finds the new binary. `/usr/bin/git` is a stub that opens an install dialog when the command line tools are missing, so it counts as found only when `/usr/bin/xcode-select -p` exits 0, and it is never run before that. With `HONJIN_TEST_PATH` set (E2E), only that `PATH` is searched; herdr is still found as in spec 04. |
+| S2 | **Detection.** `node/binary-resolver.ts` generalises `HerdrBinaryResolver` (spec 04 §Resolving the binary) to any binary from the catalog: `PATH`, then `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and the entry's `extraCandidates`, then the login shell `command -v <binary>`. `<binary>` comes only from the catalog constant, never from user input (D44). herdr keeps its `honjin.herdr.path` first step and its behaviour. A found binary's version is the first non-empty line of `execFile(path, ['--version'])` with a 5 s timeout, or `''` if that fails. **Misses are not cached**, so a re-check after an install finds the new binary. `/usr/bin/git` is a stub that opens an install dialog when the command line tools are missing, so it counts as found only when `/usr/bin/xcode-select -p` exits 0, and it is never run before that. With `HONJIN_TEST_PATH` set (E2E), only that `PATH` is searched, for herdr too (D50); the E2E links the real herdr there. |
 |---|---|
 | S3 | **State.** `setupState(found: Record<id, boolean>)` returns `'ready'` when herdr and at least one agent are found, `'needs-herdr'` when herdr is missing, else `'needs-agent'`. git never blocks. |
 | S4 | **RPC.** `HonjinSetupService` (path `/services/honjin-setup`) has `check(): Promise<PrerequisiteStatus[]>`, where `PrerequisiteStatus = { id, found: boolean, path?: string, version: string, install?: string }`. |
@@ -81,6 +81,8 @@ No telemetry: S12's request is the only one Honjin itself makes (D47).
 - E2E:
   - The Setup view opens at start when the E2E environment is missing an agent (a `HONJIN_TEST_PATH` override). It
     shows Install for the missing rows and a version for herdr. Re-check updates it.
+  - With herdr missing, the herdr tab shows "herdr not found · Set Up Honjin"; once Re-check finds herdr, the
+    terminal replaces it without a reload (spec 02 step 5).
   - + with two fake agents shows the picker, and Enter opens a tab running the chosen command. With one agent there
     is no picker.
   - Help → Report an Issue exists.

@@ -1,5 +1,5 @@
 import { expect, test, Page } from '@playwright/test';
-import { rmSync } from 'fs';
+import { existsSync, readlinkSync, rmSync, symlinkSync } from 'fs';
 import { join } from 'path';
 import { FAKE_CLAUDE, fakeAgent } from './fake-agents';
 
@@ -42,4 +42,29 @@ test('Setup stays closed at start when herdr and an agent are found', async ({ p
     await expect(page.locator('.lm-TabBar-tab', { hasText: /^herdr$/ })).toBeVisible({ timeout: 30_000 });
     await page.waitForTimeout(2000); // the check is async; give it time to (wrongly) open
     await expect(view(page)).toHaveCount(0);
+});
+
+test('herdr installed through Setup replaces the "herdr not found" notice without a reload (spec 02 step 5, spec 13 S7)', async ({ page }) => {
+    test.setTimeout(120_000);
+    const link = join(process.env.HONJIN_TEST_PATH!, 'herdr');
+    const target = readlinkSync(link);
+    rmSync(link);
+    try {
+        await page.goto('/');
+        await expect(state(page)).toHaveText('Install herdr to continue.', { timeout: 60_000 });
+        const notice = page.locator('.honjin-herdr-overlay');
+        await expect(notice).toContainText('herdr not found');
+        await expect(notice.getByRole('button', { name: 'Set Up Honjin' })).toBeVisible();
+
+        symlinkSync(target, link);
+        await view(page).getByRole('button', { name: 'Re-check' }).click();
+        await expect(state(page)).toHaveText('Ready. Click + on any folder to start an agent.');
+        await expect(notice).toHaveCount(0, { timeout: 30_000 });
+        await expect(page.locator('.lm-TabBar-tab', { hasText: /^herdr$/ })).toHaveCount(1);
+        await expect(page.locator(`#honjin-herdr-terminal .xterm`)).toBeVisible();
+    } finally {
+        if (!existsSync(link)) {
+            symlinkSync(target, link);
+        }
+    }
 });
