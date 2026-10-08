@@ -5,7 +5,7 @@ const expected: Record<string, { type: string; default: unknown }> = {
     'honjin.scanRoots': { type: 'array', default: [] },
     'honjin.extraProjects': { type: 'array', default: [] },
     'honjin.hiddenProjects': { type: 'array', default: [] },
-    'honjin.agentCommands': { type: 'object', default: { claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' } },
+    'honjin.agentCommands': { type: 'object', default: { claude: 'claude', codex: 'codex', antigravity: 'agy', opencode: 'opencode' } },
     'honjin.projectOverrides': { type: 'object', default: {} },
     'honjin.herdr.path': { type: 'string', default: 'herdr' },
     'honjin.herdr.session': { type: 'string', default: '' },

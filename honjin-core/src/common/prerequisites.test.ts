@@ -1,26 +1,25 @@
 import { PREREQUISITES, setupState } from './prerequisites';
 
 const byId = (id: string) => PREREQUISITES.find(p => p.id === id)!;
-const none = { brew: false, npm: false };
 
 describe('PREREQUISITES (spec 13 S1)', () => {
     it('lists the catalog in order', () => {
-        expect(PREREQUISITES.map(p => p.id)).toEqual(['herdr', 'claude', 'codex', 'gemini', 'opencode', 'git']);
+        expect(PREREQUISITES.map(p => p.id)).toEqual(['herdr', 'claude', 'codex', 'antigravity', 'opencode', 'git']);
         expect(PREREQUISITES.map(p => p.role)).toEqual(['required', 'agent', 'agent', 'agent', 'agent', 'optional']);
     });
 
     it('uses the vendor install commands', () => {
-        expect(byId('herdr').install(none)).toBe('curl -fsSL https://herdr.dev/install.sh | sh');
-        expect(byId('claude').install(none)).toBe('curl -fsSL https://claude.ai/install.sh | bash');
-        expect(byId('codex').install(none)).toBe('curl -fsSL https://chatgpt.com/codex/install.sh | sh');
-        expect(byId('opencode').install(none)).toBe('curl -fsSL https://opencode.ai/install | bash');
-        expect(byId('git').install(none)).toBe('xcode-select --install');
+        expect(byId('herdr').install).toBe('curl -fsSL https://herdr.dev/install.sh | sh');
+        expect(byId('claude').install).toBe('curl -fsSL https://claude.ai/install.sh | bash');
+        expect(byId('codex').install).toBe('curl -fsSL https://chatgpt.com/codex/install.sh | sh');
+        expect(byId('opencode').install).toBe('curl -fsSL https://opencode.ai/install | bash');
+        expect(byId('git').install).toBe('xcode-select --install');
     });
 
-    it('installs gemini with brew, else npm, else not at all', () => {
-        expect(byId('gemini').install({ brew: true, npm: true })).toBe('brew install gemini-cli');
-        expect(byId('gemini').install({ brew: false, npm: true })).toBe('npm install -g @google/gemini-cli');
-        expect(byId('gemini').install(none)).toBeUndefined();
+    it('has Antigravity CLI, which replaced Gemini CLI (D60)', () => {
+        expect(byId('antigravity')).toMatchObject({
+            name: 'Antigravity CLI', binary: 'agy', install: 'curl -fsSL https://antigravity.google/cli/install.sh | bash'
+        });
     });
 
     it('gives opencode its installer locations as extra candidates', () => {

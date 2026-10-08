@@ -54,7 +54,7 @@ export const honjinPreferenceSchema: PreferenceSchema = {
         'honjin.hiddenProjects': { ...stringList(), description: 'Projects left out of the tree and the workspace.' },
         'honjin.agentCommands': {
             type: 'object', scope,
-            default: { claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' },
+            default: { claude: 'claude', codex: 'codex', antigravity: 'agy', opencode: 'opencode' },
             description: 'The command + types for each agent, so you can add flags (for example "claude --model opus").',
             additionalProperties: { type: 'string' }
         },

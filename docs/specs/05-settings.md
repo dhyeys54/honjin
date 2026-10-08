@@ -10,7 +10,7 @@ or folder-scoped values are ignored, so project repos are never touched.
 | `honjin.scanRoots` | `string[]` | `[]` | Folders whose immediate subfolders are projects. `~` allowed. |
 | `honjin.extraProjects` | `string[]` | `[]` | Projects added by hand. |
 | `honjin.hiddenProjects` | `string[]` | `[]` | Projects left out of the tree and the workspace. |
-| `honjin.agentCommands` | `object` map agent id → command | `{ claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' }` | The command + types for each agent in the picker (spec 13 S8–S10). Replaces the global `honjin.startupCommand` (D44). |
+| `honjin.agentCommands` | `object` map agent id → command | `{ claude: 'claude', codex: 'codex', antigravity: 'agy', opencode: 'opencode' }` | The command + types for each agent in the picker (spec 13 S8–S10). Replaces the global `honjin.startupCommand` (D44). |
 | `honjin.projectOverrides` | `object` map `path → { startupCommand?: string }` | `{}` | Per-project overrides. |
 | `honjin.herdr.path` | `string` | `"herdr"` | herdr binary name or absolute path. |
 | `honjin.herdr.session` | `string` | `""` | herdr session name; `""` means herdr's default session. |

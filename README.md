@@ -2,7 +2,7 @@
 
 <h1 align="center">Honjin</h1>
 <p align="center"><b>Run coding agents across all your projects from one window.</b><br>
-Click + on any folder to start Claude Code, Codex, Gemini CLI or opencode there.</p>
+Click + on any folder to start Claude Code, Codex, Antigravity CLI or opencode there.</p>
 <p align="center">Public beta · 0.1.0-beta.1 · macOS on Apple silicon · free and open source (MIT)</p>
 
 ---
@@ -33,7 +33,7 @@ folder, and a side panel shows which agents are working, which are blocked and w
 ## Requirements
 
 - A Mac with Apple silicon (M1 or later) running macOS 13 or later. Intel Macs, Windows and Linux are not built yet.
-- [herdr](https://herdr.dev) and at least one coding agent (Claude Code, Codex, Gemini CLI or opencode). You don't
+- [herdr](https://herdr.dev) and at least one coding agent (Claude Code, Codex, Antigravity CLI or opencode). You don't
   need to install them first: on first launch Honjin opens **Set Up Honjin**, shows what is missing and has an
   **Install** button for each. Re-open it any time from the command palette (**Honjin: Set Up Prerequisites**).
 - git is optional. It only powers the Changes view and the branch in the status bar.

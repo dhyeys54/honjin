@@ -13,21 +13,21 @@ make a public beta workable: a version label, a way to report problems, and a wa
 | `herdr` | herdr | `herdr` | required | `curl -fsSL https://herdr.dev/install.sh \| sh` | — |
 | `claude` | Claude Code | `claude` | agent | `curl -fsSL https://claude.ai/install.sh \| bash` | — |
 | `codex` | Codex | `codex` | agent | `curl -fsSL https://chatgpt.com/codex/install.sh \| sh` | — |
-| `gemini` | Gemini CLI | `gemini` | agent | `brew install gemini-cli` when `brew` is found, else `npm install -g @google/gemini-cli` when `npm` is found, else none | — |
+| `antigravity` | Antigravity CLI | `agy` | agent | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` (replaced Gemini CLI, D60) | — |
 | `opencode` | opencode | `opencode` | agent | `curl -fsSL https://opencode.ai/install \| bash` | `~/.opencode/bin/opencode`, `~/bin/opencode` |
 | `git` | git | `git` | optional | `xcode-select --install` | — |
 
 ```ts
 interface Prerequisite {
-    id: 'herdr' | 'claude' | 'codex' | 'gemini' | 'opencode' | 'git';
+    id: 'herdr' | 'claude' | 'codex' | 'antigravity' | 'opencode' | 'git';
     name: string; binary: string; role: 'required' | 'agent' | 'optional';
     docsUrl: string;
-    install(found: { brew: boolean; npm: boolean }): string | undefined;  // undefined: no Install button, show docsUrl
+    install: string;
     extraCandidates: string[];                                            // `~` expanded by the backend
 }
 ```
 Docs URLs: herdr.dev/docs/install, code.claude.com/docs/en/setup, github.com/openai/codex,
-github.com/google-gemini/gemini-cli, github.com/sst/opencode, developer.apple.com/xcode/resources.
+antigravity.google/docs/cli/install, github.com/sst/opencode, developer.apple.com/xcode/resources.
 
 | S2 | **Detection.** `node/binary-resolver.ts` generalises `HerdrBinaryResolver` (spec 04 §Resolving the binary) to any binary from the catalog: `PATH`, then `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and the entry's `extraCandidates`, then the login shell `command -v <binary>`. `<binary>` comes only from the catalog constant, never from user input (D44). herdr keeps its `honjin.herdr.path` first step and its behaviour. A found binary's version is the first non-empty line of `execFile(path, ['--version'])` with a 5 s timeout, or `''` if that fails. **Misses are not cached**, so a re-check after an install finds the new binary. `/usr/bin/git` is a stub that opens an install dialog when the command line tools are missing, so it counts as found only when `/usr/bin/xcode-select -p` exits 0, and it is never run before that. With `HONJIN_TEST_PATH` set (E2E), only that `PATH` is searched, for herdr too (D50); the E2E links the real herdr there. |
 |---|---|
@@ -38,7 +38,7 @@ github.com/google-gemini/gemini-cli, github.com/sst/opencode, developer.apple.co
 
 | S5 | **Widget.** `SetupWidget` (`id = 'honjin-setup'`, label `Set Up Honjin`, icon `codicon codicon-tools`) opens in the **main** area. It has a heading and one row per catalog entry (`[data-testid="honjin-setup-row"][data-id="<id>"]`). A found row shows a check, the name and the version. A missing row shows the name, `Required`, `Agent` or `Optional`, and an **Install** button, or a **Docs** link when `install` is undefined. Above the rows, one line states the S3 state: `Ready. Click + on any folder to start an agent.`, `Install herdr to continue.` or `Install at least one agent.` A **Re-check** button runs `check()` again. |
 |---|---|
-| S6 | **Install.** Install opens a Theia terminal (`TerminalService.newTerminal`, title `Install <name>`) in the bottom panel that runs `/bin/zsh -lc "<install>"` (`common/install-script.ts`) with the S2 fallback folders appended to `PATH`, so a `brew` or `npm` that detection found there also runs (D51), then prints `Finished.` or `Failed (exit <n>).` and waits for Enter before the tab closes (Theia disposes a terminal when its process ends, which would hide the installer's output; D49). The command is the catalog string, never user input (D44). When that terminal's process exits or its tab closes, the view runs `check()` again. Honjin never installs anything without this click. |
+| S6 | **Install.** Install opens a Theia terminal (`TerminalService.newTerminal`, title `Install <name>`) in the bottom panel that runs `/bin/zsh -lc "<install>"` (`common/install-script.ts`) with the S2 fallback folders appended to `PATH`, so an installer that calls a tool from those folders also runs (D51), then prints `Finished.` or `Failed (exit <n>).` and waits for Enter before the tab closes (Theia disposes a terminal when its process ends, which would hide the installer's output; D49). The command is the catalog string, never user input (D44). When that terminal's process exits or its tab closes, the view runs `check()` again. Honjin never installs anything without this click. |
 | S7 | **When it opens.** At startup the frontend runs `check()`. If the state is not `ready`, it opens the Setup view and the first-run folder picker (spec 03) waits. When a check turns `ready`, the folder picker runs if first run is still pending, then a notification says `Click + on any folder to start an agent there.` The command `honjin.setup.open` (`Honjin: Set Up Prerequisites`) opens the view at any time. A **Continue anyway** link on the view lets the user skip to the folder picker. |
 
 ## Agent picker on +
@@ -46,7 +46,7 @@ github.com/google-gemini/gemini-cli, github.com/sst/opencode, developer.apple.co
 | S8 | **Choice.** `common/agent-choice.ts` has `agentChoices(installed: AgentId[], commands: Record<AgentId,string>, last?: string, paths?: Record<AgentId,string>)`. It returns the installed agents in catalog order, each `{ id, label: name, command: commands[id] }`, then `{ id: 'shell', label: 'Shell', command: '' }`, with the `last` id first when present. When a command's first word is the agent's catalog binary name and `paths` has the path Setup found for it, that word becomes the path, single-quoted if it needs it: the pane's shell may not have the folder on its `PATH` (D51). Any other command runs as written. |
 |---|---|
 | S9 | **Flow.** When the folder's project has a `projectOverrides[path].startupCommand`, + runs it as before, with no picker. Otherwise: if exactly one agent is installed, + runs it with no prompt. If none are installed, + opens the Setup view. Otherwise a quick pick lists `agentChoices`, with the first item preselected, so + then Enter repeats the last choice. Escape cancels and no tab opens. The chosen id is stored in `localStorage` key `honjin.lastAgent`. The installed list is the last `check()` result, refreshed when the Setup view re-checks. |
-| S10 | **Settings.** `honjin.agentCommands` (object, User scope) maps an agent id to its command, default `{ claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' }`, so users can add flags. The global `honjin.startupCommand` is removed (D44). The per-project `startupCommand` override stays. |
+| S10 | **Settings.** `honjin.agentCommands` (object, User scope) maps an agent id to its command, default `{ claude: 'claude', codex: 'codex', antigravity: 'agy', opencode: 'opencode' }`, so users can add flags. The global `honjin.startupCommand` is removed (D44). The per-project `startupCommand` override stays. |
 
 ## Beta plumbing
 
@@ -70,7 +70,7 @@ No telemetry: S12's request is the only one Honjin itself makes (D47).
 ## Tests
 
 - Unit tests:
-  - the catalog's install strings and the gemini fallbacks;
+  - the catalog's install strings;
   - `setupState`;
   - `agentChoices` (order, `last` first, shell last);
   - `compareVersions` (the cases in S12 plus equal versions);

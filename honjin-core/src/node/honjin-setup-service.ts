@@ -58,14 +58,12 @@ export class HonjinSetupServiceImpl implements HonjinSetupService {
     }
 
     async check(): Promise<PrerequisiteStatus[]> {
-        const [brew, npm] = await Promise.all([this.find('brew'), this.find('npm')]);
         return Promise.all(PREREQUISITES.map(async (p): Promise<PrerequisiteStatus> => {
             const path = await this.locate(p);
             if (path) {
                 return { id: p.id, found: true, path, version: await this.version(path) };
             }
-            const install = p.install({ brew: !!brew, npm: !!npm });
-            return { id: p.id, found: false, version: '', ...(install === undefined ? {} : { install }) };
+            return { id: p.id, found: false, version: '', install: p.install };
         }));
     }
 

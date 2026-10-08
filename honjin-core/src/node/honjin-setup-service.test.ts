@@ -31,7 +31,6 @@ describe('HonjinSetupService.check (spec 13 S2, S4)', () => {
     it('reports each catalog entry in order, with path and first version line when found and the install command when not', async () => {
         const dir = mkdtempSync(join(tmpdir(), 'honjin-setup-'));
         const claude = exe(dir, 'claude');
-        exe(dir, 'brew');
         const { exec } = fake({
             [`${claude} --version`]: { stdout: '\n2.1.211 (Claude Code)\nextra\n' },
             '/fake/herdr --version': { stdout: 'herdr 0.9.1\n' }
@@ -39,11 +38,11 @@ describe('HonjinSetupService.check (spec 13 S2, S4)', () => {
         const service = new HonjinSetupServiceImpl({ pathEnv: dir, execFileFn: exec }, async () => '/fake/herdr');
 
         const result = await service.check();
-        expect(result.map(s => s.id)).toEqual(['herdr', 'claude', 'codex', 'gemini', 'opencode', 'git']);
+        expect(result.map(s => s.id)).toEqual(['herdr', 'claude', 'codex', 'antigravity', 'opencode', 'git']);
         expect(result[0]).toEqual({ id: 'herdr', found: true, path: '/fake/herdr', version: 'herdr 0.9.1' });
         expect(result[1]).toEqual({ id: 'claude', found: true, path: claude, version: '2.1.211 (Claude Code)' });
         expect(result[2]).toEqual({ id: 'codex', found: false, version: '', install: 'curl -fsSL https://chatgpt.com/codex/install.sh | sh' });
-        expect(result[3]).toMatchObject({ id: 'gemini', found: false, install: 'brew install gemini-cli' });
+        expect(result[3]).toMatchObject({ id: 'antigravity', found: false, install: 'curl -fsSL https://antigravity.google/cli/install.sh | bash' });
     });
 
     it('gives an empty version when --version fails or times out', async () => {

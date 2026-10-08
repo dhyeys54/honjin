@@ -7,7 +7,7 @@ Things a new user can run into, with the workaround. Report anything else with *
 - **Apple Silicon and macOS 13 or later only.** Intel Macs, Windows and Linux are not built.
 - **Install commands for herdr and the agents come from each vendor's docs** and can go stale. If one fails in Setup, run the vendor's current command in a terminal; Setup picks the tool up on the next check.
 - **herdr shows its own welcome screen on its first run** and waits for Enter once.
-- **An Install button that fails** leaves its terminal open with `Failed (exit N)` and waits for Enter; Setup then re-checks. Each row's **Docs** link opens the vendor's instructions (for Gemini only when brew and npm are both missing), and **Re-check** is always there.
+- **An Install button that fails** leaves its terminal open with `Failed (exit N)` and waits for Enter; Setup then re-checks. **Re-check** is always there.
 - **Agents sign in themselves.** The first `claude` (or other agent) launch asks for login or an API key inside its herdr tab. Honjin does not handle credentials.
 - **Updating:** re-run the install one-liner. There is no automatic update, only a notification.
 
