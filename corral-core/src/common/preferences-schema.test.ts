@@ -5,7 +5,7 @@ const expected: Record<string, { type: string; default: unknown }> = {
     'corral.scanRoots': { type: 'array', default: [] },
     'corral.extraProjects': { type: 'array', default: [] },
     'corral.hiddenProjects': { type: 'array', default: [] },
-    'corral.startupCommand': { type: 'string', default: 'claude' },
+    'corral.agentCommands': { type: 'object', default: { claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' } },
     'corral.projectOverrides': { type: 'object', default: {} },
     'corral.herdr.path': { type: 'string', default: 'herdr' },
     'corral.herdr.session': { type: 'string', default: '' },

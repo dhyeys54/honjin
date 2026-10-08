@@ -69,7 +69,7 @@ the first time you open it, right-click → Open, or run `xattr -dr com.apple.qu
 | `corral.scanRoots` | `[]` | Folders whose subfolders are projects |
 | `corral.extraProjects` | `[]` | Projects added by hand |
 | `corral.hiddenProjects` | `[]` | Hidden projects |
-| `corral.startupCommand` | `"claude"` | Typed into each new herdr tab (`""` = plain shell) |
+| `corral.agentCommands` | `{ "claude": "claude", "codex": "codex", … }` | The command + types for each agent in the picker; add flags here |
 | `corral.projectOverrides` | `{}` | Per-project `{ "startupCommand": "…" }` |
 | `corral.herdr.path` / `corral.herdr.session` | `"herdr"` / `""` | herdr binary, and session (empty = default) |
 

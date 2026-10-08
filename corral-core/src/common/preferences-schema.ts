@@ -1,3 +1,4 @@
+import type { AgentId } from './prerequisites';
 import { PreferenceScope } from '@theia/core/lib/common/preferences/preference-scope';
 import type { PreferenceDataProperty, PreferenceSchema } from '@theia/core/lib/common/preferences/preference-schema';
 
@@ -5,7 +6,7 @@ export const CorralPreferenceKeys = {
     scanRoots: 'corral.scanRoots',
     extraProjects: 'corral.extraProjects',
     hiddenProjects: 'corral.hiddenProjects',
-    startupCommand: 'corral.startupCommand',
+    agentCommands: 'corral.agentCommands',
     projectOverrides: 'corral.projectOverrides',
     herdrPath: 'corral.herdr.path',
     herdrSession: 'corral.herdr.session',
@@ -26,7 +27,7 @@ export interface CorralConfiguration {
     'corral.scanRoots': string[];
     'corral.extraProjects': string[];
     'corral.hiddenProjects': string[];
-    'corral.startupCommand': string;
+    'corral.agentCommands': Partial<Record<AgentId, string>>;
     'corral.projectOverrides': Record<string, ProjectOverride>;
     'corral.herdr.path': string;
     'corral.herdr.session': string;
@@ -49,9 +50,11 @@ export const corralPreferenceSchema: PreferenceSchema = {
         'corral.scanRoots': { ...stringList(), description: 'Folders whose immediate subfolders are projects. "~" is allowed.' },
         'corral.extraProjects': { ...stringList(), description: 'Projects added by hand.' },
         'corral.hiddenProjects': { ...stringList(), description: 'Projects left out of the tree and the workspace.' },
-        'corral.startupCommand': {
-            type: 'string', default: 'claude', scope,
-            description: 'Typed into every new herdr tab. Empty means a plain shell.'
+        'corral.agentCommands': {
+            type: 'object', scope,
+            default: { claude: 'claude', codex: 'codex', gemini: 'gemini', opencode: 'opencode' },
+            description: 'The command + types for each agent, so you can add flags (for example "claude --model opus").',
+            additionalProperties: { type: 'string' }
         },
         'corral.projectOverrides': {
             type: 'object', default: {}, scope,

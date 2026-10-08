@@ -1080,7 +1080,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
   - Do: Install opens a terminal titled `Install <name>`. Check by hand once that its exit triggers a re-check. Keep
     the existing E2E fixtures, where a fake agent exists, so other suites don't open Setup.
 
-- [ ] **T8.4 Agent picker on +**
+- [x] **T8.4 Agent picker on +**
   - Spec: 13 S8–S10; spec 05 §Startup-command resolution (amended).
   - Tests first:
     - Update `common/startup-command.test.ts`: no override now returns `undefined`.
@@ -1256,3 +1256,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.6 — Settings UI persistence of `corral.resourceMonitor.*Percent` could not be reproduced (E2E `settings-ui.spec.ts` passes for both fields, typed and filled), kept as a regression test; sweep of FOR-REVIEW and the specs' not-covered lists; `docs/KNOWN-ISSUES.md`; stale-editor report listed as unexplained; npm audit: two criticals accepted (D55)
 - 2026-10-08 T8.7 — `scripts/install.sh` (checksum before any change, stage-then-swap, quits only the Corral at the target path), `install.test.sh` (fixture release over http.server; corrupt zip leaves the old app), `release.sh` (draft only), `package:mac` now builds the arm64 zip (225 MB, opens, installs via install.sh from file://), `test:install`
 - 2026-10-08 T8.8 (steps 1, 2, 5 only; task stays open) — LICENSE (MIT), THIRD_PARTY_NOTICES.md, `.github/ISSUE_TEMPLATE/{bug,install,idea,config}.yml`, CONTRIBUTING.md; trademark check reported to the user, not ticked
+- 2026-10-08 T8.4 — + asks which installed agent to run (last choice first, none → Setup, one → no prompt, project override skips it); corral.agentCommands replaces corral.startupCommand; "Use agent picker" (3 E2E; 303 unit, 61 E2E)

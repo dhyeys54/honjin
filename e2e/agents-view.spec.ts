@@ -23,7 +23,7 @@ test('A12: Agents is the third part, under Changes, titled Agents', async ({ pag
 });
 
 test('A11: with no agents the view says so', async ({ page }) => {
-    // The E2E startup command is `echo corral-e2e`, so nothing here starts an agent.
+    // The E2E agent command is `echo corral-e2e`, so nothing here starts an agent.
     await page.goto('/');
     await expect(empty(page)).toHaveText('No agents running', { timeout: 15_000 });
 });

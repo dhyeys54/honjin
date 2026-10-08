@@ -32,7 +32,7 @@ export const ProjectsActions = {
     ADD: { id: ADD_PROJECT_COMMAND_ID, label: 'Corral: Add Project…' } as Command,
     REMOVE: { id: 'corral.projects.remove', label: 'Remove from list' } as Command,
     SET_STARTUP: { id: 'corral.projects.setStartupCommand', label: 'Set startup command…' } as Command,
-    USE_GLOBAL: { id: 'corral.projects.useGlobalCommand', label: 'Use global startup command' } as Command,
+    USE_GLOBAL: { id: 'corral.projects.useGlobalCommand', label: 'Use agent picker' } as Command,
     FORGET: { id: 'corral.projects.forgetMapping', label: 'Remove from herdr mapping' } as Command,
     COPY_PATH: { id: 'corral.projects.copyPath', label: 'Copy Path' } as Command,
     REVEAL: { id: 'corral.projects.revealInFinder', label: 'Reveal in Finder' } as Command,
@@ -244,7 +244,7 @@ export class ProjectsActionsContribution implements CommandContribution, MenuCon
         const overrides = this.prefs['corral.projectOverrides'];
         const value = await this.quickInput.input({
             title: `Startup command for ${basename(path)}`,
-            value: resolveStartupCommand(path, [path], this.prefs['corral.startupCommand'], overrides),
+            value: resolveStartupCommand(path, [path], overrides) ?? '',
             placeHolder: 'Leave empty for a plain shell · Esc to cancel'
         });
         if (value !== undefined) { // Esc gives undefined; Enter on empty stores '' (an explicit plain shell)

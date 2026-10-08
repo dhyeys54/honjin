@@ -12,7 +12,7 @@ if (!process.env.CORRAL_E2E_CONFIG_DIR) {
     writeFileSync(join(dir, 'settings.json'), JSON.stringify({
         'corral.scanRoots': [resolve(__dirname, 'fixtures/projects')],
         'corral.firstRunCompleted': true,
-        'corral.startupCommand': 'echo corral-e2e'
+        'corral.agentCommands': { claude: 'echo corral-e2e', codex: 'echo corral-e2e-codex' }
     }, undefined, 2));
     process.env.CORRAL_E2E_CONFIG_DIR = dir;
 }
