@@ -1,10 +1,11 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
-import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common';
+import { Command, CommandContribution, CommandRegistry, MessageService } from '@theia/core/lib/common';
 import { ConfirmDialog, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PreferenceService } from '@theia/core/lib/common/preferences/preference-service';
 import { CHOOSE_SCAN_ROOTS_COMMAND_ID } from '../common/command-ids';
 import { abbreviateHome, shouldRunFirstRun } from '../common/first-run';
 import { FolderPicker } from './folder-picker';
+import { SetupService } from './setup/setup-service';
 import { CorralPreferences, setCorralPreference } from './corral-preferences';
 
 export const ChooseScanRootsCommand: Command = { id: CHOOSE_SCAN_ROOTS_COMMAND_ID, label: 'Corral: Choose Project Folders…' };
@@ -15,22 +16,34 @@ export class FirstRunContribution implements FrontendApplicationContribution, Co
     @inject(CorralPreferences) protected readonly prefs: CorralPreferences;
     @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
     @inject(FolderPicker) protected readonly picker: FolderPicker;
+    @inject(SetupService) protected readonly setup: SetupService;
+    @inject(MessageService) protected readonly messages: MessageService;
 
-    async onDidInitializeLayout(): Promise<void> {
+    onDidInitializeLayout(): void {
+        // Not awaited: Theia runs these hooks in sequence, and waiting for installs would hold up the rest of startup.
+        void this.run();
+    }
+
+    /** Spec 13 S7: Setup first, then the folder picker (spec 05), then the + hint. */
+    protected async run(): Promise<void> {
         await this.prefs.ready;
-        if (!shouldRunFirstRun({
+        const waited = await this.setup.untilReady().catch(() => false);
+        const firstRun = shouldRunFirstRun({
             firstRunCompleted: this.prefs['corral.firstRunCompleted'],
             scanRoots: this.prefs['corral.scanRoots'],
             extraProjects: this.prefs['corral.extraProjects']
-        })) {
-            return;
+        });
+        if (firstRun) {
+            const chosen = await this.pickFolders();
+            if (chosen.length) {
+                await setCorralPreference(this.preferenceService, 'corral.scanRoots', chosen);
+            }
+            // Cancel also completes first run; the Projects view's empty state offers the picker again.
+            await setCorralPreference(this.preferenceService, 'corral.firstRunCompleted', true);
         }
-        const chosen = await this.pickFolders();
-        if (chosen.length) {
-            await setCorralPreference(this.preferenceService, 'corral.scanRoots', chosen);
+        if (waited || firstRun) {
+            void this.messages.info('Click + on any folder to start an agent there.');
         }
-        // Cancel also completes first run; the Projects view's empty state offers the picker again.
-        await setCorralPreference(this.preferenceService, 'corral.firstRunCompleted', true);
     }
 
     registerCommands(registry: CommandRegistry): void {

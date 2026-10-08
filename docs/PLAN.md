@@ -1068,7 +1068,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
       fake PATH is missing.
   - Do: bind the service and its RPC path in both modules, following `CorralAgentService`.
 
-- [ ] **T8.3 Setup view and first run**
+- [x] **T8.3 Setup view and first run**
   - Spec: 13 S5–S7; spec 05 §First run.
   - Tests first: `e2e/setup.spec.ts`.
     - Start with `CORRAL_TEST_PATH` set to a dir holding only herdr. The Setup view opens at start, the herdr row
@@ -1252,3 +1252,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.0 — spec 13 (setup, agent picker, beta plumbing), specs 03/05/07 amended, D44–D47, Stage 8 tasks and G8 (docs only)
 - 2026-10-08 T8.1 — prerequisite catalog (vendor install commands), setupState, agentChoices, compareVersions (semver pre-release), issueBody/issueUrl without paths (20 tests; 294 unit)
 - 2026-10-08 T8.2 — findBinary generalises herdr's lookup (PATH, fallback dirs, installer-specific candidates, login shell with a checked name); CorralSetupService.check over RPC with versions, /usr/bin/git stub handled, CORRAL_TEST_PATH limits the search (9 unit + 1 int; 303 unit, 17 int)
+- 2026-10-08 T8.3 — Setup view (rows, state line, Install in a visible terminal, Re-check, Continue anyway), corral.setup.open, first run waits for setup then shows the + hint; E2E backend sees only a fake-agent dir (2 E2E; 57 E2E, 303 unit)

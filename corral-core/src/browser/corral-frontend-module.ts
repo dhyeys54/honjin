@@ -1,6 +1,7 @@
 import '../../src/browser/style/herdr.css';
 import '../../src/browser/style/changes.css';
 import '../../src/browser/style/agents.css';
+import '../../src/browser/style/setup.css';
 
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
@@ -29,6 +30,9 @@ import {
 import { ResourceStatusContribution } from './resource-monitor/resource-status-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
 import { FirstRunContribution } from './first-run-contribution';
+import { SetupService } from './setup/setup-service';
+import { SETUP_ID, SetupWidget } from './setup/setup-widget';
+import { SetupContribution } from './setup/setup-contribution';
 import { EditorPlacementGuard } from './editor-placement-guard';
 import { CorralWindowTitle, CorralWindowTitleRefresh } from './window-title-contribution';
 import { WindowTitleContribution } from '@theia/core/lib/browser/window/window-title-service';
@@ -128,6 +132,14 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
         createWidget: () => ctx.container.get(AgentTimelineWidget)
     })).inSingletonScope();
     bindViewContribution(bind, AgentTimelineContribution);
+    bind(SetupService).toSelf().inSingletonScope();
+    bind(SetupWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: SETUP_ID,
+        createWidget: () => ctx.container.get(SetupWidget)
+    })).inSingletonScope();
+    bindViewContribution(bind, SetupContribution);
+    bind(FrontendApplicationContribution).toService(SetupContribution);
     bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ProjectsViewContainerFactory);
     bindViewContribution(bind, ProjectsContribution);

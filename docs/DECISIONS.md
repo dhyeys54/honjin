@@ -309,3 +309,8 @@ Left as they are: `herdr-plugin/` keeps upstream's 2-space, double-quote style a
 **Decision.** `CorralScmContribution` listens to `EditorManager.onCurrentEditorChanged` and sets `ScmService.selectedRepository` to the repository containing the editor's file (`findRepository`). Preview/webview tabs leave the selection alone.
 **Why.** Theia selects the first repository that registers and never changes it, so with many project roots the bottom-left item named an arbitrary project (seen: `ai-job-search` while editing `us-lead-engine`).
 **Consequences.** Show Changes still selects its folder's repository, until the next editor change.
+
+## D49 — Install terminals run zsh and wait for Enter (spec 13 S6) · 2026-10-08
+**Decision.** The Install terminal runs `/bin/zsh -lc "<install>; …; read _"` in the bottom panel: it prints `Finished.` or `Failed (exit <n>).`, then waits for Enter. The view re-checks on process exit or tab close, whichever comes first.
+**Why.** Theia disposes a terminal widget as soon as its process ends, so the installer's output (and any error) would vanish. The frontend can't read the user's `$SHELL`; zsh is the macOS default, and `-l` loads the profile installers write PATH changes to.
+**Consequences.** The re-check runs when the user dismisses the tab, not the instant the installer ends; Re-check covers the gap.
