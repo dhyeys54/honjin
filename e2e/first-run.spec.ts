@@ -6,7 +6,7 @@ import { join, resolve } from 'path';
 import { row } from './helpers';
 
 // Needs its own backend: the shared one is seeded with settings, first run needs an empty profile.
-const PORT = 3110;
+const PORT = Number(process.env.CORRAL_E2E_PORT ?? 3100) + 10; // next to the shared server, so a parallel worktree on another port does not collide
 const url = `http://127.0.0.1:${PORT}`;
 const root = resolve(__dirname, '..');
 const projectsDir = resolve(__dirname, 'fixtures/projects');
