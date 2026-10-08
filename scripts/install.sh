@@ -3,17 +3,27 @@
 #   CORRAL_VERSION       release tag to install (default: latest)
 #   CORRAL_RELEASE_BASE  base URL holding the zip and SHA256SUMS (default: the GitHub release)
 #   CORRAL_INSTALL_DIR   where Corral.app goes (default: /Applications)
+#   CORRAL_QUIT_WAIT     seconds to wait for a running Corral to quit (default: 10)
 set -eu
 
 repo=dhyeys54/corral
 dir=${CORRAL_INSTALL_DIR:-/Applications}
 
 [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || { echo "Corral's beta runs on Apple Silicon Macs only." >&2; exit 1; }
+[ "$(sw_vers -productVersion | cut -d. -f1)" -ge 13 ] || { echo "Corral needs macOS 13 or later." >&2; exit 1; }
+
+if [ ! -w "$dir" ]; then
+    echo "Can't write to $dir. Re-run with:" >&2
+    echo "  curl -fsSL https://raw.githubusercontent.com/$repo/main/scripts/install.sh | sudo sh" >&2
+    echo "or install for yourself only: CORRAL_INSTALL_DIR=\$HOME/Applications (create it first)." >&2
+    exit 1
+fi
 
 base=${CORRAL_RELEASE_BASE:-}
 if [ -z "$base" ]; then
     tag=${CORRAL_VERSION:-$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n 1)}
     [ -n "$tag" ] || { echo "Could not find the latest Corral release." >&2; exit 1; }
+    case $tag in v*) ;; *) tag=v$tag ;; esac
     base=https://github.com/$repo/releases/download/$tag
 fi
 
@@ -37,15 +47,18 @@ mkdir -p "$stage"
 ditto -x -k "$tmp/$zip" "$stage"
 [ -d "$stage/Corral.app" ] || { echo "The zip does not contain Corral.app." >&2; exit 1; }
 
-# Only quit the Corral that lives at the path being replaced.
-if pgrep -f "$dir/Corral.app/Contents/MacOS/" >/dev/null 2>&1; then
+# Only quit the Corral that lives at the path being replaced, and never replace one that is still running.
+running() { pgrep -f "$dir/Corral.app/Contents/MacOS/" >/dev/null 2>&1; }
+if running; then
     osascript -e 'quit app "Corral"' >/dev/null 2>&1 || true
     n=0
-    while pgrep -f "$dir/Corral.app/Contents/MacOS/" >/dev/null 2>&1 && [ "$n" -lt 20 ]; do sleep 0.5; n=$((n + 1)); done
+    while running && [ "$n" -lt $((${CORRAL_QUIT_WAIT:-10} * 2)) ]; do sleep 0.5; n=$((n + 1)); done
+    running && { echo "Corral is still running. Quit it and run this again. Nothing was changed." >&2; exit 1; }
 fi
 
-rm -rf "$dir/Corral.app"
-mv "$stage/Corral.app" "$dir/Corral.app"
+# Keep the old app until the new one is in place.
+[ -d "$dir/Corral.app" ] && mv "$dir/Corral.app" "$stage/old"
+mv "$stage/Corral.app" "$dir/Corral.app" || { [ -d "$stage/old" ] && mv "$stage/old" "$dir/Corral.app"; echo "Could not move Corral into $dir." >&2; exit 1; }
 
 version=${zip#Corral-}; version=${version%-arm64-mac.zip}
 echo "Installed Corral $version in $dir. Open Corral from Applications."

@@ -22,5 +22,5 @@ if [ -z "$notes" ]; then
     echo "Corral $version. Install: curl -fsSL https://raw.githubusercontent.com/dhyeys54/corral/main/scripts/install.sh | sh" > "$notes"
 fi
 
-gh release create "v$version" --draft --prerelease --title "Corral $version" --notes-file "$notes" "$dist/$zip" "$dist/SHA256SUMS"
+gh release create "v$version" --draft --title "Corral $version" --notes-file "$notes" "$dist/$zip" "$dist/SHA256SUMS"
 echo "Draft release v$version created. Publish it on GitHub when you are happy with it."

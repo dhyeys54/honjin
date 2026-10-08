@@ -21,14 +21,18 @@
 
 - **`scripts/install.sh`** (POSIX `sh`, kept short enough to read before running). The README one-liner is
   `curl -fsSL https://raw.githubusercontent.com/dhyeys54/corral/main/scripts/install.sh | sh`. The script:
-  1. Exits with a message unless `uname -s` is `Darwin` and `uname -m` is `arm64`.
+  1. Exits with a message unless `uname -s` is `Darwin`, `uname -m` is `arm64` and macOS is 13 or later. It then exits with a message if the install
+     directory is not writable, naming the `sudo sh` re-run and `CORRAL_INSTALL_DIR=$HOME/Applications`; it never falls
+     back silently.
   2. Reads the latest release from `https://api.github.com/repos/dhyeys54/corral/releases/latest`, or the tag in
-     `CORRAL_VERSION` when set.
+     `CORRAL_VERSION` when set (a leading `v` is optional). `/releases/latest` skips prereleases, so releases are not
+     marked prerelease (D56).
   3. Downloads the release's `Corral-<version>-arm64-mac.zip` and `SHA256SUMS` into a `mktemp -d` directory. It
      honours `CORRAL_RELEASE_BASE` (a base URL), so tests can serve a local fixture.
   4. Checks the zip against `SHA256SUMS` with `shasum -a 256 -c`. On a mismatch it stops and changes nothing.
-  5. Quits a running Corral (`osascript -e 'quit app "Corral"'`), waits up to 10 s, then replaces
-     `/Applications/Corral.app` with the unzipped app (`ditto -x -k`).
+  5. Quits a running Corral (`osascript -e 'quit app "Corral"'`), waits up to 10 s, then, if it is still running
+     (`CORRAL_QUIT_WAIT`, default 10), exits changing nothing. Otherwise it replaces `/Applications/Corral.app` with the
+     unzipped app (`ditto -x -k`), keeping the old app aside until the new one is in place.
   6. Prints the version installed and "Open Corral from Applications". Running it again updates.
 - **`scripts/release.sh <version>`**: runs `package:mac`, writes `SHA256SUMS` for the zip, and runs
   `gh release create v<version> --draft --notes-file <notes>` with both files. It never publishes; the user publishes
