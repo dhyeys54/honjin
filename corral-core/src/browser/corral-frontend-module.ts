@@ -22,7 +22,10 @@ import { AGENTS_VIEW_ID, createAgentsWidget } from './agents/agents-widget';
 import { ProjectsViewContainerFactory } from './projects/projects-view-container';
 import { ProjectsActionsContribution } from './projects/projects-actions-contribution';
 import { WorkspaceRootsSync } from './workspace-roots-sync';
-import { CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService } from '../common/protocol';
+import {
+    CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CORRAL_SETUP_PATH,
+    CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService, CorralSetupService
+} from '../common/protocol';
 import { ResourceStatusContribution } from './resource-monitor/resource-status-contribution';
 import { HerdrTerminalContribution } from './herdr/herdr-terminal-contribution';
 import { FirstRunContribution } from './first-run-contribution';
@@ -103,6 +106,9 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     })).inSingletonScope();
     bind(CorralAgentService).toDynamicValue(ctx =>
         ServiceConnectionProvider.createProxy<CorralAgentService>(ctx.container, CORRAL_AGENTS_PATH)
+    ).inSingletonScope();
+    bind(CorralSetupService).toDynamicValue(ctx =>
+        ServiceConnectionProvider.createProxy<CorralSetupService>(ctx.container, CORRAL_SETUP_PATH)
     ).inSingletonScope();
     bind(AgentsService).toSelf().inSingletonScope();
     bind(AgentsContribution).toSelf().inSingletonScope();

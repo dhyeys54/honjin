@@ -6,7 +6,8 @@ import { cpus, homedir, totalmem } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import {
-    CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService, HerdrError
+    CORRAL_AGENTS_PATH, CORRAL_HERDR_PATH, CORRAL_PROJECTS_PATH, CORRAL_RESOURCES_PATH, CORRAL_SETUP_PATH,
+    CorralAgentService, CorralHerdrService, CorralProjectService, CorralResourceService, CorralSetupService, HerdrError
 } from '../common/protocol';
 import { CorralHerdrServiceImpl } from './corral-herdr-service';
 import { CorralProjectServiceImpl } from './corral-project-service';
@@ -14,6 +15,8 @@ import { CorralAgentServiceImpl } from './corral-agent-service';
 import { CorralResourceServiceImpl } from './corral-resource-service';
 import { defaultExecFile, HerdrCli } from './herdr-cli';
 import { HerdrBinaryResolver } from './herdr-binary';
+import { FALLBACK_DIRS } from './binary-resolver';
+import { CorralSetupServiceImpl } from './corral-setup-service';
 import { readSettings } from './read-settings';
 import { CorralPreferenceKeys } from '../common/preferences-schema';
 import { WorkspaceMapStore } from './workspace-map-store';
@@ -32,7 +35,7 @@ if (!process.env.THEIA_DEFAULT_PLUGINS && resourcesPath && existsSync(packagedPl
 function createHerdrAccess(env: EnvVariablesServer) {
     const resolver = new HerdrBinaryResolver({
         pathEnv: process.env.PATH ?? '',
-        candidates: [join(homedir(), '.local/bin/herdr'), '/opt/homebrew/bin/herdr', '/usr/local/bin/herdr'],
+        candidates: FALLBACK_DIRS.map(d => join(d, 'herdr')),
         shell: process.env.SHELL || '/bin/zsh',
         execFileFn: defaultExecFile
     });
@@ -97,5 +100,20 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler(CORRAL_AGENTS_PATH, () => ctx.container.get<CorralAgentService>(CorralAgentService))
+    ).inSingletonScope();
+
+    bind(CorralSetupService).toDynamicValue(ctx => {
+        const { resolveBinary } = access(ctx.container.get<EnvVariablesServer>(EnvVariablesServer));
+        // The E2E sets CORRAL_TEST_PATH to choose exactly which tools exist, so nothing beyond it may be searched.
+        const testPath = process.env.CORRAL_TEST_PATH;
+        return new CorralSetupServiceImpl({
+            pathEnv: testPath ?? process.env.PATH ?? '',
+            execFileFn: defaultExecFile,
+            fallbacks: testPath === undefined ? { dirs: FALLBACK_DIRS, home: homedir(), shell: process.env.SHELL || '/bin/zsh' } : undefined
+        }, async () => (await resolveBinary()).binary);
+    }).inSingletonScope();
+
+    bind(ConnectionHandler).toDynamicValue(ctx =>
+        new RpcConnectionHandler(CORRAL_SETUP_PATH, () => ctx.container.get<CorralSetupService>(CorralSetupService))
     ).inSingletonScope();
 });

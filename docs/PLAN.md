@@ -1053,7 +1053,7 @@ command, Corral helps them install herdr and an agent, the first + starts an age
       leading `v` is ignored.
     - `issueBody`: contains each version given, and contains no `/` path segments from the input env.
 
-- [ ] **T8.2 Detection backend**
+- [x] **T8.2 Detection backend**
   - Spec: 13 S2, S4; spec 04 §Resolving the binary.
   - Tests first:
     - `node/binary-resolver.test.ts`, with a temp dir of fake executables:
@@ -1251,3 +1251,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 G7 — approved by the user after trying the installed app (title lines, Agent Timeline, lane click)
 - 2026-10-08 T8.0 — spec 13 (setup, agent picker, beta plumbing), specs 03/05/07 amended, D44–D47, Stage 8 tasks and G8 (docs only)
 - 2026-10-08 T8.1 — prerequisite catalog (vendor install commands), setupState, agentChoices, compareVersions (semver pre-release), issueBody/issueUrl without paths (20 tests; 294 unit)
+- 2026-10-08 T8.2 — findBinary generalises herdr's lookup (PATH, fallback dirs, installer-specific candidates, login shell with a checked name); CorralSetupService.check over RPC with versions, /usr/bin/git stub handled, CORRAL_TEST_PATH limits the search (9 unit + 1 int; 303 unit, 17 int)

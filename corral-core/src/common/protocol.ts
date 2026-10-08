@@ -1,11 +1,13 @@
 // RPC contract between the frontend widgets and the Node backend (spec 00 §Components).
 import type { AgentList } from './agents';
+import type { PrerequisiteStatus } from './prerequisites';
 import type { Runaway, Summary } from './resource-usage';
 
 export const CORRAL_PROJECTS_PATH = '/services/corral-projects';
 export const CORRAL_HERDR_PATH = '/services/corral-herdr';
 export const CORRAL_RESOURCES_PATH = '/services/corral-resources';
 export const CORRAL_AGENTS_PATH = '/services/corral-agents';
+export const CORRAL_SETUP_PATH = '/services/corral-setup';
 
 export const CorralProjectService = Symbol('CorralProjectService');
 export interface ProjectScanRequest {
@@ -80,4 +82,10 @@ export interface CorralAgentService {
     list(): Promise<AgentList>;
     /** Focuses the agent's pane in herdr (marks it seen). Rejects with `agent_not_found` when the pane is gone. */
     focus(paneId: string): Promise<void>;
+}
+
+export const CorralSetupService = Symbol('CorralSetupService');
+export interface CorralSetupService {
+    /** Spec 13 S4: every prerequisite in catalog order, found or with its install command. */
+    check(): Promise<PrerequisiteStatus[]>;
 }
