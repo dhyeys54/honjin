@@ -233,3 +233,52 @@ test('A7: the part header and the right-panel tab count agents that need you', a
         }
     }
 });
+
+test('A14, A15: the Agent Timeline tab draws one lane per agent, coloured by status, and a label click focuses', async ({ page }) => {
+    test.setTimeout(120_000);
+    const created: string[] = [];
+    try {
+        const beta = workspace(join(FIXTURES, 'beta'), 'agents-beta');
+        created.push(beta.ws);
+        const src = workspace(join(FIXTURES, 'alpha', 'src'), 'agents-src');
+        created.push(src.ws);
+        herdr('workspace', 'focus', src.ws); // so clicking beta's lane has something to reveal
+        report(beta.pane, 'working');
+
+        await page.goto('/');
+        await expect(agentRow(page, 'beta')).toContainText('working', { timeout: 15_000 });
+        await page.locator('[data-testid="corral-projects"]').click({ position: { x: 5, y: 150 } }); // keys go to herdr while its terminal has focus
+        await page.keyboard.press('F1');
+        await page.keyboard.type('Toggle Agent Timeline');
+        await page.keyboard.press('Enter');
+        const timeline = page.locator('[data-testid="corral-agent-timeline"]');
+        await expect(page.locator('.lm-TabBar-tab', { hasText: 'Agent Timeline' })).toBeVisible({ timeout: 10_000 });
+        const lanes = timeline.locator('[data-testid="corral-timeline-lane"]');
+        await expect(lanes).toHaveCount(1);
+        await expect(lanes.first().locator('.corral-timeline-seg.corral-agent-working')).toHaveCount(1);
+
+        report(beta.pane, 'blocked');
+        await expect(lanes.first().locator('.corral-timeline-seg.corral-agent-blocked')).toHaveCount(1, { timeout: 10_000 });
+        await expect(lanes.first().locator('.corral-timeline-seg.corral-agent-working')).toHaveCount(1);
+
+        report(src.pane, 'working');
+        await expect(lanes).toHaveCount(2, { timeout: 10_000 });
+        await expect(lanes.first()).toContainText('beta'); // blocked sorts before working (A3)
+        for (const title of await timeline.locator('.corral-timeline-seg').evaluateAll(els => els.map(e => e.getAttribute('title')))) {
+            expect(title).toMatch(/^(working|blocked) \d+[smh]$/);
+        }
+
+        await expect(timeline.locator('.corral-timeline-axis span')).toHaveText(['-15m', '-10m', '-5m', 'now']);
+        await lanes.first().locator('.corral-timeline-label').click();
+        await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^herdr$/ })).toBeVisible({ timeout: 10_000 });
+
+        herdr('pane', 'release-agent', src.pane, '--source', 'corral-e2e', '--agent', 'claude');
+        await expect(agentRow(page, 'alpha/src')).toHaveCount(0, { timeout: 10_000 });
+        await expect(lanes).toHaveCount(2); // the lane of a pane that went away stays
+        await expect(lanes.first()).toContainText('beta');
+    } finally {
+        for (const ws of created) {
+            try { herdr('workspace', 'close', ws); } catch { /* already gone */ }
+        }
+    }
+});

@@ -2,7 +2,9 @@ import { inject, injectable } from '@theia/core/shared/inversify';
 import { CommandService, Emitter, Event } from '@theia/core';
 import { FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { MessageService } from '@theia/core/lib/common/message-service';
-import { AgentList, AgentRow, AgentsPoller, Seen, agentRows, agentsIntervalMs, needsYou, trackSince } from '../../common/agents';
+import {
+    AgentLane, AgentList, AgentRow, AgentsPoller, Seen, TIMELINE_WINDOW_MS, agentLocation, agentRows, agentsIntervalMs, needsYou, orderLanes, trackHistory, trackSince
+} from '../../common/agents';
 import { CorralPreferenceKeys } from '../../common/preferences-schema';
 import { CorralAgentService } from '../../common/protocol';
 import { CorralPreferences } from '../corral-preferences';
@@ -22,6 +24,7 @@ export class AgentsService implements FrontendApplicationContribution {
     @inject(MessageService) protected readonly messages: MessageService;
 
     protected seen: ReadonlyMap<string, Seen> = new Map();
+    protected history: ReadonlyMap<string, AgentLane> = new Map();
     protected list: AgentList = { running: true, agents: [] };
     protected _loaded = false;
     protected _error: string | undefined;
@@ -57,9 +60,20 @@ export class AgentsService implements FrontendApplicationContribution {
         return this.list.running;
     }
 
+    protected projects() {
+        return this.projectList.entries(false).filter(e => this.projectList.roots.includes(e.path));
+    }
+
     rows(): AgentRow[] {
-        const projects = this.projectList.entries(false).filter(e => this.projectList.roots.includes(e.path));
-        return agentRows(this.list.agents, this.seen, projects);
+        return agentRows(this.list.agents, this.seen, this.projects());
+    }
+
+    /** A15: the lanes in display order; `listed` is false for a pane that has gone away. */
+    timeline(): { lane: AgentLane; location: string; listed: boolean }[] {
+        const projects = this.projects();
+        const rowIds = this.rows().map(r => r.paneId);
+        return orderLanes([...this.history.values()], rowIds).map(lane =>
+            ({ lane, location: agentLocation(lane.cwd, projects).location, listed: rowIds.includes(lane.paneId) }));
     }
 
     needsYou(): number {
@@ -83,7 +97,9 @@ export class AgentsService implements FrontendApplicationContribution {
     }
 
     protected onResult(list: AgentList): void {
-        this.seen = trackSince(this.seen, list.agents, Date.now());
+        const now = Date.now();
+        this.seen = trackSince(this.seen, list.agents, now);
+        this.history = trackHistory(this.history, list.agents, now, TIMELINE_WINDOW_MS);
         this.list = list;
         this._loaded = true;
         this._error = undefined;

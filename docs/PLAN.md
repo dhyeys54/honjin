@@ -999,10 +999,10 @@ inventing new ones:
     with the kind (dot width + margin). Check in the browser that Theia's virtualised rows grow to two lines.
   - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`.
 
-- [ ] **T7.11 Agent Timeline (bottom panel)**
+- [x] **T7.11 Agent Timeline (bottom panel)**
   - Spec: 12 A14, A15.
   - Tests first: a test in `e2e/agents-view.spec.ts` with the T7.5 helpers. Set up `beta` and `src`; `report(beta.pane, 'working')`.
-    1. `page.keyboard` is not needed: run the command through Theia's quick command (`F1`, type `Agents: Show Timeline`, Enter).
+    1. `page.keyboard` is not needed: run the command through Theia's quick command (`F1`, type `Toggle Agent Timeline`, Enter).
        The bottom panel opens with a tab `Agent Timeline`; one lane for beta with a `.corral-agent-working` segment.
     2. `report(beta.pane, 'blocked')`: within 10 s the beta lane has a `.corral-agent-blocked` segment and still a working one.
     3. `report(src.pane, 'working')`: two lanes; the order is beta (blocked) first.
@@ -1011,7 +1011,7 @@ inventing new ones:
     6. A segment's `title` matches `/^(working|blocked) \d+[smh]$/`.
   - Do: `AgentsService` keeps `history` next to `seen` (updated in `onResult` via `trackHistory`) and exposes `lanes()`.
     `AgentTimelineWidget` (ReactWidget) renders A15 with divs; `AgentTimelineContribution` (`AbstractViewContribution`,
-    `defaultWidgetOptions: { area: 'bottom' }`, toggle command `corral.agents.timeline.toggle`, label `Agents: Show Timeline`)
+    `defaultWidgetOptions: { area: 'bottom' }`, toggle command `corral.agents.timeline.toggle`, label `Toggle Agent Timeline`)
     is bound with `bindViewContribution`; CSS in `agents.css` using only `var(--theia-…)`.
     The default layout keeps the bottom panel collapsed (spec 02); opening the tab does not change that for new windows.
   - Verify: build, then `npx playwright test -c e2e/playwright.config.ts agents-view`, then `npm run test:e2e`.
@@ -1027,7 +1027,7 @@ inventing new ones:
     - every running agent appears, blocked and done first, with sensible ages;
     - clicking a `done` agent jumps to its pane in the herdr tab, and the row turns `idle` at once;
     - the part header and the right-panel tab badges count blocked + done;
-    - rows with a title show it as a second line; `Agents: Show Timeline` opens a bottom tab with one lane per agent,
+    - rows with a title show it as a second line; `Toggle Agent Timeline` opens a bottom tab with one lane per agent,
       coloured by status, in a sensible order, and clicking a lane label jumps to the pane;
     - Reveal in Projects and Copy Path work;
     - after the user quits herdr's server themselves, the view says `herdr is not running` within one interval.
@@ -1106,3 +1106,4 @@ inventing new ones:
 - 2026-10-08 G7 — spec-reviewer on stage 7: no must-fix; should-fix docs done (even initial split stated in spec 12 A12 and D42, untested behaviours listed in spec 12 §Tests). Waiting on the human checkpoint.
 - 2026-10-08 T7.9 — trackHistory, segmentGeometry, orderLanes (A14/A15) (8 unit tests, 270 total)
 - 2026-10-08 T7.10 — agent rows show the pane title on a second line (title set via OSC in the E2E pane); row grows to two lines; tooltip is title then cwd (E2E extended, 52 total)
+- 2026-10-08 T7.11 — Agent Timeline tab in the bottom panel (lanes per agent, status-coloured segments over 15 min, axis, click label focuses, lanes of gone panes stay); opened by View: Toggle Agent Timeline (1 E2E test added, 53 E2E total)

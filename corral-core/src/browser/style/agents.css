@@ -56,3 +56,78 @@
         animation: none;
     }
 }
+
+.corral-timeline {
+    overflow: auto;
+}
+
+.corral-timeline-empty {
+    padding: 12px;
+    color: var(--theia-descriptionForeground);
+}
+
+.corral-timeline-body {
+    padding: 8px 12px;
+}
+
+.corral-timeline-lane,
+.corral-timeline-axis {
+    display: flex;
+    align-items: center;
+    height: 22px;
+}
+
+.corral-timeline-label {
+    flex: none;
+    width: 220px;
+    padding-right: 12px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+}
+
+.corral-timeline-track {
+    position: relative;
+    flex: 1;
+    height: 10px;
+    background: var(--theia-editorWidget-background);
+    border-radius: 2px;
+}
+
+.corral-timeline-seg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 2px;
+}
+
+/* Idle is "ready and waiting"; the track shows through (A15). */
+.corral-timeline-seg.corral-agent-idle {
+    visibility: visible;
+    background: transparent;
+    animation: none;
+}
+
+.corral-timeline-seg.corral-agent-working {
+    animation: none;
+}
+
+.corral-timeline-axis {
+    color: var(--theia-descriptionForeground);
+    font-size: 0.85em;
+}
+
+.corral-timeline-axis .corral-timeline-track {
+    background: none;
+}
+
+.corral-timeline-axis span {
+    position: absolute;
+    transform: translateX(-100%);
+}
+
+.corral-timeline-axis span:first-child {
+    transform: none;
+}

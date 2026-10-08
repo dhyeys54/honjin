@@ -14,6 +14,8 @@ import { ChangesService } from './changes/changes-service';
 import { CHANGES_VIEW_ID, createChangesWidget } from './changes/changes-widget';
 import { ChangesContribution } from './changes/changes-contribution';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
+import { AgentTimelineContribution } from './agents/agent-timeline-contribution';
+import { AGENT_TIMELINE_ID, AgentTimelineWidget } from './agents/agent-timeline-widget';
 import { AgentsContribution } from './agents/agents-contribution';
 import { AgentsService } from './agents/agents-service';
 import { AGENTS_VIEW_ID, createAgentsWidget } from './agents/agents-widget';
@@ -114,6 +116,12 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
         id: AGENTS_VIEW_ID,
         createWidget: () => createAgentsWidget(ctx.container)
     })).inSingletonScope();
+    bind(AgentTimelineWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: AGENT_TIMELINE_ID,
+        createWidget: () => ctx.container.get(AgentTimelineWidget)
+    })).inSingletonScope();
+    bindViewContribution(bind, AgentTimelineContribution);
     bind(ProjectsViewContainerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ProjectsViewContainerFactory);
     bindViewContribution(bind, ProjectsContribution);
