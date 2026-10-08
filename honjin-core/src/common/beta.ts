@@ -38,6 +38,11 @@ export function compareVersions(a: string, b: string): number {
     return x.pre.length - y.pre.length;
 }
 
+/** S12: the update notice is for a tag newer than the running version, once per tag per window. */
+export function isNewRelease(tag: string | undefined, current: string, announced: ReadonlySet<string>): tag is string {
+    return tag !== undefined && !announced.has(tag) && compareVersions(tag, current) > 0;
+}
+
 export interface IssueEnv {
     honjin: string;
     macos: string;

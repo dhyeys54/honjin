@@ -5,7 +5,7 @@ import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 import { HonjinSetupService } from '../common/protocol';
-import { compareVersions, issueBody, issueUrl } from '../common/beta';
+import { isNewRelease, issueBody, issueUrl } from '../common/beta';
 import { HonjinPreferences } from './honjin-preferences';
 import { SetupService } from './setup/setup-service';
 
@@ -61,7 +61,7 @@ export class BetaContribution implements FrontendApplicationContribution, Comman
             return;
         }
         const latest = await this.backend.latestRelease().catch(() => undefined);
-        if (!latest || this.announced.has(latest.tag) || compareVersions(latest.tag, await this.version()) <= 0) {
+        if (!latest || !isNewRelease(latest.tag, await this.version(), this.announced)) {
             return;
         }
         this.announced.add(latest.tag);

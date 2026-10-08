@@ -1,4 +1,4 @@
-import { compareVersions, issueBody, issueUrl } from './beta';
+import { compareVersions, isNewRelease, issueBody, issueUrl } from './beta';
 
 describe('compareVersions (spec 13 S12)', () => {
     it.each([
@@ -38,5 +38,20 @@ describe('issueBody / issueUrl (S11)', () => {
         expect(url.origin + url.pathname).toBe('https://github.com/dhyeys54/honjin/issues/new');
         expect(url.searchParams.get('template')).toBe('bug.yml');
         expect(url.searchParams.get('body')).toBe('a b&c');
+    });
+});
+
+describe('isNewRelease (S12)', () => {
+    it('announces a newer tag once', () => {
+        const announced = new Set<string>();
+        expect(isNewRelease('v0.1.0-beta.2', '0.1.0-beta.1', announced)).toBe(true);
+        announced.add('v0.1.0-beta.2');
+        expect(isNewRelease('v0.1.0-beta.2', '0.1.0-beta.1', announced)).toBe(false);
+    });
+
+    it('ignores the running version, an older one, and no answer', () => {
+        expect(isNewRelease('v0.1.0-beta.1', '0.1.0-beta.1', new Set())).toBe(false);
+        expect(isNewRelease('v0.0.9', '0.1.0-beta.1', new Set())).toBe(false);
+        expect(isNewRelease(undefined, '0.1.0-beta.1', new Set())).toBe(false);
     });
 });
