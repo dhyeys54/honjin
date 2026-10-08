@@ -278,13 +278,20 @@ test('A14, A15: the Agent Timeline tab draws one lane per agent, coloured by sta
         await page.keyboard.type('beta readme');
         await page.locator('.quick-input-widget .monaco-list-row', { hasText: 'README.md' }).first().click();
         await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^README\.md$/ })).toBeVisible({ timeout: 10_000 });
-        await timeline.locator('.corral-timeline-lane', { hasText: 'alpha/src' }).locator('.corral-timeline-label').click();
+        const lane = timeline.locator('.corral-timeline-lane', { hasText: 'alpha/src' });
+        // A15: the lane says it is clickable (pointer cursor, tooltip), and the whole row is the target, not just the text
+        await expect(lane).toHaveClass(/corral-timeline-lane-focusable/);
+        expect(await lane.evaluate(e => getComputedStyle(e).cursor)).toBe('pointer');
+        await expect(lane.locator('.corral-timeline-label')).toHaveAttribute('title', new RegExp(`^Focus claude in herdr\\n${realpathSync(join(FIXTURES, 'alpha', 'src'))}$`));
+        await lane.locator('.corral-timeline-track').click({ position: { x: 200, y: 5 } });
         await expect.poll(() => herdrStatus(src.pane), { timeout: 10_000 }).toBe('idle');
         await expect(page.locator('.lm-TabBar-tab.lm-mod-current', { hasText: /^herdr$/ })).toBeVisible({ timeout: 10_000 });
 
         herdr('pane', 'release-agent', src.pane, '--source', 'corral-e2e', '--agent', 'claude');
         await expect(agentRow(page, 'alpha/src')).toHaveCount(0, { timeout: 10_000 });
         await expect(lanes).toHaveCount(2); // the lane of a pane that went away stays
+        await expect(lanes.filter({ hasText: 'alpha/src' })).not.toHaveClass(/corral-timeline-lane-focusable/);
+        await expect(lanes.filter({ hasText: 'alpha/src' }).locator('.corral-timeline-label')).toHaveAttribute('title', /^No longer running\n/);
         await expect(lanes.first()).toContainText('beta');
     } finally {
         for (const ws of created) {

@@ -85,7 +85,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: default;
+}
+
+.corral-timeline-lane-focusable {
+    cursor: pointer;
+}
+
+.corral-timeline-lane-focusable:hover {
+    background: var(--theia-list-hoverBackground);
 }
 
 .corral-timeline-track {

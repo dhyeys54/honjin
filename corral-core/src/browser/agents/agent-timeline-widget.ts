@@ -41,11 +41,13 @@ export class AgentTimelineWidget extends ReactWidget {
         const now = Date.now();
         return React.createElement('div', { className: 'corral-timeline-body' },
             ...lanes.map(({ lane, location, listed }) => React.createElement('div', {
-                key: lane.paneId, className: 'corral-timeline-lane', 'data-testid': 'corral-timeline-lane'
+                key: lane.paneId, 'data-testid': 'corral-timeline-lane',
+                className: listed ? 'corral-timeline-lane corral-timeline-lane-focusable' : 'corral-timeline-lane',
+                onClick: listed ? () => void this.agents.focus(lane.paneId) : undefined
             },
                 React.createElement('div', {
-                    className: 'corral-timeline-label', title: lane.cwd,
-                    onClick: listed ? () => void this.agents.focus(lane.paneId) : undefined
+                    className: 'corral-timeline-label',
+                    title: `${listed ? `Focus ${lane.kind} in herdr` : 'No longer running'}\n${lane.cwd}`
                 }, `${lane.kind} · ${location}`),
                 React.createElement('div', { className: 'corral-timeline-track' },
                     ...lane.segments.map((seg, i) => {
