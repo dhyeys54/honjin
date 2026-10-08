@@ -7,7 +7,7 @@ Click + on any folder to start Claude Code, Codex, Antigravity CLI or opencode t
 
 ---
 
-<!-- DEMO GIF: docs/screenshots/demo.gif (60 s: + on a folder → pick an agent → agent works → Agents view shows it blocked → click to jump) -->
+![Click + on a folder, pick Claude Code, and the agent starts in a herdr tab there](docs/screenshots/demo.gif)
 
 ![Honjin: the editor, a herdr terminal with two Claude Code tabs, and the Projects tree](docs/screenshots/hero.png)
 
