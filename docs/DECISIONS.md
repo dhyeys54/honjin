@@ -347,3 +347,8 @@ Skipped while two sessions wrote entries at the same time; nothing was decided u
 **Decision.** Besides the install directory, `install.sh` checks that a `Honjin.app` already there is writable, and stops with the same "Can't write to …" message and `sudo sh` hint when it isn't.
 **Why.** The swap moves the old app into a staging folder, and macOS only lets a folder move to a new parent when its `..` can be rewritten. An app installed by another account on the same Mac passed the directory check and then failed with a bare `mv: Permission denied`.
 **Consequences.** `scripts/install.test.sh` covers it. On a shared Mac, the second account to install needs `sudo sh` or its own `HONJIN_INSTALL_DIR`.
+
+## D59 — The herdr terminal also passes a `PATH` with Setup's folders (amends D30, G8) · 2026-10-08
+**Decision.** `herdrClientEnv(home)` is `HOME` plus `PATH`: `/usr/bin:/bin:/usr/sbin:/sbin` and the S2 fallback folders (`~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin`). Still nothing from Honjin's own environment.
+**Why.** The client starts herdr's server, which inherited no `PATH`. herdr's integrations tab only offers agents "found on your `PATH`", so on the fresh-account test it showed Claude Code (in `~/.local/bin`) as not found while Setup showed it found. Pane login shells keep these folders after `path_helper`'s, so a bare `claude` in a pane works too.
+**Consequences.** It applies when Honjin's client starts the server; a server already running keeps its old environment until `herdr server stop`. Agents in other folders (nvm, bun) still reach panes through the user's profile, but not herdr's integrations list.
