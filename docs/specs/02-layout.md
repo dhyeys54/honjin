@@ -21,6 +21,11 @@ its view opens in the **right** panel (rank 200, after Projects) and only when a
 **Show Changes** (spec 03). A layout saved with it in the left bar closes it there on startup. Theia's
 `scmView:toggle` (⌃⇧G) opens it on the right too; it then shows the repository that was last selected.
 
+The selected repository follows the active editor (DECISIONS D48): when the current editor changes, the repository
+that contains its file becomes the selected one, so the bottom-left git item names that project and branch. Theia
+itself only selects the first repository that registers. Preview and webview tabs have no file, so they leave the
+selection as it was. E2E: `e2e/scm-follows-editor.spec.ts`.
+
 ## Panel transitions
 
 Side and bottom panels slide instead of snapping: `expandDuration` is 150 ms for all three
