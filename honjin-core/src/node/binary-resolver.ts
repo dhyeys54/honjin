@@ -2,6 +2,7 @@ import { accessSync, constants, statSync } from 'fs';
 import { homedir } from 'os';
 import { delimiter, isAbsolute, join } from 'path';
 import { ExecFileFn } from './herdr-cli';
+import { FALLBACK_DIRS as HOME_FALLBACK_DIRS } from '../common/prerequisites';
 
 export interface FindBinaryOptions {
     /** The `PATH` string to search; the real one is minimal when launched from Finder. */
@@ -12,8 +13,7 @@ export interface FindBinaryOptions {
     execFileFn: ExecFileFn;
 }
 
-/** Where installers put binaries that a Finder-launched app's `PATH` misses (spec 04). */
-export const FALLBACK_DIRS = [join(homedir(), '.local/bin'), '/opt/homebrew/bin', '/usr/local/bin'];
+export const FALLBACK_DIRS = HOME_FALLBACK_DIRS.map(d => d.replace(/^~(?=\/)/, homedir()));
 
 export function isExecutable(path: string): boolean {
     try {

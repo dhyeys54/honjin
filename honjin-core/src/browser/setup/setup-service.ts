@@ -4,6 +4,7 @@ import { Deferred } from '@theia/core/lib/common/promise-util';
 import { TerminalService } from '@theia/terminal/lib/browser/base/terminal-service';
 import { TerminalWatcher } from '@theia/terminal/lib/common/terminal-watcher';
 import { HonjinSetupService } from '../../common/protocol';
+import { installScript } from '../../common/install-script';
 import { AGENTS, AgentId, PrerequisiteStatus, SetupState, setupState } from '../../common/prerequisites';
 
 /** Spec 13 S5–S7: the last prerequisite check, shared by the Setup view, first run and + (S9). */
@@ -53,8 +54,7 @@ export class SetupService {
 
     /** S6: the catalog command in a visible terminal, only on a click; a re-check follows when it ends. */
     async install(name: string, command: string): Promise<void> {
-        const script = `${command}; s=$?; echo; if [ $s -eq 0 ]; then echo 'Finished.'; else echo "Failed (exit $s)."; fi; `
-            + `echo 'Press Enter to close this tab.'; read _`;
+        const script = installScript(command);
         const widget = await this.terminals.newTerminal({
             title: `Install ${name}`, useServerTitle: false, shellPath: '/bin/zsh', shellArgs: ['-lc', script], destroyTermOnClose: true
         });

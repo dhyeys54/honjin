@@ -71,3 +71,19 @@ test('with only claude installed, + opens a tab with no picker', async ({ page }
     await expect(picker(page)).toBeHidden();
     await expect.poll(() => herdr('pane', 'read', newPanes(before)[0]), { timeout: 20_000 }).toContain('honjin-e2e');
 });
+
+test('+ runs the agent binary Setup found, not whatever the pane PATH has (spec 13 S8)', async ({ page }) => {
+    const original = readFileSync(settingsFile(), 'utf8');
+    try {
+        // `--version` keeps a real claude on the pane's PATH harmless if this regresses; only the fake prints "fake".
+        writeSettings({ ...JSON.parse(original), 'honjin.agentCommands': { claude: 'claude --version' } });
+        await page.goto('/');
+        await expect(projects(page)).toBeVisible({ timeout: 30_000 });
+        const before = paneIds();
+        await plus(page, 'beta');
+        await expect.poll(() => newPanes(before).length, { timeout: 20_000 }).toBe(1);
+        await expect.poll(() => herdr('pane', 'read', newPanes(before)[0]), { timeout: 20_000 }).toContain('1.0.0 (fake claude)');
+    } finally {
+        writeSettings(original);
+    }
+});

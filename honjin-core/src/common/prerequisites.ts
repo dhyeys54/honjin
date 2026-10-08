@@ -15,6 +15,9 @@ export interface Prerequisite {
 
 export interface PrerequisiteStatus { id: PrerequisiteId; found: boolean; path?: string; version: string; install?: string }
 
+/** Where installers put binaries that a Finder-launched app's `PATH` misses (spec 04); `~` is the home folder. */
+export const FALLBACK_DIRS = ['~/.local/bin', '/opt/homebrew/bin', '/usr/local/bin'];
+
 const fixed = (command: string) => () => command;
 
 /** Spec 13 S1. Install commands are copied from each vendor's docs (checked 2026-10-08, D44); never user input. */

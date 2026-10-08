@@ -23,4 +23,18 @@ describe('agentChoices (spec 13 S8)', () => {
     it('falls back to the binary name when the map has no command', () => {
         expect(agentChoices(['codex'], {})[0].command).toBe('codex');
     });
+
+    it('runs the binary Setup found, since the pane shell may not have its folder on PATH', () => {
+        const paths = { claude: '/Users/me/.local/bin/claude', codex: "/Users/o'k dir/codex" };
+        const byId = (installed: ('claude' | 'codex' | 'gemini')[], cmds: Record<string, string>) =>
+            Object.fromEntries(agentChoices(installed, cmds, undefined, paths).map(c => [c.id, c.command]));
+        expect(byId(['claude', 'codex', 'gemini'], commands)).toEqual({
+            claude: '/Users/me/.local/bin/claude --verbose',
+            codex: "'/Users/o'\\''k dir/codex'",
+            gemini: 'gemini',
+            shell: ''
+        });
+        expect(byId(['claude'], { claude: 'my-claude-wrapper' }).claude).toBe('my-claude-wrapper');
+        expect(byId(['claude'], { claude: 'claudette' }).claude).toBe('claudette');
+    });
 });

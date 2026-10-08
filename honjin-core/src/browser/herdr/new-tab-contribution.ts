@@ -101,7 +101,8 @@ export class NewTabContribution implements CommandContribution, KeybindingContri
             await this.commands.executeCommand(SetupCommand.id);
             return undefined;
         }
-        const choices = agentChoices(installed, this.prefs['honjin.agentCommands'], localStorage.getItem(LAST_AGENT_KEY) ?? undefined);
+        const paths = Object.fromEntries((this.setup.statuses ?? []).filter(s => s.path).map(s => [s.id, s.path]));
+        const choices = agentChoices(installed, this.prefs['honjin.agentCommands'], localStorage.getItem(LAST_AGENT_KEY) ?? undefined, paths);
         if (installed.length === 1) {
             return choices.find(c => c.id === installed[0])!.command;
         }
