@@ -19,7 +19,9 @@ asarUnpack:
   - "lib/backend/native/rg"   # the bundle spawns rg from app.asar.unpacked (spawn cannot run it from inside the asar)
   - "**/node_modules/drivelist/**"
 mac:
-  target: dir
+  target:
+    - target: zip
+      arch: arm64
   icon: ../branding/generated/corral.icns
   category: public.app-category.developer-tools
   identity: null
