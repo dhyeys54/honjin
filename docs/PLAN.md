@@ -1021,7 +1021,7 @@ inventing new ones:
     run `npm test && npm run typecheck && npm run lint && npm run test:int && npm run test:e2e` (roots and first-run alone);
     package and install as in T7.8.
 
-- [ ] **G7 Stage 7 gate**: all suites → `spec-reviewer` on spec 12 and stage 7 → fix must-fix findings → **human
+- [x] **G7 Stage 7 gate**: all suites → `spec-reviewer` on spec 12 and stage 7 → fix must-fix findings → **human
   checkpoint, stop**.
   - Ask the user to check these in the installed app, with real agents in their own session:
     - every running agent appears, blocked and done first, with sensible ages;
@@ -1109,3 +1109,4 @@ inventing new ones:
 - 2026-10-08 T7.11 — Agent Timeline tab in the bottom panel (lanes per agent, status-coloured segments over 15 min, axis, click label focuses, lanes of gone panes stay); opened by View: Toggle Agent Timeline (1 E2E test added, 53 E2E total)
 - 2026-10-08 T7.12 — README covers title line and timeline; all suites green (274 unit, 16 int, 53 E2E; roots and first-run alone); Corral.app repackaged and relaunched, timeline code confirmed in the installed app.asar (UI not viewed there; the E2E screenshot showed the timeline in the browser build)
 - 2026-10-08 T7.11 follow-up — timeline lanes look clickable: whole row is the target, pointer cursor, hover background, "Focus <kind> in herdr" tooltip; gone lanes say "No longer running" and are inert (E2E extended; 274 unit, 53 E2E)
+- 2026-10-08 G7 — approved by the user after trying the installed app (title lines, Agent Timeline, lane click)
