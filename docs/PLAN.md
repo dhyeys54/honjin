@@ -1273,3 +1273,4 @@ command, Corral helps them install herdr and an agent, the first + starts an age
 - 2026-10-08 T8.8 step 4 — filter-repo stripped GTM.md, FOR-REVIEW.md and research/feature-gaps.md from all history (backup mirror ../corral-backup-2026-10-08.git; history secret scan clean); T8.8 done (308 unit, 17 int, 62 E2E, install)
 - 2026-10-08 Rename — Corral → Honjin across code, config, docs and icons (new icon), D57; history left as written
 - 2026-10-08 G8 — fresh-account install test passed (user): one-liner install, Setup installed herdr and agents, herdr integrations see Claude (D59), Antigravity CLI replaces Gemini (D60), + and picker work
+- 2026-10-09 Fix — sleep no longer leaves the plugin host stuck at "Activating …": Electron keeps a dropped window's backend (D62), reproduced by suspending the renderer (1 test)

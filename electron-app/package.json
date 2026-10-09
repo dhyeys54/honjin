@@ -81,7 +81,8 @@
     },
     "backend": {
       "config": {
-        "configurationFolder": ".honjin"
+        "configurationFolder": ".honjin",
+        "frontendConnectionTimeout": -1
       }
     }
   },

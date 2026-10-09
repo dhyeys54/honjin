@@ -362,3 +362,8 @@ Skipped while two sessions wrote entries at the same time; nothing was decided u
 **Decision.** `bug.yml`'s textarea id is `what-happened`, and `issueUrl` passes the environment as `what-happened=` instead of `body=`.
 **Why.** Checked on the live repo: an issue form ignores GitHub's own `body=` parameter, even when a field's id is `body`, and the field stayed empty. A form fills a field from the parameter named after its id (GitHub's form-schema docs); a custom id does prefill, with line breaks kept (checked on a public repo's form).
 **Consequences.** A unit test reads the id from `bug.yml`, so renaming the field without the URL fails.
+
+## D62 — The Electron backend keeps a window's connection across a dropped socket · 2026-10-09
+**Decision.** `electron-app/package.json` sets `frontendConnectionTimeout: -1`. The browser target keeps Theia's default (0).
+**Why.** Found in the installed beta: after the Mac slept, the status bar stayed on "Activating Git Base (built-in)" and no extension worked until Reload Window. Reproduced in the dev build by suspending the renderer past socket.io's ping timeout (30 s + 60 s): with the default 0 the backend closes the window's connection at once, which kills its plugin host; the reconnect is refused, and the half-restarted plugins never finish activating. With -1 the reconnect succeeds and the same plugin host carries on.
+**Consequences.** Electron still closes a window's backend at once on a real close or reload, because the window marks itself for close first (`ElectronWindowService`). A renderer that dies without closing leaves its backend running until Honjin quits. The browser target can't tell a closed tab from a dropped socket, so it keeps 0; it is only for dev and E2E. A unit test reads the setting.
