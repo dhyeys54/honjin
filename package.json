@@ -21,7 +21,7 @@
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "typecheck": "tsc --noEmit -p honjin-core",
     "lint": "eslint .",
-    "package:mac": "npm run build -w honjin-core && npm --prefix electron-app run download:plugins && npm --prefix electron-app run rebuild && cd electron-app && theia build --mode production && electron-builder --mac",
+    "package:mac": "npm run build -w honjin-core && npm --prefix electron-app run download:plugins && npm --prefix electron-app run rebuild && cd electron-app && rm -rf lib && theia build --mode production && electron-builder --mac",
     "download:plugins": "npm --prefix browser-app run download:plugins"
   },
   "devDependencies": {
